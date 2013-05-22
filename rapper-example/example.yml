@@ -1,0 +1,11 @@
+http:
+  port: 8080
+  adminPort: 8081
+
+  requestLog:
+    console:
+      enabled: false
+
+logging:
+  loggers:
+    com.hypnoticocelot.rapper.example.sink.SLF4JSpanSink: trace
