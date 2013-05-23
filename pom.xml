@@ -5,16 +5,16 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>com.hypnoticocelot</groupId>
-    <artifactId>rapper-parent</artifactId>
+    <artifactId>telemetry-parent</artifactId>
     <version>0.0.1-SNAPSHOT</version>
 
     <packaging>pom</packaging>
 
     <modules>
-        <module>rapper-lib</module>
-        <module>rapper-dropwizard</module>
-        <module>rapper-example</module>
-        <module>rapper-agent</module>
+        <module>telemetry-lib</module>
+        <module>telemetry-dropwizard</module>
+        <module>telemetry-example</module>
+        <module>telemetry-agent</module>
     </modules>
 
     <dependencies>
