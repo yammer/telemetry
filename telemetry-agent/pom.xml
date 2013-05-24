@@ -80,7 +80,7 @@
                     <relocations>
                         <relocation>
                             <pattern>org.objectweb.asm</pattern>
-                            <shadedPattern>rapper.org.objectweb.asm</shadedPattern>
+                            <shadedPattern>telemetry.org.objectweb.asm</shadedPattern>
                             <includes>
                                 <include>org.objectweb.asm.*</include>
                             </includes>
