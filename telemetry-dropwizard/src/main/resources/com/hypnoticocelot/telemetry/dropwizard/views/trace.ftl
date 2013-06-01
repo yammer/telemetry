@@ -17,6 +17,7 @@
 <body>
 <h1>Trace - ${trace.root.data.name}</h1>
 <div id="trace-${trace.id}" class="trace">
+    (start = ${trace.startTimeNanos} ; duration = ${trace.duration})
     <@renderSpan span=trace.root trace=trace/>
 </div>
 </body>
@@ -25,8 +26,8 @@
 <#macro renderSpan span trace>
 <#-- @ftlvariable name="span" type="com.hypnoticocelot.telemetry.tracing.Span" -->
 <#-- @ftlvariable name="trace" type="com.hypnoticocelot.telemetry.tracing.Trace" -->
-<div id="span-${span.id}" class="span" style="left: ${((span.startTime - trace.startTime) / trace.duration) * 100}%; width: ${(span.duration / trace.duration) * 100}%;">
-    ${span.data.name}
+<div id="span-${span.id}" class="span" style="left: ${((span.startTimeNanos - trace.startTimeNanos) / trace.duration) * 100}%; width: ${(span.duration / trace.duration) * 100}%;">
+    ${span.data.name} (start = ${span.startTimeNanos}; duration = ${span.duration}}
 <#if (span.data.annotations?size > 0)>
     <table>
         <tr>

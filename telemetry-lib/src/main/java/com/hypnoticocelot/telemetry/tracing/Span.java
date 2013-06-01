@@ -14,8 +14,8 @@ public class Span implements AutoCloseable {
     private final UUID id;
     private final UUID parentId;
     private final SpanData data;
-    private final long startTime;
-    private long endTime;
+    private final long startTimeNanos;
+    private long duration;
 
     public static Span start(SpanData data) {
         SpanContext context = spanContext.get();
@@ -30,21 +30,22 @@ public class Span implements AutoCloseable {
         }
 
         final UUID spanId = generateSpanId();
-        final Span span = new Span(traceId, spanId, context.currentSpanId(), data, System.currentTimeMillis());
+        final Span span = new Span(traceId, spanId, context.currentSpanId(), data, System.currentTimeMillis() * 1000000, System.nanoTime());
         context.startSpan(span);
         return span;
     }
 
-    private Span(UUID traceId, UUID id, UUID parentId, SpanData data, long startTime) {
+    private Span(UUID traceId, UUID id, UUID parentId, SpanData data, long startTimeNanos, long startNanos) {
         this.traceId = traceId;
         this.parentId = parentId;
         this.id = id;
         this.data = data;
-        this.startTime = startTime;
+        this.startTimeNanos = startTimeNanos;
+        this.duration = startNanos;
     }
 
     public void end() {
-        endTime = System.currentTimeMillis();
+        duration = System.nanoTime() - duration;
 
         SpanContext context = spanContext.get();
         if (context != null) {
@@ -79,16 +80,12 @@ public class Span implements AutoCloseable {
         return data;
     }
 
-    public long getStartTime() {
-        return startTime;
-    }
-
-    public long getEndTime() {
-        return endTime;
+    public long getStartTimeNanos() {
+        return startTimeNanos;
     }
 
     public long getDuration() {
-        return endTime - startTime;
+        return duration;
     }
 
     private static UUID generateSpanId() {

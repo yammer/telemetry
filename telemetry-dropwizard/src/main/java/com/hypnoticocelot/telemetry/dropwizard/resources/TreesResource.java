@@ -44,8 +44,8 @@ public class TreesResource {
 
         return new TreeSpan(span.getId(),
                 span.getData().getName(),
-                new DateTime(span.getStartTime()),
-                new DateTime(span.getEndTime()),
+                new DateTime(span.getStartTimeNanos()),
+                span.getDuration(),
                 children.toArray(new TreeSpan[children.size()]));
     }
 }

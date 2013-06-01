@@ -7,15 +7,15 @@ import java.util.UUID;
 public class TreeSpan {
     private final UUID id;
     private final String name;
-    private final DateTime startTime;
-    private final DateTime endTime;
+    private final DateTime startTimeNanos;
+    private final long duration;
     private final TreeSpan[] children;
 
-    public TreeSpan(UUID id, String name, DateTime startTime, DateTime endTime, TreeSpan[] children) {
+    public TreeSpan(UUID id, String name, DateTime startTimeNanos, long duration, TreeSpan[] children) {
         this.id = id;
         this.name = name;
-        this.startTime = startTime;
-        this.endTime = endTime;
+        this.startTimeNanos = startTimeNanos;
+        this.duration = duration;
         this.children = children;
     }
 
@@ -27,12 +27,12 @@ public class TreeSpan {
         return name;
     }
 
-    public DateTime getStartTime() {
-        return startTime;
+    public DateTime getStartTimeNanos() {
+        return startTimeNanos;
     }
 
-    public DateTime getEndTime() {
-        return endTime;
+    public long getDuration() {
+        return duration;
     }
 
     public TreeSpan[] getChildren() {

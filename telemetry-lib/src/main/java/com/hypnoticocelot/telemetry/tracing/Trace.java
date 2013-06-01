@@ -13,8 +13,8 @@ public class Trace {
     private final UUID id;
     private final ConcurrentMap<UUID, List<Span>> childSpans;
     private Span root = null;
-    private long startTime = Long.MAX_VALUE;
-    private long endTime = -1;
+    private long startTimeNanos = Long.MAX_VALUE;
+    private long duration = 0;
 
     private Trace(UUID id) {
         this.id = id;
@@ -35,16 +35,12 @@ public class Trace {
         return root;
     }
 
-    public long getStartTime() {
-        return startTime;
-    }
-
-    public long getEndTime() {
-        return endTime;
+    public long getStartTimeNanos() {
+        return startTimeNanos;
     }
 
     public long getDuration() {
-        return Math.max(endTime - startTime, 1);
+        return duration - startTimeNanos;
     }
 
     public List<Span> getChildren(Span span) {
@@ -52,8 +48,8 @@ public class Trace {
     }
 
     public void addSpan(Span span) {
-        startTime = Math.min(startTime, span.getStartTime());
-        endTime = Math.max(endTime, span.getEndTime());
+        startTimeNanos = Math.min(startTimeNanos, span.getStartTimeNanos());
+        duration = Math.max(duration, span.getStartTimeNanos() + span.getDuration());
 
         final UUID parentId = span.getParentId();
         if (parentId == null) {

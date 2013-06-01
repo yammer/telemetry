@@ -13,13 +13,13 @@ public class SLF4JSpanSink implements SpanSink {
 
     @Override
     public void record(Span span) {
-        LOG.trace("[TELEMETRY id={}; pid={}; tid={}; name={}; start={}; end={}; annotations={}]",
+        LOG.trace("[TELEMETRY id={}; pid={}; tid={}; name={}; start={}; duration={}; annotations={}]",
                 span.getId(),
                 span.getParentId(),
                 span.getTraceId(),
                 span.getData().getName(),
-                span.getStartTime(),
-                span.getEndTime(),
+                span.getStartTimeNanos(),
+                span.getDuration(),
                 renderAnnotations(span.getData().getAnnotations()));
     }
 

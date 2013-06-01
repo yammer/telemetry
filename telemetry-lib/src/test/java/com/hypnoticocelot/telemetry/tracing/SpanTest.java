@@ -32,7 +32,7 @@ public class SpanTest {
         assertNotNull(span.getId());
         assertNull(span.getParentId());
         assertEquals("testSpan", span.getData().getName());
-        assertTrue(span.getEndTime() >= span.getStartTime());
+        assertTrue(span.getDuration() >= 0);
     }
 
     @Test
