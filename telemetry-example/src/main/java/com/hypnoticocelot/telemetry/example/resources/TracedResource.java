@@ -1,5 +1,6 @@
 package com.hypnoticocelot.telemetry.example.resources;
 
+import com.hypnoticocelot.telemetry.SpanData;
 import com.hypnoticocelot.telemetry.tracing.Span;
 
 import javax.ws.rs.GET;
@@ -12,17 +13,17 @@ import javax.ws.rs.core.MediaType;
 public class TracedResource {
     @GET
     public String traceThis() throws InterruptedException {
-        try (Span span = Span.start("sleep 1")) {
+        try (Span span = Span.start(new SpanData("sleep 1"))) {
             Thread.sleep(100);
         }
 
-        try (Span span = Span.start("sleep 2")) {
+        try (Span span = Span.start(new SpanData("sleep 2"))) {
             Thread.sleep(100);
         }
 
-        try (Span span = Span.start("sleep 3")) {
+        try (Span span = Span.start(new SpanData("sleep 3"))) {
             Thread.sleep(40);
-            try (Span span2 = Span.start("sleep 3.1")) {
+            try (Span span2 = Span.start(new SpanData("sleep 3.1"))) {
                 Thread.sleep(20);
             }
             Thread.sleep(10);
