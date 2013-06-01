@@ -44,7 +44,7 @@ public class Trace {
     }
 
     public long getDuration() {
-        return endTime - startTime;
+        return Math.max(endTime - startTime, 1);
     }
 
     public List<Span> getChildren(Span span) {
