@@ -14,7 +14,7 @@ public class SLF4JSpanSink implements SpanSink {
                 span.getId(),
                 span.getParentId(),
                 span.getTraceId(),
-                span.getName(),
+                span.getData().getName(),
                 span.getStartTime(),
                 span.getEndTime());
     }

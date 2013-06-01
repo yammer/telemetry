@@ -1,5 +1,6 @@
 package com.hypnoticocelot.telemetry.tracing;
 
+import com.hypnoticocelot.telemetry.SpanData;
 import org.junit.After;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
@@ -23,21 +24,21 @@ public class SpanTest {
         final SpanSink sink = mock(SpanSink.class);
         SpanSinkRegistry.register(sink);
 
-        final Span span = Span.start("testSpan");
+        final Span span = Span.start(new SpanData("testSpan"));
 
         span.end();
         verify(sink).record(span);
 
         assertNotNull(span.getId());
         assertNull(span.getParentId());
-        assertEquals("testSpan", span.getName());
+        assertEquals("testSpan", span.getData().getName());
         assertTrue(span.getEndTime() >= span.getStartTime());
     }
 
     @Test
     public void testRootlessSpans() {
-        final Span outer = Span.start("outerSpan");
-        final Span inner = Span.start("innerSpan");
+        final Span outer = Span.start(new SpanData("outerSpan"));
+        final Span inner = Span.start(new SpanData("innerSpan"));
         inner.end();
         outer.end();
     }
@@ -47,8 +48,8 @@ public class SpanTest {
         final SpanSink sink = mock(SpanSink.class);
         SpanSinkRegistry.register(sink);
 
-        final Span outer = Span.start("outerSpan");
-        final Span inner = Span.start("innerSpan");
+        final Span outer = Span.start(new SpanData("outerSpan"));
+        final Span inner = Span.start(new SpanData("innerSpan"));
 
         inner.end();
         verify(sink).record(inner);
@@ -66,7 +67,7 @@ public class SpanTest {
         SpanSinkRegistry.register(first);
         SpanSinkRegistry.register(second);
 
-        final Span span = Span.start("testSpan");
+        final Span span = Span.start(new SpanData("testSpan"));
         span.end();
 
         verify(first).record(span);
@@ -109,7 +110,7 @@ public class SpanTest {
         @Override
         public void run() {
             try {
-                final Span span = Span.start(spanName);
+                final Span span = Span.start(new SpanData(spanName));
                 barrier.await();
                 span.end();
             } catch (Exception e) {

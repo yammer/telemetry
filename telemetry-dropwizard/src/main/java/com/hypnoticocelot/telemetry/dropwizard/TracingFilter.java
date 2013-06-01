@@ -1,5 +1,6 @@
 package com.hypnoticocelot.telemetry.dropwizard;
 
+import com.hypnoticocelot.telemetry.SpanData;
 import com.hypnoticocelot.telemetry.tracing.Span;
 
 import javax.servlet.*;
@@ -37,7 +38,7 @@ public class TracingFilter implements Filter {
                     + httpRequest.getScheme() + "://" + httpRequest.getHeader("Host") + httpRequest.getRequestURI();
         }
 
-        try (Span span = Span.start(spanName)) {
+        try (Span span = Span.start(new SpanData(spanName))) {
             chain.doFilter(request, response);
         }
     }

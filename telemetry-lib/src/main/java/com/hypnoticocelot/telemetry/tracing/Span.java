@@ -1,5 +1,7 @@
 package com.hypnoticocelot.telemetry.tracing;
 
+import com.hypnoticocelot.telemetry.SpanData;
+
 import java.util.Stack;
 import java.util.UUID;
 import java.util.logging.Logger;
@@ -11,11 +13,11 @@ public class Span implements AutoCloseable {
     private final UUID traceId;
     private final UUID id;
     private final UUID parentId;
-    private final String name;
+    private final SpanData data;
     private final long startTime;
     private long endTime;
 
-    public static Span start(String name) {
+    public static Span start(SpanData data) {
         SpanContext context = spanContext.get();
         if (context == null) {
             context = new SpanContext();
@@ -28,16 +30,16 @@ public class Span implements AutoCloseable {
         }
 
         final UUID spanId = generateSpanId();
-        final Span span = new Span(traceId, spanId, context.currentSpanId(), name, System.currentTimeMillis());
+        final Span span = new Span(traceId, spanId, context.currentSpanId(), data, System.currentTimeMillis());
         context.startSpan(span);
         return span;
     }
 
-    private Span(UUID traceId, UUID id, UUID parentId, String name, long startTime) {
+    private Span(UUID traceId, UUID id, UUID parentId, SpanData data, long startTime) {
         this.traceId = traceId;
         this.parentId = parentId;
         this.id = id;
-        this.name = name;
+        this.data = data;
         this.startTime = startTime;
     }
 
@@ -73,8 +75,8 @@ public class Span implements AutoCloseable {
         return parentId;
     }
 
-    public String getName() {
-        return name;
+    public SpanData getData() {
+        return data;
     }
 
     public long getStartTime() {

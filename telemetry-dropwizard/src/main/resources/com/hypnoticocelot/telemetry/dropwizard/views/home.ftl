@@ -12,7 +12,7 @@
 <#list traces as trace>
     <tr>
         <td><a href="/tracing/${trace.id.toString()?url('utf-8')}">${trace.id}</a></td>
-        <td>${trace.root.name}</td>
+        <td>${trace.root.data.name}</td>
     </tr>
 </#list>
 </table>
