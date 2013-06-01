@@ -1,9 +1,7 @@
 package com.hypnoticocelot.telemetry.agent;
 
 import com.hypnoticocelot.telemetry.agent.handlers.MethodInstrumentationHandler;
-import org.objectweb.asm.ClassReader;
-import org.objectweb.asm.ClassWriter;
-import org.objectweb.asm.Opcodes;
+import org.objectweb.asm.*;
 import org.objectweb.asm.tree.*;
 
 import java.lang.instrument.ClassFileTransformer;
@@ -40,9 +38,9 @@ public class TelemetryTransformer implements ClassFileTransformer {
                                 "; class=" + classNode.name +
                                 "; method=" + methodNode.name);
                         InsnList beginList = new InsnList();
-                        beginList.add(new FieldInsnNode(Opcodes.GETSTATIC, "java/lang/System", "out", "Ljava/io/PrintStream;"));
-                        beginList.add(new LdcInsnNode("[BEGIN] YOUR ASS HAS BEEN INSTRUMENTED! " + methodNode.name));
-                        beginList.add(new MethodInsnNode(Opcodes.INVOKEVIRTUAL, "java/io/PrintStream", "println", "(Ljava/lang/String;)V"));
+                        beginList.add(new LdcInsnNode("SPAN!"));
+                        beginList.add(new MethodInsnNode(Opcodes.INVOKESTATIC, "com/hypnoticocelot/telemetry/tracing/Span", "start", "(Ljava/lang/String;)Lcom/hypnoticocelot/telemetry/tracing/Span;"));
+                        beginList.add(new VarInsnNode(Opcodes.ASTORE, methodNode.maxLocals + 1));
 
                         methodNode.instructions.insert(beginList);
 
@@ -56,9 +54,8 @@ public class TelemetryTransformer implements ClassFileTransformer {
                                     || insn.getOpcode() == Opcodes.LRETURN
                                     || insn.getOpcode() == Opcodes.DRETURN) {
                                 InsnList endList = new InsnList();
-                                endList.add(new FieldInsnNode(Opcodes.GETSTATIC, "java/lang/System", "out", "Ljava/io/PrintStream;"));
-                                endList.add(new LdcInsnNode("[END] YOUR ASS HAS BEEN INSTRUMENTED! " + methodNode.name));
-                                endList.add(new MethodInsnNode(Opcodes.INVOKEVIRTUAL, "java/io/PrintStream", "println", "(Ljava/lang/String;)V"));
+                                endList.add(new VarInsnNode(Opcodes.ALOAD, methodNode.maxLocals + 1));
+                                endList.add(new MethodInsnNode(Opcodes.INVOKEVIRTUAL, "com/hypnoticocelot/telemetry/tracing/Span", "close", "()V"));
                                 methodNode.instructions.insertBefore(insn, endList);
                             }
                         }
@@ -77,6 +74,9 @@ public class TelemetryTransformer implements ClassFileTransformer {
             } else {
                 return null;
             }
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
         } catch (Throwable t) {
             t.printStackTrace();
             throw t;
