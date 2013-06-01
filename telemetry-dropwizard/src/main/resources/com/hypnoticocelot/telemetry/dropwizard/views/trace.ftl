@@ -26,9 +26,21 @@
 <#-- @ftlvariable name="span" type="com.hypnoticocelot.telemetry.tracing.Span" -->
 <#-- @ftlvariable name="trace" type="com.hypnoticocelot.telemetry.tracing.Trace" -->
 <div id="span-${span.id}" class="span" style="left: ${((span.startTime - trace.startTime) / trace.duration) * 100}%; width: ${(span.duration / trace.duration) * 100}%;">
-    ${span.data.name} [
-        <#list span.data.annotations?keys as annotation>${annotation} => ${span.data.annotations[annotation]} </#list>
-    ]
+    ${span.data.name}
+<#if (span.data.annotations?size > 0)>
+    <table>
+        <tr>
+            <th>Annotation</th>
+            <th>Value</th>
+        </tr>
+        <#list span.data.annotations?keys as annotation>
+        <tr>
+            <td>${annotation}</td>
+            <td>${span.data.annotations[annotation]}</td>
+        </tr>
+        </#list>
+    </table>
+</#if>
 </div>
 <#list trace.getChildren(span) as child>
     <@renderSpan span=child trace=trace/>
