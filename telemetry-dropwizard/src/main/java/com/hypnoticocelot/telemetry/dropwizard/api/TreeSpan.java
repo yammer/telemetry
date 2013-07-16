@@ -1,5 +1,6 @@
 package com.hypnoticocelot.telemetry.dropwizard.api;
 
+import com.google.common.collect.ImmutableList;
 import org.joda.time.DateTime;
 
 import java.util.UUID;
@@ -9,9 +10,9 @@ public class TreeSpan {
     private final String name;
     private final DateTime startTimeNanos;
     private final long duration;
-    private final TreeSpan[] children;
+    private final ImmutableList<TreeSpan> children;
 
-    public TreeSpan(UUID id, String name, DateTime startTimeNanos, long duration, TreeSpan[] children) {
+    public TreeSpan(UUID id, String name, DateTime startTimeNanos, long duration, ImmutableList<TreeSpan> children) {
         this.id = id;
         this.name = name;
         this.startTimeNanos = startTimeNanos;
@@ -35,7 +36,7 @@ public class TreeSpan {
         return duration;
     }
 
-    public TreeSpan[] getChildren() {
+    public ImmutableList<TreeSpan> getChildren() {
         return children;
     }
 }
