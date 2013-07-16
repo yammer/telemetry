@@ -6,7 +6,6 @@ import com.hypnoticocelot.telemetry.tracing.InMemorySpanSinkSource;
 import com.yammer.dropwizard.Service;
 import com.yammer.dropwizard.config.Bootstrap;
 import com.yammer.dropwizard.config.Environment;
-import com.hypnoticocelot.telemetry.dropwizard.TracingBundle;
 import com.hypnoticocelot.telemetry.example.resources.TracedResource;
 import com.hypnoticocelot.telemetry.example.sink.SLF4JSpanSink;
 import com.hypnoticocelot.telemetry.tracing.SpanSinkRegistry;
@@ -33,8 +32,6 @@ public class ExampleService extends Service<ExampleConfiguration> {
         final ImmutableList<Pattern> exclusionPatterns = new ImmutableList.Builder<Pattern>()
                 .add(Pattern.compile("^/favicon.ico$"))
                 .build();
-
-        bootstrap.addBundle(new TracingBundle(memorySinkSource, exclusionPatterns));
     }
 
     @Override

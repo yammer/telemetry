@@ -13,9 +13,9 @@
 
     <dependencies>
         <dependency>
-            <groupId>com.hypnoticocelot</groupId>
-            <artifactId>telemetry-dropwizard</artifactId>
-            <version>${project.version}</version>
+            <groupId>com.yammer.dropwizard</groupId>
+            <artifactId>dropwizard-core</artifactId>
+            <version>0.6.2</version>
         </dependency>
         <dependency>
             <groupId>com.hypnoticocelot</groupId>

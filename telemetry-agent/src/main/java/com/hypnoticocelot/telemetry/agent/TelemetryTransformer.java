@@ -1,14 +1,12 @@
 package com.hypnoticocelot.telemetry.agent;
 
 import com.hypnoticocelot.telemetry.agent.handlers.MethodInstrumentationHandler;
-import org.objectweb.asm.*;
-import org.objectweb.asm.tree.*;
+import javassist.*;
 
 import java.lang.instrument.ClassFileTransformer;
 import java.lang.instrument.IllegalClassFormatException;
 import java.security.ProtectionDomain;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Set;
 
 public class TelemetryTransformer implements ClassFileTransformer {
@@ -25,40 +23,22 @@ public class TelemetryTransformer implements ClassFileTransformer {
                             ProtectionDomain protectionDomain,
                             byte[] classfileBuffer) throws IllegalClassFormatException {
         try {
-            ClassReader cr = new ClassReader(classfileBuffer);
-            ClassNode classNode = new ClassNode();
-            cr.accept(classNode, ClassReader.EXPAND_FRAMES);
+            final String realClassName = className.replace('/', '.');
+            ClassPool cp = ClassPool.getDefault();
+            cp.insertClassPath(new LoaderClassPath(loader));
+            cp.insertClassPath(new ByteArrayClassPath(realClassName, classfileBuffer));
+            CtClass cc = cp.get(realClassName);
 
             boolean classUpdated = false;
-            final Iterable<MethodNode> methodNodes = classNode.methods;
-            for (MethodNode methodNode : methodNodes) {
+            for (CtMethod method : cc.getMethods()) {
                 for (MethodInstrumentationHandler handler : handlers) {
-                    if (handler.likes(classNode, methodNode)) {
+                    if (handler.likes(cc, method)) {
                         System.out.println("Instrumenting method: handler=" + handler.getClass().getName() +
-                                "; class=" + classNode.name +
-                                "; method=" + methodNode.name);
-                        InsnList beginList = new InsnList();
-                        beginList.add(new LdcInsnNode("SPAN!"));
-                        beginList.add(new MethodInsnNode(Opcodes.INVOKESTATIC, "com/hypnoticocelot/telemetry/tracing/Span", "start", "(Ljava/lang/String;)Lcom/hypnoticocelot/telemetry/tracing/Span;"));
-                        beginList.add(new VarInsnNode(Opcodes.ASTORE, methodNode.maxLocals + 1));
+                                "; class=" + cc.getName() +
+                                "; method=" + method.getName());
 
-                        methodNode.instructions.insert(beginList);
-
-                        Iterator<AbstractInsnNode> insnNodes = methodNode.instructions.iterator();
-                        while (insnNodes.hasNext()) {
-                            AbstractInsnNode insn = insnNodes.next();
-
-                            if (insn.getOpcode() == Opcodes.IRETURN
-                                    || insn.getOpcode() == Opcodes.RETURN
-                                    || insn.getOpcode() == Opcodes.ARETURN
-                                    || insn.getOpcode() == Opcodes.LRETURN
-                                    || insn.getOpcode() == Opcodes.DRETURN) {
-                                InsnList endList = new InsnList();
-                                endList.add(new VarInsnNode(Opcodes.ALOAD, methodNode.maxLocals + 1));
-                                endList.add(new MethodInsnNode(Opcodes.INVOKEVIRTUAL, "com/hypnoticocelot/telemetry/tracing/Span", "close", "()V"));
-                                methodNode.instructions.insertBefore(insn, endList);
-                            }
-                        }
+                        method.insertBefore("com.hypnoticocelot.telemetry.agent.SpanHelper.startSpan(new com.hypnoticocelot.telemetry.tracing.SpanInfo(\"SPAN!\"));");
+                        method.insertAfter("com.hypnoticocelot.telemetry.agent.SpanHelper.endSpan();", true);
 
                         classUpdated = true;
                         break;
@@ -67,10 +47,7 @@ public class TelemetryTransformer implements ClassFileTransformer {
             }
 
             if (classUpdated) {
-                ClassWriter cw = new ClassWriter(ClassWriter.COMPUTE_MAXS | ClassWriter.COMPUTE_FRAMES);
-                classNode.accept(cw);
-
-                return cw.toByteArray();
+                return cc.toBytecode();
             } else {
                 return null;
             }

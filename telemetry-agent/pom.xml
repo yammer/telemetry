@@ -20,14 +20,9 @@
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.ow2.asm</groupId>
-            <artifactId>asm</artifactId>
-            <version>4.1</version>
-        </dependency>
-        <dependency>
-            <groupId>org.ow2.asm</groupId>
-            <artifactId>asm-commons</artifactId>
-            <version>4.1</version>
+            <groupId>org.javassist</groupId>
+            <artifactId>javassist</artifactId>
+            <version>3.18.0-GA</version>
         </dependency>
     </dependencies>
 
@@ -68,16 +63,6 @@
                             </excludes>
                         </filter>
                     </filters>
-                    <relocations>
-                        <relocation>
-                            <pattern>org.objectweb.asm</pattern>
-                            <shadedPattern>telemetry.org.objectweb.asm</shadedPattern>
-                            <includes>
-                                <include>org.objectweb.asm.*</include>
-                                <include>org.objectweb.asm.tree.*</include>
-                            </includes>
-                        </relocation>
-                    </relocations>
                 </configuration>
                 <executions>
                     <execution>

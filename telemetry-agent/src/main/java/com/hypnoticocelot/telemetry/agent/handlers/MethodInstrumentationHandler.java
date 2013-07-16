@@ -1,8 +1,8 @@
 package com.hypnoticocelot.telemetry.agent.handlers;
 
-import org.objectweb.asm.tree.ClassNode;
-import org.objectweb.asm.tree.MethodNode;
+import javassist.CtClass;
+import javassist.CtMethod;
 
 public interface MethodInstrumentationHandler {
-    boolean likes(ClassNode classNode, MethodNode methodNode);
+    boolean likes(CtClass classNode, CtMethod methodNode);
 }
