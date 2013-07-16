@@ -1,7 +1,7 @@
 package com.hypnoticocelot.telemetry.dropwizard;
 
 import com.google.common.collect.ImmutableMap;
-import com.hypnoticocelot.telemetry.SpanData;
+import com.hypnoticocelot.telemetry.tracing.SpanInfo;
 import com.hypnoticocelot.telemetry.tracing.Span;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -57,7 +57,7 @@ public class TracingFilter implements Filter {
             annotationBuilder.put("httpUri", httpRequest.getRequestURI());
         }
 
-        try (Span span = Span.start(new SpanData(spanName, annotationBuilder.build()))) {
+        try (Span span = Span.start(new SpanInfo(spanName, annotationBuilder.build()))) {
             chain.doFilter(request, response);
         }
     }

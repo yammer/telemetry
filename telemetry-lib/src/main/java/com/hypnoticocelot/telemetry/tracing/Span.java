@@ -1,23 +1,21 @@
 package com.hypnoticocelot.telemetry.tracing;
 
-import com.hypnoticocelot.telemetry.SpanData;
-
 import java.util.Stack;
 import java.util.UUID;
 import java.util.logging.Logger;
 
-public class Span implements AutoCloseable {
+public class Span implements AutoCloseable, SpanData {
     private static final Logger LOG = Logger.getLogger(Span.class.getName());
     private static final ThreadLocal<SpanContext> spanContext = new ThreadLocal<>();
 
     private final UUID traceId;
     private final UUID id;
     private final UUID parentId;
-    private final SpanData data;
+    private final SpanInfo info;
     private final long startTimeNanos;
     private long duration;
 
-    public static Span start(SpanData data) {
+    public static Span start(SpanInfo info) {
         SpanContext context = spanContext.get();
         if (context == null) {
             context = new SpanContext();
@@ -30,16 +28,16 @@ public class Span implements AutoCloseable {
         }
 
         final UUID spanId = generateSpanId();
-        final Span span = new Span(traceId, spanId, context.currentSpanId(), data, System.currentTimeMillis() * 1000000, System.nanoTime());
+        final Span span = new Span(traceId, spanId, context.currentSpanId(), info, System.currentTimeMillis() * 1000000, System.nanoTime());
         context.startSpan(span);
         return span;
     }
 
-    private Span(UUID traceId, UUID id, UUID parentId, SpanData data, long startTimeNanos, long startNanos) {
+    private Span(UUID traceId, UUID id, UUID parentId, SpanInfo info, long startTimeNanos, long startNanos) {
         this.traceId = traceId;
         this.parentId = parentId;
         this.id = id;
-        this.data = data;
+        this.info = info;
         this.startTimeNanos = startTimeNanos;
         this.duration = startNanos;
     }
@@ -76,8 +74,8 @@ public class Span implements AutoCloseable {
         return parentId;
     }
 
-    public SpanData getData() {
-        return data;
+    public SpanInfo getInfo() {
+        return info;
     }
 
     public long getStartTimeNanos() {

@@ -15,6 +15,8 @@
         <module>telemetry-dropwizard</module>
         <module>telemetry-example</module>
         <module>telemetry-agent</module>
+        <module>telemetry-service</module>
+        <module>telemetry-service-sink</module>
     </modules>
 
     <dependencies>

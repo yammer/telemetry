@@ -1,6 +1,7 @@
 package com.hypnoticocelot.telemetry.example;
 
 import com.google.common.collect.ImmutableList;
+import com.hypnoticocelot.telemetry.sinks.TelemetryServiceSpanSink;
 import com.hypnoticocelot.telemetry.tracing.InMemorySpanSinkSource;
 import com.yammer.dropwizard.Service;
 import com.yammer.dropwizard.config.Bootstrap;
@@ -23,9 +24,11 @@ public class ExampleService extends Service<ExampleConfiguration> {
 
         final SLF4JSpanSink loggingSink = new SLF4JSpanSink();
         final InMemorySpanSinkSource memorySinkSource = new InMemorySpanSinkSource();
+        final TelemetryServiceSpanSink serviceSink = new TelemetryServiceSpanSink();
 
         SpanSinkRegistry.register(loggingSink);
         SpanSinkRegistry.register(memorySinkSource);
+        SpanSinkRegistry.register(serviceSink);
 
         final ImmutableList<Pattern> exclusionPatterns = new ImmutableList.Builder<Pattern>()
                 .add(Pattern.compile("^/favicon.ico$"))

@@ -11,8 +11,8 @@ import java.util.concurrent.ConcurrentMap;
 
 public class Trace {
     private final UUID id;
-    private final ConcurrentMap<UUID, List<Span>> childSpans;
-    private Span root = null;
+    private final ConcurrentMap<UUID, List<SpanData>> childSpans;
+    private SpanData root = null;
     private long startTimeNanos = Long.MAX_VALUE;
     private long duration = 0;
 
@@ -21,9 +21,9 @@ public class Trace {
         this.childSpans = new ConcurrentHashMap<>();
     }
 
-    public static Trace startTrace(Span startingSpan) {
-        final Trace trace = new Trace(startingSpan.getTraceId());
-        trace.addSpan(startingSpan);
+    public static Trace startTrace(SpanData startingSpanData) {
+        final Trace trace = new Trace(startingSpanData.getTraceId());
+        trace.addSpan(startingSpanData);
         return trace;
     }
 
@@ -31,7 +31,7 @@ public class Trace {
         return id;
     }
 
-    public Span getRoot() {
+    public SpanData getRoot() {
         return root;
     }
 
@@ -43,24 +43,24 @@ public class Trace {
         return duration - startTimeNanos;
     }
 
-    public List<Span> getChildren(Span span) {
-        return Optional.fromNullable(childSpans.get(span.getId())).or(Collections.<Span>emptyList());
+    public List<SpanData> getChildren(SpanData spanData) {
+        return Optional.fromNullable(childSpans.get(spanData.getId())).or(Collections.<SpanData>emptyList());
     }
 
-    public void addSpan(Span span) {
-        startTimeNanos = Math.min(startTimeNanos, span.getStartTimeNanos());
-        duration = Math.max(duration, span.getStartTimeNanos() + span.getDuration());
+    public void addSpan(SpanData spanData) {
+        startTimeNanos = Math.min(startTimeNanos, spanData.getStartTimeNanos());
+        duration = Math.max(duration, spanData.getStartTimeNanos() + spanData.getDuration());
 
-        final UUID parentId = span.getParentId();
+        final UUID parentId = spanData.getParentId();
         if (parentId == null) {
-            this.root = span;
+            this.root = spanData;
         } else {
-            final List<Span> newSiblings = new LinkedList<>();
-            newSiblings.add(span);
+            final List<SpanData> newSiblings = new LinkedList<>();
+            newSiblings.add(spanData);
 
-            final List<Span> siblings = childSpans.putIfAbsent(parentId, newSiblings);
+            final List<SpanData> siblings = childSpans.putIfAbsent(parentId, newSiblings);
             if (siblings != null) {
-                siblings.add(span);
+                siblings.add(spanData);
             }
         }
     }

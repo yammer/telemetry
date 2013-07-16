@@ -1,9 +1,9 @@
 package com.hypnoticocelot.telemetry.dropwizard.resources;
 
 import com.google.common.collect.ImmutableList;
+import com.hypnoticocelot.telemetry.tracing.SpanData;
 import com.hypnoticocelot.telemetry.tracing.Trace;
 import com.hypnoticocelot.telemetry.dropwizard.api.TreeSpan;
-import com.hypnoticocelot.telemetry.tracing.Span;
 import com.hypnoticocelot.telemetry.tracing.SpanSource;
 import com.hypnoticocelot.telemetry.dropwizard.api.Tree;
 import org.joda.time.DateTime;
@@ -35,17 +35,17 @@ public class TreesResource {
         return new Tree(trace.getId(), treeSpanFor(trace.getRoot(), trace));
     }
 
-    private TreeSpan treeSpanFor(Span span, Trace trace) {
+    private TreeSpan treeSpanFor(SpanData spanData, Trace trace) {
         final ImmutableList.Builder<TreeSpan> childBuilder = new ImmutableList.Builder<>();
-        for (Span child : trace.getChildren(span)) {
+        for (SpanData child : trace.getChildren(spanData)) {
             childBuilder.add(treeSpanFor(child, trace));
         }
         final ImmutableList<TreeSpan> children = childBuilder.build();
 
-        return new TreeSpan(span.getId(),
-                span.getData().getName(),
-                new DateTime(span.getStartTimeNanos()),
-                span.getDuration(),
+        return new TreeSpan(spanData.getId(),
+                spanData.getInfo().getName(),
+                new DateTime(spanData.getStartTimeNanos()),
+                spanData.getDuration(),
                 children.toArray(new TreeSpan[children.size()]));
     }
 }

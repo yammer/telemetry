@@ -17,6 +17,11 @@
             <artifactId>telemetry-dropwizard</artifactId>
             <version>${project.version}</version>
         </dependency>
+        <dependency>
+            <groupId>com.hypnoticocelot</groupId>
+            <artifactId>telemetry-service-sink</artifactId>
+            <version>${project.version}</version>
+        </dependency>
     </dependencies>
 
     <build>

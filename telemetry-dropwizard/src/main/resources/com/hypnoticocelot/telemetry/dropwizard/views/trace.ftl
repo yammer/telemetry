@@ -1,7 +1,7 @@
 <#-- @ftlvariable name="" type="com.hypnoticocelot.telemetry.dropwizard.views.TraceView" -->
 <html>
 <head>
-    <title>Trace - ${trace.root.data.name}</title>
+    <title>Trace - ${trace.root.info.name}</title>
     <style>
         .trace {
             width: 100%;
@@ -15,7 +15,7 @@
     </style>
 </head>
 <body>
-<h1>Trace - ${trace.root.data.name}</h1>
+<h1>Trace - ${trace.root.info.name}</h1>
 <div id="trace-${trace.id}" class="trace">
     (start = ${trace.startTimeNanos} ; duration = ${trace.duration})
     <@renderSpan span=trace.root trace=trace/>
@@ -27,17 +27,17 @@
 <#-- @ftlvariable name="span" type="com.hypnoticocelot.telemetry.tracing.Span" -->
 <#-- @ftlvariable name="trace" type="com.hypnoticocelot.telemetry.tracing.Trace" -->
 <div id="span-${span.id}" class="span" style="left: ${((span.startTimeNanos - trace.startTimeNanos) / trace.duration) * 100}%; width: ${(span.duration / trace.duration) * 100}%;">
-    ${span.data.name} (start = ${span.startTimeNanos}; duration = ${span.duration}}
-<#if (span.data.annotations?size > 0)>
+    ${span.info.name} (start = ${span.startTimeNanos}; duration = ${span.duration}}
+<#if (span.info.annotations?size > 0)>
     <table>
         <tr>
             <th>Annotation</th>
             <th>Value</th>
         </tr>
-        <#list span.data.annotations?keys as annotation>
+        <#list span.info.annotations?keys as annotation>
         <tr>
             <td>${annotation}</td>
-            <td>${span.data.annotations[annotation]}</td>
+            <td>${span.info.annotations[annotation]}</td>
         </tr>
         </#list>
     </table>
