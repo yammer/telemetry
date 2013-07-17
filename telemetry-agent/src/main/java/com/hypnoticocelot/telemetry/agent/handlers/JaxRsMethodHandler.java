@@ -19,26 +19,19 @@ public class JaxRsMethodHandler implements MethodInstrumentationHandler {
                     method.hasAnnotation(Class.forName("javax.ws.rs.HEAD")) ||
                     method.hasAnnotation(Class.forName("javax.ws.rs.OPTIONS"))
             )) {
-                try {
-                    // javassist won't let you check for the availability of a field and fetching the field throws
-                    // NotFoundException instead of returning null. So...ick.
-                    cc.getField("_sr");
-                } catch (NotFoundException nfe) {
-                    ConstPool constPool = cc.getClassFile().getConstPool();
-                    AnnotationsAttribute attr = new AnnotationsAttribute(constPool, AnnotationsAttribute.visibleTag);
-                    javassist.bytecode.annotation.Annotation annotation = new javassist.bytecode.annotation.Annotation("javax.ws.rs.core.Context", constPool);
-                    attr.setAnnotation(annotation);
-
-                    CtField uriInfo = new CtField(pool.get("javax.servlet.http.HttpServletRequest"), "_sr", cc);
-                    uriInfo.getFieldInfo().addAttribute(attr);
-                    cc.addField(uriInfo);
-                }
+                checkHost(cc, pool);
+                checkRequest(cc, pool);
+                checkResponse(cc, pool);
 
                 cc.getClassPool().importPackage("com.hypnoticocelot.telemetry.tracing");
                 cc.getClassPool().importPackage("com.hypnoticocelot.telemetry.agent");
+                cc.getClassPool().importPackage("com.google.common.collect");
+                cc.getClassPool().importPackage("java.util");
                 method.insertBefore(
-                        "SpanInfo spanInfo = new SpanInfo(\"JAX-RS: \" + _sr.getMethod() + \" \" + _sr.getRequestURI());" +
-                        "SpanHelper.startSpan(spanInfo);"
+                        "Map annotations = ImmutableMap.of(\"hostname\",_hostName,\"hostip\",_hostIp);" +
+                        "SpanInfo spanInfo = new SpanInfo(\"JAX-RS: \" + _sreq.getMethod() + \" \" + _sreq.getRequestURI(), annotations);" +
+                        "SpanHelper.startSpan(spanInfo);" +
+                        "_sres.setHeader(\"X-Telemetry-Traced\", \"true\");"
                 );
                 method.insertAfter("SpanHelper.endSpan();", true);
 
@@ -48,6 +41,55 @@ public class JaxRsMethodHandler implements MethodInstrumentationHandler {
             return false;
         } catch (Exception e) {
             throw new RuntimeException("Unable to instrument method", e);
+        }
+    }
+
+    private void checkHost(CtClass cc, ClassPool pool) throws CannotCompileException, NotFoundException {
+        try {
+            // javassist won't let you check for the availability of a field and fetching the field throws
+            // NotFoundException instead of returning null. So...ick.
+            cc.getField("_hostName");
+        } catch (NotFoundException nfe) {
+            CtField hostName = new CtField(pool.get("java.lang.String"), "_hostName", cc);
+            CtField hostIp = new CtField(pool.get("java.lang.String"), "_hostIp", cc);
+
+            cc.getClassPool().importPackage("java.net");
+            cc.addField(hostName, "InetAddress.getLocalHost().getHostName()");
+            cc.addField(hostIp, "InetAddress.getLocalHost().getHostAddress()");
+        }
+    }
+
+    private void checkRequest(CtClass cc, ClassPool pool) throws CannotCompileException, NotFoundException {
+        try {
+            // javassist won't let you check for the availability of a field and fetching the field throws
+            // NotFoundException instead of returning null. So...ick.
+            cc.getField("_sreq");
+        } catch (NotFoundException nfe) {
+            ConstPool constPool = cc.getClassFile().getConstPool();
+            AnnotationsAttribute attr = new AnnotationsAttribute(constPool, AnnotationsAttribute.visibleTag);
+            javassist.bytecode.annotation.Annotation annotation = new javassist.bytecode.annotation.Annotation("javax.ws.rs.core.Context", constPool);
+            attr.setAnnotation(annotation);
+
+            CtField request = new CtField(pool.get("javax.servlet.http.HttpServletRequest"), "_sreq", cc);
+            request.getFieldInfo().addAttribute(attr);
+            cc.addField(request);
+        }
+    }
+
+    private void checkResponse(CtClass cc, ClassPool pool) throws CannotCompileException, NotFoundException {
+        try {
+            // javassist won't let you check for the availability of a field and fetching the field throws
+            // NotFoundException instead of returning null. So...ick.
+            cc.getField("_sres");
+        } catch (NotFoundException nfe) {
+            ConstPool constPool = cc.getClassFile().getConstPool();
+            AnnotationsAttribute attr = new AnnotationsAttribute(constPool, AnnotationsAttribute.visibleTag);
+            javassist.bytecode.annotation.Annotation annotation = new javassist.bytecode.annotation.Annotation("javax.ws.rs.core.Context", constPool);
+            attr.setAnnotation(annotation);
+
+            CtField response = new CtField(pool.get("javax.servlet.http.HttpServletResponse"), "_sres", cc);
+            response.getFieldInfo().addAttribute(attr);
+            cc.addField(response);
         }
     }
 }
