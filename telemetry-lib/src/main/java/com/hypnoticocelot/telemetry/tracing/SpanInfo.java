@@ -5,8 +5,10 @@ import com.google.common.collect.ImmutableMap;
 import java.util.Map;
 
 public class SpanInfo {
-    private final String name;
-    private final ImmutableMap<String, String> annotations;
+    private String name;
+    private ImmutableMap<String, String> annotations;
+
+    private SpanInfo() { }
 
     public SpanInfo(String name) {
         this.name = name;
