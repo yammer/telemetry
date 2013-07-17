@@ -34,11 +34,13 @@ public class JaxRsMethodHandler implements MethodInstrumentationHandler {
                     cc.addField(uriInfo);
                 }
 
+                cc.getClassPool().importPackage("com.hypnoticocelot.telemetry.tracing");
+                cc.getClassPool().importPackage("com.hypnoticocelot.telemetry.agent");
                 method.insertBefore(
-                        "com.hypnoticocelot.telemetry.tracing.SpanInfo spanInfo = new com.hypnoticocelot.telemetry.tracing.SpanInfo(\"JAX-RS: \" + _sr.getMethod() + \" \" + _sr.getRequestURI());" +
-                        "com.hypnoticocelot.telemetry.agent.SpanHelper.startSpan(spanInfo);"
+                        "SpanInfo spanInfo = new SpanInfo(\"JAX-RS: \" + _sr.getMethod() + \" \" + _sr.getRequestURI());" +
+                        "SpanHelper.startSpan(spanInfo);"
                 );
-                method.insertAfter("com.hypnoticocelot.telemetry.agent.SpanHelper.endSpan();", true);
+                method.insertAfter("SpanHelper.endSpan();", true);
 
                 return true;
             }
