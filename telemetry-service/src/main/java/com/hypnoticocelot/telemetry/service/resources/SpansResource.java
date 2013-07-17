@@ -1,6 +1,6 @@
 package com.hypnoticocelot.telemetry.service.resources;
 
-import com.hypnoticocelot.telemetry.tracing.SpanData;
+import com.hypnoticocelot.telemetry.service.models.BeanSpanData;
 import com.hypnoticocelot.telemetry.tracing.SpanSink;
 
 import javax.ws.rs.Consumes;
@@ -18,7 +18,7 @@ public class SpansResource {
     }
 
     @POST
-    public void logSpan(SpanData span) {
+    public void logSpan(BeanSpanData span) {
         sink.record(span);
     }
 }
