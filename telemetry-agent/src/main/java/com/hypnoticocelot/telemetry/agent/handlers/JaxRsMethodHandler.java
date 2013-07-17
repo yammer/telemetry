@@ -1,25 +1,51 @@
 package com.hypnoticocelot.telemetry.agent.handlers;
 
-import javassist.CtClass;
-import javassist.CtMethod;
+import javassist.*;
+import javassist.bytecode.AnnotationsAttribute;
+import javassist.bytecode.ConstPool;
 
 public class JaxRsMethodHandler implements MethodInstrumentationHandler {
     @Override
-    public boolean likes(CtClass classNode, CtMethod methodNode) {
+    public boolean transformed(CtClass cc, CtMethod method, ClassPool pool) {
         try {
-            return (
-                    classNode.hasAnnotation(Class.forName("javax.ws.rs.Path")) ||
-                    methodNode.hasAnnotation(Class.forName("javax.ws.rs.Path"))
+            if ((
+                    cc.hasAnnotation(Class.forName("javax.ws.rs.Path")) ||
+                    method.hasAnnotation(Class.forName("javax.ws.rs.Path"))
             ) && (
-                    methodNode.hasAnnotation(Class.forName("javax.ws.rs.GET")) ||
-                    methodNode.hasAnnotation(Class.forName("javax.ws.rs.PUT")) ||
-                    methodNode.hasAnnotation(Class.forName("javax.ws.rs.POST")) ||
-                    methodNode.hasAnnotation(Class.forName("javax.ws.rs.DELETE")) ||
-                    methodNode.hasAnnotation(Class.forName("javax.ws.rs.HEAD")) ||
-                    methodNode.hasAnnotation(Class.forName("javax.ws.rs.OPTIONS"))
-            );
-        } catch (ClassNotFoundException e) {
+                    method.hasAnnotation(Class.forName("javax.ws.rs.GET")) ||
+                    method.hasAnnotation(Class.forName("javax.ws.rs.PUT")) ||
+                    method.hasAnnotation(Class.forName("javax.ws.rs.POST")) ||
+                    method.hasAnnotation(Class.forName("javax.ws.rs.DELETE")) ||
+                    method.hasAnnotation(Class.forName("javax.ws.rs.HEAD")) ||
+                    method.hasAnnotation(Class.forName("javax.ws.rs.OPTIONS"))
+            )) {
+                try {
+                    // javassist won't let you check for the availability of a field and fetching the field throws
+                    // NotFoundException instead of returning null. So...ick.
+                    cc.getField("_sr");
+                } catch (NotFoundException nfe) {
+                    ConstPool constPool = cc.getClassFile().getConstPool();
+                    AnnotationsAttribute attr = new AnnotationsAttribute(constPool, AnnotationsAttribute.visibleTag);
+                    javassist.bytecode.annotation.Annotation annotation = new javassist.bytecode.annotation.Annotation("javax.ws.rs.core.Context", constPool);
+                    attr.setAnnotation(annotation);
+
+                    CtField uriInfo = new CtField(pool.get("javax.servlet.http.HttpServletRequest"), "_sr", cc);
+                    uriInfo.getFieldInfo().addAttribute(attr);
+                    cc.addField(uriInfo);
+                }
+
+                method.insertBefore(
+                        "com.hypnoticocelot.telemetry.tracing.SpanInfo spanInfo = new com.hypnoticocelot.telemetry.tracing.SpanInfo(\"JAX-RS: \" + _sr.getMethod() + \" \" + _sr.getRequestURI());" +
+                        "com.hypnoticocelot.telemetry.agent.SpanHelper.startSpan(spanInfo);"
+                );
+                method.insertAfter("com.hypnoticocelot.telemetry.agent.SpanHelper.endSpan();", true);
+
+                return true;
+            }
+
             return false;
+        } catch (Exception e) {
+            throw new RuntimeException("Unable to instrument method", e);
         }
     }
 }

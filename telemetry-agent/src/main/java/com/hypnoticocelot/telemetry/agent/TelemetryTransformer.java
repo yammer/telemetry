@@ -32,13 +32,10 @@ public class TelemetryTransformer implements ClassFileTransformer {
             boolean classUpdated = false;
             for (CtMethod method : cc.getMethods()) {
                 for (MethodInstrumentationHandler handler : handlers) {
-                    if (handler.likes(cc, method)) {
-                        System.out.println("Instrumenting method: handler=" + handler.getClass().getName() +
+                    if (handler.transformed(cc, method, cp)) {
+                        System.out.println("Transformed method: handler=" + handler.getClass().getName() +
                                 "; class=" + cc.getName() +
                                 "; method=" + method.getName());
-
-                        method.insertBefore("com.hypnoticocelot.telemetry.agent.SpanHelper.startSpan(new com.hypnoticocelot.telemetry.tracing.SpanInfo(\"SPAN!\"));");
-                        method.insertAfter("com.hypnoticocelot.telemetry.agent.SpanHelper.endSpan();", true);
 
                         classUpdated = true;
                         break;

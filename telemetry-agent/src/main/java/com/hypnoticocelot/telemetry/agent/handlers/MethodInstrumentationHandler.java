@@ -1,8 +1,9 @@
 package com.hypnoticocelot.telemetry.agent.handlers;
 
+import javassist.ClassPool;
 import javassist.CtClass;
 import javassist.CtMethod;
 
 public interface MethodInstrumentationHandler {
-    boolean likes(CtClass classNode, CtMethod methodNode);
+    boolean transformed(CtClass cc, CtMethod method, ClassPool pool);
 }
