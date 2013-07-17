@@ -1,4 +1,4 @@
-package com.hypnoticocelot.telemetry.dropwizard.views;
+package com.hypnoticocelot.telemetry.service.views;
 
 import com.hypnoticocelot.telemetry.tracing.Trace;
 import com.yammer.dropwizard.views.View;

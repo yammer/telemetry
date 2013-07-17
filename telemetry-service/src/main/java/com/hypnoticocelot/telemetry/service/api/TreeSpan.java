@@ -1,4 +1,4 @@
-package com.hypnoticocelot.telemetry.dropwizard.api;
+package com.hypnoticocelot.telemetry.service.api;
 
 import com.google.common.collect.ImmutableList;
 import org.joda.time.DateTime;

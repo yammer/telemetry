@@ -1,11 +1,11 @@
-package com.hypnoticocelot.telemetry.dropwizard.resources;
+package com.hypnoticocelot.telemetry.service.resources;
 
 import com.google.common.collect.ImmutableList;
 import com.hypnoticocelot.telemetry.tracing.SpanData;
 import com.hypnoticocelot.telemetry.tracing.Trace;
-import com.hypnoticocelot.telemetry.dropwizard.api.TreeSpan;
+import com.hypnoticocelot.telemetry.service.api.TreeSpan;
 import com.hypnoticocelot.telemetry.tracing.SpanSource;
-import com.hypnoticocelot.telemetry.dropwizard.api.Tree;
+import com.hypnoticocelot.telemetry.service.api.Tree;
 import org.joda.time.DateTime;
 
 import javax.ws.rs.*;

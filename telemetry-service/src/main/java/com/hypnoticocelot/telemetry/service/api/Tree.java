@@ -1,4 +1,4 @@
-package com.hypnoticocelot.telemetry.dropwizard.api;
+package com.hypnoticocelot.telemetry.service.api;
 
 import java.util.UUID;
 

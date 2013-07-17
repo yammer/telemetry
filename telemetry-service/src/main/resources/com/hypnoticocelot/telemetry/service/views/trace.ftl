@@ -1,4 +1,4 @@
-<#-- @ftlvariable name="" type="com.hypnoticocelot.telemetry.dropwizard.views.TraceView" -->
+<#-- @ftlvariable name="" type="com.hypnoticocelot.telemetry.service.views.TraceView" -->
 <html>
 <head>
     <title>Trace - ${trace.root.info.name}</title>

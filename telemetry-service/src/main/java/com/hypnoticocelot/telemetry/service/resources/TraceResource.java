@@ -1,6 +1,6 @@
-package com.hypnoticocelot.telemetry.dropwizard.resources;
+package com.hypnoticocelot.telemetry.service.resources;
 
-import com.hypnoticocelot.telemetry.dropwizard.views.TraceView;
+import com.hypnoticocelot.telemetry.service.views.TraceView;
 import com.hypnoticocelot.telemetry.tracing.Trace;
 import com.hypnoticocelot.telemetry.tracing.SpanSource;
 
