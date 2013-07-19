@@ -38,7 +38,7 @@ public class JaxRsMethodHandler implements MethodInstrumentationHandler {
 
             return false;
         } catch (Exception e) {
-            throw new RuntimeException("Unable to instrument method", e);
+            throw new RuntimeException("Unable to instrument JAX-RS resource", e);
         }
     }
 
