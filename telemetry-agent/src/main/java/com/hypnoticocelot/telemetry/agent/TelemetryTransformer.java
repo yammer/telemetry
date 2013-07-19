@@ -30,14 +30,9 @@ public class TelemetryTransformer implements ClassFileTransformer {
             CtClass cc = cp.get(realClassName);
 
             boolean classUpdated = false;
-            for (CtMethod method : cc.getMethods()) {
+            for (CtMethod method : cc.getDeclaredMethods()) {
                 for (MethodInstrumentationHandler handler : handlers) {
-                    if (handler.transformed(cc, method, cp)) {
-                        System.out.println("Transformed method: handler=" + handler.getClass().getName() +
-                                "; class=" + cc.getName() +
-                                "; method=" + method.getName());
-
-                        classUpdated = true;
+                    if (classUpdated = handler.transformed(cc, method, cp)) {
                         break;
                     }
                 }

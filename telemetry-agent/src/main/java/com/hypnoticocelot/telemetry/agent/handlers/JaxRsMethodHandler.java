@@ -1,5 +1,6 @@
 package com.hypnoticocelot.telemetry.agent.handlers;
 
+import com.hypnoticocelot.telemetry.agent.BytecodeHelper;
 import javassist.*;
 import javassist.bytecode.AnnotationsAttribute;
 import javassist.bytecode.ConstPool;
@@ -17,23 +18,20 @@ public class JaxRsMethodHandler implements MethodInstrumentationHandler {
                     method.hasAnnotation(Class.forName("javax.ws.rs.POST")) ||
                     method.hasAnnotation(Class.forName("javax.ws.rs.DELETE")) ||
                     method.hasAnnotation(Class.forName("javax.ws.rs.HEAD")) ||
-                    method.hasAnnotation(Class.forName("javax.ws.rs.OPTIONS"))
+                    method.hasAnnotation(Class.forName("javax.ws.rs.OPTIONS")) // TODO: See about annotations that are themselves @HttpMethod annotated
             )) {
                 checkHost(cc, pool);
                 checkRequest(cc, pool);
                 checkResponse(cc, pool);
 
-                cc.getClassPool().importPackage("com.hypnoticocelot.telemetry.tracing");
-                cc.getClassPool().importPackage("com.hypnoticocelot.telemetry.agent");
-                cc.getClassPool().importPackage("com.google.common.collect");
-                cc.getClassPool().importPackage("java.util");
-                method.insertBefore(
-                        "Map annotations = ImmutableMap.of(\"hostname\",_hostName,\"hostip\",_hostIp);" +
-                        "SpanInfo spanInfo = new SpanInfo(\"JAX-RS: \" + _sreq.getMethod() + \" \" + _sreq.getRequestURI(), annotations);" +
-                        "SpanHelper.startSpan(spanInfo);" +
+                pool.importPackage("com.google.common.collect");
+                BytecodeHelper.spanMethod(
+                        cc,
+                        method,
+                        "\"JAX-RS: \" + _sreq.getMethod() + \" \" + _sreq.getRequestURI()",
+                        "ImmutableMap.of(\"hostname\",_hostName,\"hostip\",_hostIp)",
                         "_sres.setHeader(\"X-Telemetry-Traced\", \"true\");"
                 );
-                method.insertAfter("SpanHelper.endSpan();", true);
 
                 return true;
             }
