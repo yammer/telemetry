@@ -41,9 +41,7 @@ public class BytecodeHelper {
             body.append("}");
 
             method.setBody(body.toString());
-        } catch (CannotCompileException e) {
-            throw new RuntimeException("Unable to wrap method " + cc.getName() + "." + originalMethodName, e);
-        } catch (NotFoundException e) {
+        } catch (CannotCompileException | NotFoundException e) {
             throw new RuntimeException("Unable to wrap method " + cc.getName() + "." + originalMethodName, e);
         }
     }
