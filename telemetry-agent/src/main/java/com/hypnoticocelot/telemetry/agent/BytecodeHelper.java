@@ -15,7 +15,7 @@ public class BytecodeHelper {
             cc.getClassPool().importPackage("com.hypnoticocelot.telemetry.tracing");
             cc.getClassPool().importPackage("com.hypnoticocelot.telemetry.agent");
 
-            StringBuffer body = new StringBuffer();
+            StringBuilder body = new StringBuilder();
             body.append("{");
 
             if (extraCode != null) {
