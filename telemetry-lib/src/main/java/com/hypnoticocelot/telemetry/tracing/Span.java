@@ -16,19 +16,29 @@ public class Span implements AutoCloseable, SpanData {
     private long duration;
 
     public static Span start(SpanInfo info) {
+        return start(info, null, null);
+    }
+
+    public static Span start(SpanInfo info, UUID traceId, UUID parentSpanId) {
         SpanContext context = spanContext.get();
         if (context == null) {
             context = new SpanContext();
             spanContext.set(context);
         }
 
-        UUID traceId = context.currentTraceId();
         if (traceId == null) {
-            traceId = UUID.randomUUID();
+            traceId = context.currentTraceId();
+            if (traceId == null) {
+                traceId = UUID.randomUUID();
+            }
+        }
+
+        if (parentSpanId == null) {
+            parentSpanId = context.currentSpanId();
         }
 
         final UUID spanId = generateSpanId();
-        final Span span = new Span(traceId, spanId, context.currentSpanId(), info, System.currentTimeMillis() * 1000000, System.nanoTime());
+        final Span span = new Span(traceId, spanId, parentSpanId, info, System.currentTimeMillis() * 1000000, System.nanoTime());
         context.startSpan(span);
         return span;
     }
@@ -84,6 +94,14 @@ public class Span implements AutoCloseable, SpanData {
 
     public long getDuration() {
         return duration;
+    }
+
+    public static UUID currentTraceId() {
+        return spanContext.get().currentTraceId();
+    }
+
+    public static UUID currentSpanId() {
+        return spanContext.get().currentSpanId();
     }
 
     private static UUID generateSpanId() {
