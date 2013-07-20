@@ -3,7 +3,13 @@ package com.hypnoticocelot.telemetry.agent;
 import javassist.*;
 
 public class BytecodeHelper {
-    public static void spanMethod(CtClass cc, CtMethod method, String spanName, String annotationMap, String extraCode) {
+    public static void spanMethod(CtClass cc,
+                                  CtMethod method,
+                                  String spanName,
+                                  String annotationMap,
+                                  String extraCode,
+                                  String deriveTraceId,
+                                  String deriveParentSpanId) {
         String originalMethodName = method.getName();
         String copiedMethodName = originalMethodName + "$TelemetryImpl";
 
@@ -18,18 +24,23 @@ public class BytecodeHelper {
             StringBuilder body = new StringBuilder();
             body.append("{");
 
-            if (extraCode != null) {
-                body.append("    " + extraCode);
-            }
-
             if (annotationMap != null) {
                 body.append("    SpanInfo info = new SpanInfo(" + spanName + ", " + annotationMap + ");");
             } else {
                 body.append("    SpanInfo info = new SpanInfo(" + spanName + ");");
             }
 
-            body.append("    Span span = Span.start(info);");
+            if (deriveTraceId == null || deriveParentSpanId == null) {
+                body.append("    Span span = Span.start(info);");
+            } else {
+                body.append("    Span span = Span.start(info, " + deriveTraceId + ", " + deriveParentSpanId + ");");
+            }
+
             body.append("    try {");
+            if (extraCode != null) {
+                body.append("    " + extraCode);
+            }
+
             if (method.getReturnType().getClass().equals(Void.class)) {
                 body.append("        " + copiedMethodName + "($$);");
             } else {

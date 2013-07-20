@@ -25,12 +25,15 @@ public class JaxRsMethodHandler implements MethodInstrumentationHandler {
                 checkResponse(cc, pool);
 
                 pool.importPackage("com.google.common.collect");
+                pool.importPackage("java.util");
                 BytecodeHelper.spanMethod(
                         cc,
                         method,
                         "\"JAX-RS: \" + _sreq.getMethod() + \" \" + _sreq.getRequestURI()",
                         "ImmutableMap.of(\"hostname\",_hostName,\"hostip\",_hostIp)",
-                        "_sres.setHeader(\"X-Telemetry-Traced\", \"true\");"
+                        "_sres.setHeader(\"X-Telemetry-Traced\", \"true\");",
+                        "_sreq.getHeader(\"X-Telemetry-TraceId\") == null ? null : UUID.fromString(_sreq.getHeader(\"X-Telemetry-TraceId\"))",
+                        "_sreq.getHeader(\"X-Telemetry-Parent-SpanId\") == null ? null : UUID.fromString(_sreq.getHeader(\"X-Telemetry-Parent-SpanId\"))"
                 );
 
                 return true;
