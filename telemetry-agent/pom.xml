@@ -6,7 +6,7 @@
     
     <parent>
         <artifactId>telemetry-parent</artifactId>
-        <groupId>com.hypnoticocelot</groupId>
+        <groupId>com.yammer</groupId>
         <version>0.0.1-SNAPSHOT</version>
     </parent>
 
@@ -15,7 +15,7 @@
 
     <dependencies>
         <dependency>
-            <groupId>com.hypnoticocelot</groupId>
+            <groupId>com.yammer</groupId>
             <artifactId>telemetry-lib</artifactId>
             <version>${project.version}</version>
         </dependency>
@@ -43,8 +43,8 @@
                             <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
                         </manifest>
                         <manifestEntries>
-                            <Agent-Class>com.hypnoticocelot.telemetry.agent.TelemetryAgent</Agent-Class>
-                            <Premain-Class>com.hypnoticocelot.telemetry.agent.TelemetryAgent</Premain-Class>
+                            <Agent-Class>com.yammer.telemetry.agent.TelemetryAgent</Agent-Class>
+                            <Premain-Class>com.yammer.telemetry.agent.TelemetryAgent</Premain-Class>
                             <Can-Redefine-Classes>true</Can-Redefine-Classes>
                             <Can-Retransform-Classes>true</Can-Retransform-Classes>
                             <Can-Set-Native-Method-Prefix>true</Can-Set-Native-Method-Prefix>

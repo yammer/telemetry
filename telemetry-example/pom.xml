@@ -6,7 +6,7 @@
 
     <parent>
         <artifactId>telemetry-parent</artifactId>
-        <groupId>com.hypnoticocelot</groupId>
+        <groupId>com.yammer</groupId>
         <version>0.0.1-SNAPSHOT</version>
     </parent>
 
@@ -28,7 +28,7 @@
             <version>${dropwizard.version}</version>
         </dependency>
         <dependency>
-            <groupId>com.hypnoticocelot</groupId>
+            <groupId>com.yammer</groupId>
             <artifactId>telemetry-service-sink</artifactId>
             <version>${project.version}</version>
         </dependency>
@@ -75,7 +75,7 @@
                             <transformers>
                                 <transformer implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer" />
                                 <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
-                                    <mainClass>com.hypnoticocelot.telemetry.example.ExampleService</mainClass>
+                                    <mainClass>com.yammer.telemetry.example.ExampleService</mainClass>
                                 </transformer>
                             </transformers>
                         </configuration>
@@ -97,7 +97,7 @@
                 <artifactId>exec-maven-plugin</artifactId>
                 <version>1.2.1</version>
                 <configuration>
-                    <mainClass>com.hypnoticocelot.telemetry.example.ExampleService</mainClass>
+                    <mainClass>com.yammer.telemetry.example.ExampleService</mainClass>
                     <arguments>
                         <argument>server</argument>
                         <argument>example.yml</argument>
