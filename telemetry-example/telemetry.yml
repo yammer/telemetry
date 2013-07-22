@@ -1,0 +1,11 @@
+instruments:
+- inbound-http
+- outbound-http
+
+sinks:
+  slf4j:
+    enabled: true
+  telemetry:
+    enabled: true
+    host: localhost
+    port: 9090

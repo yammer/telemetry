@@ -14,9 +14,9 @@ public class TelemetryServiceSpanSink implements SpanSink {
     private final Client client;
     private final WebResource resource;
 
-    public TelemetryServiceSpanSink() {
+    public TelemetryServiceSpanSink(String host, int port) {
         this.client = new Client();
-        this.resource = client.resource("http://localhost:9090/spans");
+        this.resource = client.resource("http://" + host + ":" + port + "/spans");
     }
 
     @Override
