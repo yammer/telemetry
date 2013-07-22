@@ -8,4 +8,4 @@ http:
 
 logging:
   loggers:
-    com.hypnoticocelot.telemetry.example.sink.SLF4JSpanSink: trace
+    com.hypnoticocelot.telemetry.sinks.SLF4JSpanSink: trace

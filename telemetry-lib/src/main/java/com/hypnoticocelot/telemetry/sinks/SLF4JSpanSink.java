@@ -1,4 +1,4 @@
-package com.hypnoticocelot.telemetry.example.sink;
+package com.hypnoticocelot.telemetry.sinks;
 
 import com.google.common.collect.ImmutableMap;
 import com.hypnoticocelot.telemetry.tracing.SpanData;
