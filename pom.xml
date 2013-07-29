@@ -18,6 +18,11 @@
         <module>telemetry-service-sink</module>
     </modules>
 
+    <properties>
+        <dropwizard.version>0.6.2</dropwizard.version>
+        <jackson.version>2.2.0</jackson.version>
+    </properties>
+
     <dependencies>
         <dependency>
             <groupId>junit</groupId>

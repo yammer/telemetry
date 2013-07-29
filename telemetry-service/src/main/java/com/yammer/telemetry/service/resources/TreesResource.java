@@ -43,7 +43,7 @@ public class TreesResource {
         final ImmutableList<TreeSpan> children = childBuilder.build();
 
         return new TreeSpan(spanData.getId(),
-                spanData.getInfo().getName(),
+                spanData.getName(),
                 new DateTime(spanData.getStartTimeNanos()),
                 spanData.getDuration(),
                 children);

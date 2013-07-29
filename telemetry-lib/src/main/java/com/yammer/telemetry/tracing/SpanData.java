@@ -1,5 +1,6 @@
 package com.yammer.telemetry.tracing;
 
+import java.util.Map;
 import java.util.UUID;
 
 public interface SpanData {
@@ -9,7 +10,9 @@ public interface SpanData {
 
     UUID getParentId();
 
-    SpanInfo getInfo();
+    String getName();
+
+    Map<String, String> getAnnotations();
 
     long getStartTimeNanos();
 

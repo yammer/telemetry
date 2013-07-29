@@ -4,8 +4,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.yammer.telemetry.agent.handlers.ApacheHttpClientMethodHandler;
 import com.yammer.telemetry.agent.handlers.JaxRsMethodHandler;
-import com.yammer.telemetry.sinks.SLF4JSpanSink;
 import com.yammer.telemetry.sinks.TelemetryServiceSpanSink;
+import com.yammer.telemetry.tracing.Span;
 import com.yammer.telemetry.tracing.SpanSinkRegistry;
 
 import java.io.File;
@@ -23,11 +23,9 @@ public class TelemetryAgent {
             try {
                 TelemetryConfiguration config = loadConfiguration(agentArgs);
 
-                if (config.isEnabled()) {
-                    if (config.getSinks().getSlf4j().isEnabled()) {
-                        SpanSinkRegistry.register(new SLF4JSpanSink());
-                    }
+                Span.addBaseAnnotations(config.getAnnotations());
 
+                if (config.isEnabled()) {
                     TelemetryServiceConfiguration telemetry = config.getSinks().getTelemetry();
                     if (telemetry.isEnabled()) {
                         SpanSinkRegistry.register(new TelemetryServiceSpanSink(telemetry.getHost(), telemetry.getPort()));

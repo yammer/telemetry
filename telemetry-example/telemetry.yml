@@ -3,8 +3,6 @@ instruments:
 - outbound-http
 
 sinks:
-  slf4j:
-    enabled: true
   telemetry:
     enabled: true
     host: localhost

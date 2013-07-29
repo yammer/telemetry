@@ -18,33 +18,35 @@ public class BytecodeHelper {
             copiedMethod.setModifiers(Modifier.PRIVATE);
             cc.addMethod(copiedMethod);
 
+            cc.getClassPool().importPackage("java.util");
             cc.getClassPool().importPackage("com.yammer.telemetry.tracing");
             cc.getClassPool().importPackage("com.yammer.telemetry.agent");
 
             StringBuilder body = new StringBuilder();
             body.append("{");
 
+            body.append("    Span span = Span.start(").append(spanName);
             if (annotationMap != null) {
-                body.append("    SpanInfo info = new SpanInfo(" + spanName + ", " + annotationMap + ");");
+                body.append(", ").append(annotationMap);
             } else {
-                body.append("    SpanInfo info = new SpanInfo(" + spanName + ");");
+                body.append(", Collections.emptyMap()");
             }
 
             if (deriveTraceId == null || deriveParentSpanId == null) {
-                body.append("    Span span = Span.start(info);");
+                body.append(");");
             } else {
-                body.append("    Span span = Span.start(info, " + deriveTraceId + ", " + deriveParentSpanId + ");");
+                body.append(", ").append(deriveTraceId).append(", ").append(deriveParentSpanId).append(");");
             }
 
             body.append("    try {");
             if (extraCode != null) {
-                body.append("    " + extraCode);
+                body.append("    ").append(extraCode);
             }
 
             if (method.getReturnType().getClass().equals(Void.class)) {
-                body.append("        " + copiedMethodName + "($$);");
+                body.append("        ").append(copiedMethodName).append("($$);");
             } else {
-                body.append("        return " + copiedMethodName + "($$);");
+                body.append("        return ").append(copiedMethodName).append("($$);");
             }
             body.append("    } finally {");
             body.append("        span.end();");

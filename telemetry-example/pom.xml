@@ -12,10 +12,6 @@
 
     <artifactId>telemetry-example</artifactId>
 
-    <properties>
-        <dropwizard.version>0.6.2</dropwizard.version>
-    </properties>
-
     <dependencies>
         <dependency>
             <groupId>com.yammer.dropwizard</groupId>
