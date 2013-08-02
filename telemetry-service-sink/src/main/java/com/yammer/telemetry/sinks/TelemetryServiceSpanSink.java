@@ -32,4 +32,9 @@ public class TelemetryServiceSpanSink implements SpanSink {
             e.printStackTrace(System.err);
         }
     }
+
+    @Override
+    public void clear() {
+        throw new UnsupportedOperationException("clear() unsupported by TelemetryServiceSpanSink");
+    }
 }

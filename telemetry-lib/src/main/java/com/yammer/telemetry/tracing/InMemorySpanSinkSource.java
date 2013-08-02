@@ -31,4 +31,9 @@ public class InMemorySpanSinkSource implements SpanSink, SpanSource {
             trace.addSpan(spanData);
         }
     }
+
+    @Override
+    public void clear() {
+        traces.clear();
+    }
 }
