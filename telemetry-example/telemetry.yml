@@ -7,3 +7,6 @@ sinks:
     enabled: true
     host: localhost
     port: 9090
+
+annotations:
+  service: example
