@@ -150,14 +150,6 @@ public class Span implements AutoCloseable, SpanData {
         return duration;
     }
 
-    public static UUID currentTraceId() {
-        return spanContext.get().currentTraceId();
-    }
-
-    public static UUID currentSpanId() {
-        return spanContext.get().currentSpanId();
-    }
-
     private static UUID generateSpanId() {
         return UUID.randomUUID();
     }
