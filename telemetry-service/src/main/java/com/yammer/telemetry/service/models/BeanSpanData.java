@@ -2,7 +2,6 @@ package com.yammer.telemetry.service.models;
 
 import com.yammer.telemetry.tracing.SpanData;
 
-import java.util.Map;
 import java.util.UUID;
 
 public class BeanSpanData implements SpanData {
@@ -10,7 +9,6 @@ public class BeanSpanData implements SpanData {
     private UUID id;
     private UUID parentId;
     private String name;
-    private Map<String, String> annotations;
     private long startTimeNanos;
     private long duration;
 
@@ -37,11 +35,6 @@ public class BeanSpanData implements SpanData {
     }
 
     @Override
-    public Map<String, String> getAnnotations() {
-        return annotations;
-    }
-
-    @Override
     public long getStartTimeNanos() {
         return startTimeNanos;
     }
@@ -58,7 +51,6 @@ public class BeanSpanData implements SpanData {
                 ", id=" + id +
                 ", parentId=" + parentId +
                 ", name='" + name + '\'' +
-                ", annotations=" + annotations +
                 ", startTimeNanos=" + startTimeNanos +
                 ", duration=" + duration +
                 '}';

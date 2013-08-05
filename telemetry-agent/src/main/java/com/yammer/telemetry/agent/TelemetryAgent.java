@@ -5,7 +5,6 @@ import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.yammer.telemetry.agent.handlers.ApacheHttpClientMethodHandler;
 import com.yammer.telemetry.agent.handlers.HttpServletMethodHandler;
 import com.yammer.telemetry.sinks.TelemetryServiceSpanSink;
-import com.yammer.telemetry.tracing.Span;
 import com.yammer.telemetry.tracing.SpanSinkRegistry;
 
 import java.io.File;
@@ -22,8 +21,6 @@ public class TelemetryAgent {
         if (!agentArgs.isEmpty()) {
             try {
                 TelemetryConfiguration config = loadConfiguration(agentArgs);
-
-                Span.addBaseAnnotations(config.getAnnotations());
 
                 if (config.isEnabled()) {
                     TelemetryServiceConfiguration telemetry = config.getSinks().getTelemetry();

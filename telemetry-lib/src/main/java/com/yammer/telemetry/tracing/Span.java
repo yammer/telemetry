@@ -1,43 +1,25 @@
 package com.yammer.telemetry.tracing;
 
-import com.google.common.collect.ImmutableMap;
-
-import java.util.Collections;
-import java.util.Map;
 import java.util.Stack;
 import java.util.UUID;
 import java.util.logging.Logger;
 
 public class Span implements AutoCloseable, SpanData {
     private static final Logger LOG = Logger.getLogger(Span.class.getName());
-    private static ImmutableMap<String, String> DEFAULT_ANNOTATIONS = ImmutableMap.of();
     private static final ThreadLocal<SpanContext> spanContext = new ThreadLocal<>();
 
     private final UUID traceId;
     private final UUID parentId;
     private final UUID id;
     private final String name;
-    private final ImmutableMap<String, String> annotations;
     private final long startTimeNanos;
     private long duration;
 
-    public static void addBaseAnnotations(Map<String, String> baseAnnotations) {
-        DEFAULT_ANNOTATIONS = ImmutableMap.<String, String>builder().putAll(DEFAULT_ANNOTATIONS).putAll(baseAnnotations).build();
-    }
-
     public static Span start(String name) {
-        return start(name, Collections.<String, String>emptyMap(), null, null, null);
-    }
-
-    public static Span start(String name, Map<String, String> annotations) {
-        return start(name, annotations, null, null, null);
+        return start(name, null, null, null);
     }
 
     public static Span start(String name, UUID traceId, UUID spanId, UUID parentSpanId) {
-        return start(name, Collections.<String, String>emptyMap(), traceId, spanId, parentSpanId);
-    }
-
-    public static Span start(String name, Map<String, String> annotations, UUID traceId, UUID spanId, UUID parentSpanId) {
         SpanContext context = spanContext.get();
         if (context == null) {
             context = new SpanContext();
@@ -58,18 +40,16 @@ public class Span implements AutoCloseable, SpanData {
         if (spanId == null) {
             spanId = generateSpanId();
         }
-        ImmutableMap<String, String> combinedAnnotations = ImmutableMap.<String, String>builder().putAll(annotations).putAll(DEFAULT_ANNOTATIONS).build();
-        final Span span = new Span(traceId, spanId, parentSpanId, name, combinedAnnotations, System.currentTimeMillis() * 1000000, System.nanoTime());
+        final Span span = new Span(traceId, spanId, parentSpanId, name, System.currentTimeMillis() * 1000000, System.nanoTime());
         context.startSpan(span);
         return span;
     }
 
-    private Span(UUID traceId, UUID id, UUID parentId, String name, ImmutableMap<String, String> annotations, long startTimeNanos, long startNanos) {
+    private Span(UUID traceId, UUID id, UUID parentId, String name, long startTimeNanos, long startNanos) {
         this.traceId = traceId;
         this.parentId = parentId;
         this.id = id;
         this.name = name;
-        this.annotations = annotations;
         this.startTimeNanos = startTimeNanos;
         this.duration = startNanos;
     }
@@ -108,10 +88,6 @@ public class Span implements AutoCloseable, SpanData {
 
     public String getName() {
         return name;
-    }
-
-    public ImmutableMap<String, String> getAnnotations() {
-        return annotations;
     }
 
     public long getStartTimeNanos() {
@@ -183,7 +159,6 @@ public class Span implements AutoCloseable, SpanData {
                 ", parentId=" + parentId +
                 ", id=" + id +
                 ", name='" + name + '\'' +
-                ", annotations=" + annotations +
                 ", startTimeNanos=" + startTimeNanos +
                 ", duration=" + duration +
                 '}';
