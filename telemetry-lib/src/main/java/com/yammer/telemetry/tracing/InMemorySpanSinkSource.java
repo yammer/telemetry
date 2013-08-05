@@ -49,4 +49,9 @@ public class InMemorySpanSinkSource implements SpanSink, SpanSource {
             }
         }
     }
+
+    @Override
+    public List<AnnotationData> getAnnotations(UUID spanId) {
+        return spanAnnotations.get(spanId);
+    }
 }
