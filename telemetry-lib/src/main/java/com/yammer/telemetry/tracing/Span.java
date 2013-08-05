@@ -1,5 +1,7 @@
 package com.yammer.telemetry.tracing;
 
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Stack;
 import java.util.UUID;
 import java.util.logging.Logger;
@@ -20,6 +22,7 @@ public class Span implements AutoCloseable, SpanData {
     private final long startTimeNanos;
     private long duration;
     private final boolean logSpan;
+    private final List<AnnotationData> annotations;
 
     /**
      * Starts a new trace.
@@ -75,7 +78,7 @@ public class Span implements AutoCloseable, SpanData {
         if (spanId == null) {
             spanId = generateSpanId();
         }
-        final Span span = new Span(traceId, spanId, parentSpanId, name, System.currentTimeMillis() * 1000000, System.nanoTime(), true);
+        final Span span = new Span(traceId, spanId, parentSpanId, name, nowInNanoseconds(), System.nanoTime(), true);
         context.startSpan(span);
         return span;
     }
@@ -88,6 +91,11 @@ public class Span implements AutoCloseable, SpanData {
         this.startTimeNanos = startTimeNanos;
         this.duration = startNanos;
         this.logSpan = logSpan;
+        this.annotations = new LinkedList<>();
+    }
+
+    public void addAnnotation(String message) {
+        annotations.add(new AnnotationData(nowInNanoseconds(), message));
     }
 
     public void end() {
@@ -103,6 +111,12 @@ public class Span implements AutoCloseable, SpanData {
                 }
             } else {
                 throw new IllegalStateException("Span.end() from a detached span.");
+            }
+        }
+
+        for (SpanSink sink : SpanSinkRegistry.getSpanSinks()) {
+            for (AnnotationData annotation : annotations) {
+                sink.recordAnnotation(getId(), annotation);
             }
         }
     }
@@ -188,8 +202,8 @@ public class Span implements AutoCloseable, SpanData {
                 LOG.warning("Popped " + extraPops + " unclosed Spans");
             }
         }
-    }
 
+    }
     @Override
     public String toString() {
         return "Span{" +
@@ -200,5 +214,9 @@ public class Span implements AutoCloseable, SpanData {
                 ", startTimeNanos=" + startTimeNanos +
                 ", duration=" + duration +
                 '}';
+    }
+
+    private static long nowInNanoseconds() {
+        return System.currentTimeMillis() * 1000000;
     }
 }

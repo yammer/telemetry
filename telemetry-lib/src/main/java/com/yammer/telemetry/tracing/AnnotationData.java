@@ -1,11 +1,29 @@
 package com.yammer.telemetry.tracing;
 
-import com.google.common.base.Optional;
+public class AnnotationData {
+    private long startTimeNanos;
+    private String message;
 
-public interface AnnotationData {
-    long getStartTimeNanos();
+    private AnnotationData() { }
 
-    Optional<Long> getDuration();
+    public AnnotationData(long startTimeNanos, String message) {
+        this.startTimeNanos = startTimeNanos;
+        this.message = message;
+    }
 
-    String getMessage();
+    public long getStartTimeNanos() {
+        return startTimeNanos;
+    }
+
+    public String getMessage() {
+        return message;
+    }
+
+    @Override
+    public String toString() {
+        return "AnnotationData{" +
+                "startTimeNanos=" + startTimeNanos +
+                ", message='" + message + '\'' +
+                '}';
+    }
 }

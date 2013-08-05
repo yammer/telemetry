@@ -6,8 +6,10 @@
     request.setHeader(HttpHeaderNames.SPAN_ID, span.getId().toString());
 
     try {
+        span.addAnnotation("ClientSent");
         return $proceed($$);
     } finally {
+        span.addAnnotation("ClientReceived");
         span.end();
     }
 }

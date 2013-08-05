@@ -12,8 +12,10 @@
     }
 
     try {
+        span.addAnnotation("ServerReceived");
         $proceed($1, $2);
     } finally {
+        span.addAnnotation("ServerSent");
         span.end();
     }
 }

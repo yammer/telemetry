@@ -38,8 +38,8 @@ public class InMemorySpanSinkSource implements SpanSink, SpanSource {
     }
 
     private void recordAnnotation(UUID spanId, AnnotationData annotation, int attempt) {
-        if (attempt + 1 > MAX_RECORD_ANNOTATION_ATTEMPTS) {
-            throw new RuntimeException("Failed after " + attempt + " attempts to record annotation");
+        if (attempt > MAX_RECORD_ANNOTATION_ATTEMPTS) {
+            throw new RuntimeException("Failed after " + (attempt - 1) + " attempts to record annotation");
         }
 
         ImmutableList<AnnotationData> annotations = spanAnnotations.get(spanId);
