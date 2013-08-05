@@ -21,7 +21,8 @@ In order to trace across hosts trace ID and span ID information must be passed f
 Clients will pass the current trace ID and the current span ID to downstream services via HTTP request headers:
 
     X-Telemetry-TraceId: {current trace ID}
-    X-Telemetry-Parent-SpanId: {current span ID}
+    X-Telemetry-SpanId: {current span ID}
+    X-Telemetry-Parent-SpanId: {parent span ID, may be absent if this is the root span}
 
 ## Notes
 

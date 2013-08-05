@@ -1,0 +1,21 @@
+{
+    Span span;
+
+    final String traceId = $1.getHeader(HttpHeaderNames.TRACE_ID);
+    final String spanId = $1.getHeader(HttpHeaderNames.SPAN_ID);
+    final String parentSpanId = $1.getHeader(HttpHeaderNames.PARENT_SPAN_ID);
+    if (traceId != null) {
+        UUID traceIdUuid = UUID.fromString(traceId);
+        UUID spanIdUuid = (spanId != null) ? UUID.fromString(spanId) : null;
+        UUID parentSpanIdUuid = (parentSpanId != null) ? UUID.fromString(parentSpanId) : null;
+        span = Span.start($1.getRequestURL().toString(), traceIdUuid, spanIdUuid, parentSpanIdUuid);
+    } else {
+        span = Span.start($1.getRequestURL().toString());
+    }
+
+    try {
+        $proceed($1, $2);
+    } finally {
+        span.end();
+    }
+}

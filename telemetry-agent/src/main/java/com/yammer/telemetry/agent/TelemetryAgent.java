@@ -3,7 +3,7 @@ package com.yammer.telemetry.agent;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.yammer.telemetry.agent.handlers.ApacheHttpClientMethodHandler;
-import com.yammer.telemetry.agent.handlers.JaxRsMethodHandler;
+import com.yammer.telemetry.agent.handlers.HttpServletMethodHandler;
 import com.yammer.telemetry.sinks.TelemetryServiceSpanSink;
 import com.yammer.telemetry.tracing.Span;
 import com.yammer.telemetry.tracing.SpanSinkRegistry;
@@ -33,7 +33,7 @@ public class TelemetryAgent {
 
                     final TelemetryTransformer transformer = new TelemetryTransformer();
                     if (config.getInstruments().contains("inbound-http")) {
-                        transformer.addHandler(new JaxRsMethodHandler());
+                        transformer.addHandler(new HttpServletMethodHandler());
                     }
                     if (config.getInstruments().contains("outbound-http")) {
                         transformer.addHandler(new ApacheHttpClientMethodHandler());

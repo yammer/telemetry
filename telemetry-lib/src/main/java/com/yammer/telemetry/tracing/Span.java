@@ -26,14 +26,18 @@ public class Span implements AutoCloseable, SpanData {
     }
 
     public static Span start(String name) {
-        return start(name, Collections.<String, String>emptyMap(), null, null);
+        return start(name, Collections.<String, String>emptyMap(), null, null, null);
     }
 
     public static Span start(String name, Map<String, String> annotations) {
-        return start(name, annotations, null, null);
+        return start(name, annotations, null, null, null);
     }
 
-    public static Span start(String name, Map<String, String> annotations, UUID traceId, UUID parentSpanId) {
+    public static Span start(String name, UUID traceId, UUID spanId, UUID parentSpanId) {
+        return start(name, Collections.<String, String>emptyMap(), traceId, spanId, parentSpanId);
+    }
+
+    public static Span start(String name, Map<String, String> annotations, UUID traceId, UUID spanId, UUID parentSpanId) {
         SpanContext context = spanContext.get();
         if (context == null) {
             context = new SpanContext();
@@ -51,7 +55,9 @@ public class Span implements AutoCloseable, SpanData {
             parentSpanId = context.currentSpanId();
         }
 
-        final UUID spanId = generateSpanId();
+        if (spanId == null) {
+            spanId = generateSpanId();
+        }
         ImmutableMap<String, String> combinedAnnotations = ImmutableMap.<String, String>builder().putAll(annotations).putAll(DEFAULT_ANNOTATIONS).build();
         final Span span = new Span(traceId, spanId, parentSpanId, name, combinedAnnotations, System.currentTimeMillis() * 1000000, System.nanoTime());
         context.startSpan(span);

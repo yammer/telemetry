@@ -1,0 +1,14 @@
+{
+    HttpRequest request = %HTTP_REQUEST_PARAM%;
+    Span span = Span.start(request.getRequestLine().getUri());
+
+    request.setHeader(HttpHeaderNames.TRACE_ID, span.getTraceId().toString());
+    request.setHeader(HttpHeaderNames.SPAN_ID, span.getId().toString());
+    request.setHeader(HttpHeaderNames.PARENT_SPAN_ID, span.getParentId().toString());
+
+    try {
+        return $proceed($$);
+    } finally {
+        span.end();
+    }
+}
