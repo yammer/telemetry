@@ -22,6 +22,8 @@ public class TelemetryAgent {
             try {
                 TelemetryConfiguration config = loadConfiguration(agentArgs);
 
+                Annotations.setServiceAnnotations(config.getAnnotations());
+
                 if (config.isEnabled()) {
                     TelemetryServiceConfiguration telemetry = config.getSinks().getTelemetry();
                     if (telemetry.isEnabled()) {

@@ -31,7 +31,7 @@ public class Span implements AutoCloseable, SpanData {
      * @return The root span of the newly created trace.
      */
     public static Span startTrace(String name) {
-        return start(name, null, null, null);
+        return start(name, null, null, null, true);
     }
 
     /**
@@ -42,7 +42,7 @@ public class Span implements AutoCloseable, SpanData {
      * @return The newly started span.
      */
     public static Span startSpan(String name) {
-        return start(name, null, null, null);
+        return start(name, null, null, null, true);
     }
 
     /**
@@ -54,10 +54,10 @@ public class Span implements AutoCloseable, SpanData {
      * @return The attached span.
      */
     public static Span attachSpan(UUID traceId, UUID spanId) {
-        return new Span(traceId, spanId, null, null, -1, -1, false);
+        return start(null, traceId, spanId, null, false);
     }
 
-    private static Span start(String name, UUID traceId, UUID spanId, UUID parentSpanId) {
+    private static Span start(String name, UUID traceId, UUID spanId, UUID parentSpanId, boolean logSpan) {
         SpanContext context = spanContext.get();
         if (context == null) {
             context = new SpanContext();
@@ -78,7 +78,7 @@ public class Span implements AutoCloseable, SpanData {
         if (spanId == null) {
             spanId = generateSpanId();
         }
-        final Span span = new Span(traceId, spanId, parentSpanId, name, nowInNanoseconds(), System.nanoTime(), true);
+        final Span span = new Span(traceId, spanId, parentSpanId, name, nowInNanoseconds(), System.nanoTime(), logSpan);
         context.startSpan(span);
         return span;
     }
@@ -94,8 +94,12 @@ public class Span implements AutoCloseable, SpanData {
         this.annotations = new LinkedList<>();
     }
 
-    public void addAnnotation(String message) {
-        annotations.add(new AnnotationData(nowInNanoseconds(), message));
+    public void addAnnotation(String name) {
+        annotations.add(new AnnotationData(nowInNanoseconds(), name));
+    }
+
+    public void addAnnotation(String name, String message) {
+        annotations.add(new AnnotationData(nowInNanoseconds(), name, message));
     }
 
     public void end() {

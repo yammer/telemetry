@@ -5,7 +5,3 @@ http:
   requestLog:
     console:
       enabled: false
-
-logging:
-  loggers:
-    com.yammer.telemetry.service.resources.SpansResource: debug

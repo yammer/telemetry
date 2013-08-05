@@ -13,6 +13,7 @@
 
     try {
         span.addAnnotation("ServerReceived");
+        span.addAnnotation("ServiceName", Annotations.getServiceAnnotations().getService());
         $proceed($1, $2);
     } finally {
         span.addAnnotation("ServerSent");
