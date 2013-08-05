@@ -28,20 +28,6 @@
 <#-- @ftlvariable name="trace" type="com.yammer.telemetry.tracing.Trace" -->
 <div id="span-${span.id}" class="span" style="left: ${((span.startTimeNanos - trace.startTimeNanos) / trace.duration) * 100}%; width: ${(span.duration / trace.duration) * 100}%;">
     ${span.name} (start = ${span.startTimeNanos}; duration = ${span.duration})
-<#if (span.annotations?size > 0)>
-    <table>
-        <tr>
-            <th>Annotation</th>
-            <th>Value</th>
-        </tr>
-        <#list span.annotations?keys as annotation>
-        <tr>
-            <td>${annotation}</td>
-            <td>${span.annotations[annotation]}</td>
-        </tr>
-        </#list>
-    </table>
-</#if>
 </div>
 <#list trace.getChildren(span) as child>
     <@renderSpan span=child trace=trace/>

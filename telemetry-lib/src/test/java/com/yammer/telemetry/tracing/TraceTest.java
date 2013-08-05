@@ -14,9 +14,9 @@ public class TraceTest {
 
     @Before
     public void setUp() {
-        foo = Span.start("foo");
-        bar = Span.start("bar");
-        baz = Span.start("baz");
+        foo = Span.startTrace("foo");
+        bar = Span.startSpan("bar");
+        baz = Span.startSpan("baz");
 
         baz.end();
         bar.end();

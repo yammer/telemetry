@@ -4,6 +4,11 @@ import java.util.Stack;
 import java.util.UUID;
 import java.util.logging.Logger;
 
+/**
+ * Start a new trace.
+ * Start a new span within a trace.
+ * Attach to a span within a trace.
+ */
 public class Span implements AutoCloseable, SpanData {
     private static final Logger LOG = Logger.getLogger(Span.class.getName());
     private static final ThreadLocal<SpanContext> spanContext = new ThreadLocal<>();
@@ -14,12 +19,42 @@ public class Span implements AutoCloseable, SpanData {
     private final String name;
     private final long startTimeNanos;
     private long duration;
+    private final boolean logSpan;
 
-    public static Span start(String name) {
+    /**
+     * Starts a new trace.
+     *
+     * @param name Name to be given to the root span in the trace.
+     * @return The root span of the newly created trace.
+     */
+    public static Span startTrace(String name) {
         return start(name, null, null, null);
     }
 
-    public static Span start(String name, UUID traceId, UUID spanId, UUID parentSpanId) {
+    /**
+     * Starts a new span within a trace. Uses the current thread context to determine the
+     * trace ID and parent span ID.
+     *
+     * @param name Name to be given to the span.
+     * @return The newly started span.
+     */
+    public static Span startSpan(String name) {
+        return start(name, null, null, null);
+    }
+
+    /**
+     * Attach to an existing span. This is useful when a span has been created elsewhere
+     * (probably on another host) and you'd like to log annotations against that span locally.
+     *
+     * @param traceId ID of the trace of the span being attached.
+     * @param spanId ID of the span being attached.
+     * @return The attached span.
+     */
+    public static Span attachSpan(UUID traceId, UUID spanId) {
+        return new Span(traceId, spanId, null, null, -1, -1, false);
+    }
+
+    private static Span start(String name, UUID traceId, UUID spanId, UUID parentSpanId) {
         SpanContext context = spanContext.get();
         if (context == null) {
             context = new SpanContext();
@@ -40,32 +75,35 @@ public class Span implements AutoCloseable, SpanData {
         if (spanId == null) {
             spanId = generateSpanId();
         }
-        final Span span = new Span(traceId, spanId, parentSpanId, name, System.currentTimeMillis() * 1000000, System.nanoTime());
+        final Span span = new Span(traceId, spanId, parentSpanId, name, System.currentTimeMillis() * 1000000, System.nanoTime(), true);
         context.startSpan(span);
         return span;
     }
 
-    private Span(UUID traceId, UUID id, UUID parentId, String name, long startTimeNanos, long startNanos) {
+    private Span(UUID traceId, UUID id, UUID parentId, String name, long startTimeNanos, long startNanos, boolean logSpan) {
         this.traceId = traceId;
         this.parentId = parentId;
         this.id = id;
         this.name = name;
         this.startTimeNanos = startTimeNanos;
         this.duration = startNanos;
+        this.logSpan = logSpan;
     }
 
     public void end() {
-        duration = System.nanoTime() - duration;
+        if (logSpan) {
+            duration = System.nanoTime() - duration;
 
-        SpanContext context = spanContext.get();
-        if (context != null) {
-            final Iterable<SpanSink> sinks = SpanSinkRegistry.getSpanSinks();
-            context.endSpan(this);
-            for (SpanSink sink : sinks) {
-                sink.record(this);
+            SpanContext context = spanContext.get();
+            if (context != null) {
+                final Iterable<SpanSink> sinks = SpanSinkRegistry.getSpanSinks();
+                context.endSpan(this);
+                for (SpanSink sink : sinks) {
+                    sink.record(this);
+                }
+            } else {
+                throw new IllegalStateException("Span.end() from a detached span.");
             }
-        } else {
-            throw new IllegalStateException("Span.end() from a detached span.");
         }
     }
 

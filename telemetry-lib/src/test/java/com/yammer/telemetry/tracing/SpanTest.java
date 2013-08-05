@@ -23,7 +23,7 @@ public class SpanTest {
         final SpanSink sink = mock(SpanSink.class);
         SpanSinkRegistry.register(sink);
 
-        final Span span = Span.start("testSpan");
+        final Span span = Span.startTrace("testSpan");
 
         span.end();
         verify(sink).record(span);
@@ -36,8 +36,8 @@ public class SpanTest {
 
     @Test
     public void testRootlessSpans() {
-        final Span outer = Span.start("outerSpan");
-        final Span inner = Span.start("innerSpan");
+        final Span outer = Span.startTrace("outerSpan");
+        final Span inner = Span.startSpan("innerSpan");
         inner.end();
         outer.end();
     }
@@ -47,8 +47,8 @@ public class SpanTest {
         final SpanSink sink = mock(SpanSink.class);
         SpanSinkRegistry.register(sink);
 
-        final Span outer = Span.start("outerSpan");
-        final Span inner = Span.start("innerSpan");
+        final Span outer = Span.startTrace("outerSpan");
+        final Span inner = Span.startSpan("innerSpan");
 
         inner.end();
         verify(sink).record(inner);
@@ -66,7 +66,7 @@ public class SpanTest {
         SpanSinkRegistry.register(first);
         SpanSinkRegistry.register(second);
 
-        final Span span = Span.start("testSpan");
+        final Span span = Span.startTrace("testSpan");
         span.end();
 
         verify(first).record(span);
@@ -109,7 +109,7 @@ public class SpanTest {
         @Override
         public void run() {
             try {
-                final Span span = Span.start(spanName);
+                final Span span = Span.startTrace(spanName);
                 barrier.await();
                 span.end();
             } catch (Exception e) {
