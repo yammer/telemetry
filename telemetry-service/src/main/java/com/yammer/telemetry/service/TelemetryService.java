@@ -27,6 +27,7 @@ public class TelemetryService extends Service<TelemetryConfiguration> {
         environment.addResource(new SpansResource(sinkSource));
         environment.addResource(new TracingHomeResource(sinkSource));
         environment.addResource(new TreesResource(sinkSource));
+        environment.addResource(new NetworkResource(sinkSource));
         environment.addResource(new TraceResource(sinkSource));
     }
 }
