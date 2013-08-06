@@ -46,6 +46,7 @@ public class TreesResource {
                 spanData.getName(),
                 new DateTime(spanData.getStartTimeNanos()),
                 spanData.getDuration(),
+                trace.getAnnotations(spanData),
                 children);
     }
 }
