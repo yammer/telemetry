@@ -33,7 +33,7 @@ public class TelemetryServiceSpanSink implements SpanSink {
     }
 
     @Override
-    public void recordAnnotation(UUID spanId, AnnotationData annotation) {
-        spansResource.path(spanId.toString()).type(MediaType.APPLICATION_JSON).post(annotation);
+    public void recordAnnotation(UUID traceId, UUID spanId, AnnotationData annotation) {
+        spansResource.path(traceId.toString()).path(spanId.toString()).type(MediaType.APPLICATION_JSON).post(annotation);
     }
 }

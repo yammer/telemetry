@@ -8,7 +8,7 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import java.util.UUID;
 
-@Path("/spans/{id}")
+@Path("/spans/{traceId}/{spanId}")
 public class SpanResource {
     private final SpanSink sink;
 
@@ -17,7 +17,7 @@ public class SpanResource {
     }
 
     @POST
-    public void logAnnotation(@PathParam("id") UUID spanId, AnnotationData annotation) {
-        sink.recordAnnotation(spanId, annotation);
+    public void logAnnotation(@PathParam("traceId") UUID traceId, @PathParam("spanId") UUID spanId, AnnotationData annotation) {
+        sink.recordAnnotation(traceId, spanId, annotation);
     }
 }

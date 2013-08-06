@@ -120,7 +120,7 @@ public class Span implements AutoCloseable, SpanData {
 
         for (SpanSink sink : SpanSinkRegistry.getSpanSinks()) {
             for (AnnotationData annotation : annotations) {
-                sink.recordAnnotation(getId(), annotation);
+                sink.recordAnnotation(getTraceId(), getId(), annotation);
             }
         }
     }

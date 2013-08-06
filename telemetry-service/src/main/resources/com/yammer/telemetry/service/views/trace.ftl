@@ -12,6 +12,12 @@
             border: 1px solid #ff1493;
             background: #ffc0cb;
         }
+
+        .annotationMarker {
+            position: relative;
+            border: 1px solid #000000;
+            background: #444444;
+        }
     </style>
 </head>
 <body>
@@ -27,6 +33,9 @@
 <#-- @ftlvariable name="span" type="com.yammer.telemetry.tracing.Span" -->
 <#-- @ftlvariable name="trace" type="com.yammer.telemetry.tracing.Trace" -->
 <div id="span-${span.id}" class="span" style="left: ${((span.startTimeNanos - trace.startTimeNanos) / trace.duration) * 100}%; width: ${(span.duration / trace.duration) * 100}%;">
+    <#list trace.getAnnotations(span) as annotation>
+    <div class="annotationMarker" style="left: ${((annotation.startTimeNanos - trace.startTimeNanos) / trace.duration) * 100}%; width: 1px;">${annotation.name}</div>
+    </#list>
     ${span.name} (start = ${span.startTimeNanos}; duration = ${span.duration})
 </div>
 <#list trace.getChildren(span) as child>

@@ -25,7 +25,8 @@ public class TraceTest {
 
     @Test
     public void testForward() {
-        final Trace trace = Trace.startTrace(foo);
+        final Trace trace = new Trace(foo.getId());
+        trace.addSpan(foo);
         trace.addSpan(bar);
         trace.addSpan(baz);
 
@@ -37,7 +38,8 @@ public class TraceTest {
 
     @Test
     public void testReverse() {
-        final Trace trace = Trace.startTrace(baz);
+        final Trace trace = new Trace(baz.getId());
+        trace.addSpan(baz);
         trace.addSpan(bar);
         trace.addSpan(foo);
 
@@ -49,7 +51,8 @@ public class TraceTest {
 
     @Test
     public void testScattered() {
-        final Trace trace = Trace.startTrace(bar);
+        final Trace trace = new Trace(bar.getId());
+        trace.addSpan(bar);
         trace.addSpan(baz);
         trace.addSpan(foo);
 
@@ -61,7 +64,8 @@ public class TraceTest {
 
     @Test
     public void testRootless() {
-        final Trace trace = Trace.startTrace(baz);
+        final Trace trace = new Trace(baz.getId());
+        trace.addSpan(baz);
         trace.addSpan(bar);
 
         assertNull(trace.getRoot());

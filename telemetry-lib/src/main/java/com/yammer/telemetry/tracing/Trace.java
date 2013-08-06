@@ -12,19 +12,15 @@ import java.util.concurrent.ConcurrentMap;
 public class Trace {
     private final UUID id;
     private final ConcurrentMap<UUID, List<SpanData>> childSpans;
+    private final ConcurrentMap<UUID, List<AnnotationData>> annotations;
     private SpanData root = null;
     private long startTimeNanos = Long.MAX_VALUE;
     private long duration = 0;
 
-    private Trace(UUID id) {
+    public Trace(UUID id) {
         this.id = id;
         this.childSpans = new ConcurrentHashMap<>();
-    }
-
-    public static Trace startTrace(SpanData startingSpanData) {
-        final Trace trace = new Trace(startingSpanData.getTraceId());
-        trace.addSpan(startingSpanData);
-        return trace;
+        this.annotations = new ConcurrentHashMap<>();
     }
 
     public UUID getId() {
@@ -47,6 +43,10 @@ public class Trace {
         return Optional.fromNullable(childSpans.get(spanData.getId())).or(Collections.<SpanData>emptyList());
     }
 
+    public List<AnnotationData> getAnnotations(SpanData spanData) {
+        return annotations.get(spanData.getId());
+    }
+
     public void addSpan(SpanData spanData) {
         startTimeNanos = Math.min(startTimeNanos, spanData.getStartTimeNanos());
         duration = Math.max(duration, spanData.getStartTimeNanos() + spanData.getDuration());
@@ -62,6 +62,15 @@ public class Trace {
             if (siblings != null) {
                 siblings.add(spanData);
             }
+        }
+    }
+
+    public void addAnnotation(UUID spanId, AnnotationData data) {
+        final LinkedList<AnnotationData> currentAnnotation = new LinkedList<>();
+        currentAnnotation.add(data);
+        List<AnnotationData> previousAnnotations = annotations.putIfAbsent(spanId, currentAnnotation);
+        if (previousAnnotations != null) {
+            previousAnnotations.add(data);
         }
     }
 }

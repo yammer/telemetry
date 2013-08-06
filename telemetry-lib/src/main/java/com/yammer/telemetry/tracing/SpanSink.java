@@ -6,5 +6,5 @@ public interface SpanSink {
 
     void record(SpanData spanData);
 
-    void recordAnnotation(UUID spanId, AnnotationData annotation);
+    void recordAnnotation(UUID traceId, UUID spanId, AnnotationData annotation);
 }
