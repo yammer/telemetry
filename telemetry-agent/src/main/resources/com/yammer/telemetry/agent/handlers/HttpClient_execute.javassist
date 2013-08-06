@@ -8,6 +8,9 @@
     try {
         span.addAnnotation("ClientSent");
         return $proceed($$);
+    } catch (Exception e) {
+        span.addAnnotation("ClientException", e.getClass().getName());
+        throw e;
     } finally {
         span.addAnnotation("ClientReceived");
         span.end();
