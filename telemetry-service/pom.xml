@@ -11,7 +11,11 @@
     </parent>
 
     <artifactId>telemetry-service</artifactId>
-    
+
+    <properties>
+        <jquery.version>1.10.2</jquery.version>
+    </properties>
+
     <dependencies>
         <dependency>
             <groupId>com.yammer</groupId>
@@ -21,12 +25,22 @@
         <dependency>
             <groupId>com.yammer.dropwizard</groupId>
             <artifactId>dropwizard-core</artifactId>
-            <version>0.6.2</version>
+            <version>${dropwizard.version}</version>
         </dependency>
         <dependency>
             <groupId>com.yammer.dropwizard</groupId>
             <artifactId>dropwizard-views</artifactId>
-            <version>0.6.2</version>
+            <version>${dropwizard.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.webjars</groupId>
+            <artifactId>jquery</artifactId>
+            <version>${jquery.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.webjars</groupId>
+            <artifactId>jquery-ui</artifactId>
+            <version>${jquery.version}</version>
         </dependency>
     </dependencies>
 

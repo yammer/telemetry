@@ -17,8 +17,16 @@
             position: relative;
             border: 1px solid #000000;
             background: #444444;
+            width: 1px;
         }
     </style>
+    <script src="/webjars/jquery/1.10.2/jquery.js"></script>
+    <script src="/webjars/jquery-ui/1.10.2/ui/jquery-ui.js"></script>
+    <script>
+        $(function() {
+            $(document).tooltip();
+        })
+    </script>
 </head>
 <body>
 <h1>Trace - ${trace.root.name}</h1>
@@ -34,7 +42,7 @@
 <#-- @ftlvariable name="trace" type="com.yammer.telemetry.tracing.Trace" -->
 <div id="span-${span.id}" class="span" style="left: ${((span.startTimeNanos - trace.startTimeNanos) / trace.duration) * 100}%; width: ${(span.duration / trace.duration) * 100}%;">
     <#list trace.getAnnotations(span) as annotation>
-    <div class="annotationMarker" style="left: ${((annotation.startTimeNanos - trace.startTimeNanos) / trace.duration) * 100}%; width: 1px;">${annotation.name}</div>
+    <div class="annotationMarker" style="left: ${((annotation.startTimeNanos - span.startTimeNanos) / span.duration) * 100}%;" title="${annotation.name} @ ${annotation.startTimeNanos}">&nbsp;</div>
     </#list>
     ${span.name} (start = ${span.startTimeNanos}; duration = ${span.duration})
 </div>

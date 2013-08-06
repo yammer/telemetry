@@ -1,5 +1,6 @@
 package com.yammer.telemetry.service;
 
+import com.yammer.dropwizard.assets.AssetsBundle;
 import com.yammer.telemetry.service.resources.*;
 import com.yammer.telemetry.tracing.InMemorySpanSinkSource;
 import com.yammer.dropwizard.Service;
@@ -15,6 +16,7 @@ public class TelemetryService extends Service<TelemetryConfiguration> {
     @Override
     public void initialize(Bootstrap<TelemetryConfiguration> bootstrap) {
         bootstrap.addBundle(new ViewBundle());
+        bootstrap.addBundle(new AssetsBundle("/META-INF/resources/webjars", "/webjars"));
     }
 
     @Override
