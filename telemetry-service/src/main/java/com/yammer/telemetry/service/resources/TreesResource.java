@@ -12,10 +12,10 @@ import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import java.util.Collection;
 
-@Path("/tracing/trees")
+@Path("/data/trees")
 @Produces(MediaType.APPLICATION_JSON)
 public class TreesResource {
-    private SpanSource spanSource;
+    private final SpanSource spanSource;
 
     public TreesResource(SpanSource spanSource) {
         this.spanSource = spanSource;
