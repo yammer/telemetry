@@ -7,8 +7,8 @@ import java.io.IOException;
 import java.nio.charset.Charset;
 import java.util.logging.Logger;
 
-public class HttpServletMethodHandler implements MethodInstrumentationHandler {
-    private static final Logger LOGGER = Logger.getLogger(HttpServletMethodHandler.class.getName());
+public class HttpServletClassHandler implements ClassInstrumentationHandler {
+    private static final Logger LOGGER = Logger.getLogger(HttpServletClassHandler.class.getName());
     private boolean enabled = true;
 
     @Override

@@ -8,8 +8,8 @@ import java.lang.reflect.Modifier;
 import java.nio.charset.Charset;
 import java.util.logging.Logger;
 
-public class ApacheHttpClientMethodHandler implements MethodInstrumentationHandler {
-    private static final Logger LOGGER = Logger.getLogger(ApacheHttpClientMethodHandler.class.getName());
+public class ApacheHttpClientClassHandler implements ClassInstrumentationHandler {
+    private static final Logger LOGGER = Logger.getLogger(ApacheHttpClientClassHandler.class.getName());
     private boolean enabled = true;
 
     @Override

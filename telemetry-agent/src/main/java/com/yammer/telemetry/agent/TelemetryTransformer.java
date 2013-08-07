@@ -1,6 +1,6 @@
 package com.yammer.telemetry.agent;
 
-import com.yammer.telemetry.agent.handlers.MethodInstrumentationHandler;
+import com.yammer.telemetry.agent.handlers.ClassInstrumentationHandler;
 import javassist.*;
 
 import java.lang.instrument.ClassFileTransformer;
@@ -10,9 +10,9 @@ import java.util.HashSet;
 import java.util.Set;
 
 public class TelemetryTransformer implements ClassFileTransformer {
-    private final Set<MethodInstrumentationHandler> handlers = new HashSet<>();
+    private final Set<ClassInstrumentationHandler> handlers = new HashSet<>();
 
-    public void addHandler(MethodInstrumentationHandler handler) {
+    public void addHandler(ClassInstrumentationHandler handler) {
         handlers.add(handler);
     }
 
@@ -30,7 +30,7 @@ public class TelemetryTransformer implements ClassFileTransformer {
             CtClass cc = cp.get(realClassName);
 
             boolean classUpdated = false;
-            for (MethodInstrumentationHandler handler : handlers) {
+            for (ClassInstrumentationHandler handler : handlers) {
                 if (classUpdated = handler.transformed(cc, cp)) {
                     break;
                 }
