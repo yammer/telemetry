@@ -42,7 +42,7 @@
 <#-- @ftlvariable name="trace" type="com.yammer.telemetry.tracing.Trace" -->
 <div id="span-${span.id}" class="span" style="left: ${((span.startTimeNanos - trace.startTimeNanos) / trace.duration) * 100}%; width: ${(span.duration / trace.duration) * 100}%;">
     <#list trace.getAnnotations(span) as annotation>
-    <div class="annotationMarker" style="left: ${((annotation.startTimeNanos - span.startTimeNanos) / span.duration) * 100}%;" title="${annotation.name} @ ${annotation.startTimeNanos}">&nbsp;</div>
+    <div class="annotationMarker" style="left: ${((annotation.startTimeNanos - span.startTimeNanos) / span.duration) * 100}%;" title="${annotation.name} - ${annotation.message!"null"} @ ${annotation.startTimeNanos}">&nbsp;</div>
     </#list>
     ${span.name} (start = ${span.startTimeNanos}; duration = ${span.duration})
 </div>

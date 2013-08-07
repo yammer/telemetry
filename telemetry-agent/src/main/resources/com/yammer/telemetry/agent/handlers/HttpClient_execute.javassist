@@ -1,17 +1,38 @@
 {
+    // Grab the useful parameters. ApacheHttpClientMethodHandler will either pass in
+    // $N (where N is 1, 2, 3, 4, …) or null if this parameter isn't available in this
+    // version of HttpClient.execute().
+    HttpHost host = %HTTP_HOST_PARAM%;
     HttpRequest request = %HTTP_REQUEST_PARAM%;
+    HttpUriRequest uriRequest = %HTTP_REQUEST_URI_PARAM%;
+
+    // Start the span.
     Span span = Span.startSpan(request.getRequestLine().getUri());
 
+    // Set the request headers to link up this client request with the corresponding
+    // service request.
     request.setHeader(HttpHeaderNames.TRACE_ID, span.getTraceId().toString());
     request.setHeader(HttpHeaderNames.SPAN_ID, span.getId().toString());
 
+    if (host != null) {
+        span.addAnnotation(AnnotationNames.FALLBACK_SERVICE_NAME, host.getHostName());
+    } else if (uriRequest != null) {
+        span.addAnnotation(AnnotationNames.FALLBACK_SERVICE_NAME, uriRequest.getURI().getHost());
+    }
+
     try {
+        // Generate the "client has sent its request" annotation.
         span.addAnnotation("ClientSent");
+
+        // Execute the HTTP request, return the response.
         return $proceed($$);
     } catch (Exception e) {
+        // Some exception happened. Let's generate an exception annotation without getting in the way.
         span.addAnnotation("ClientException", e.getClass().getName());
         throw e;
     } finally {
+        // Generate the "client has received the response" annotation.
+        // TODO: Should this move to immediately after $proceed($$)? Is it such a bad thing if ClientReceived isn't logged when an exception is thrown?
         span.addAnnotation("ClientReceived");
         span.end();
     }

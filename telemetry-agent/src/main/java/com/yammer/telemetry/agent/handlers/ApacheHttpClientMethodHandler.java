@@ -25,12 +25,19 @@ public class ApacheHttpClientMethodHandler implements MethodInstrumentationHandl
 
                 for (CtMethod method : cc.getDeclaredMethods()) {
                     if ("execute".equals(method.getName()) && !Modifier.isAbstract(method.getModifiers())) {
-                        String requestParameter = null;
+                        String hostParameter = "null";
+                        String requestParameter = "null";
+                        String requestUriParameter = "null";
+                        String handlerParameter = "null";
                         CtClass[] parameterTypes = method.getParameterTypes();
                         for (int i = 0; i < parameterTypes.length; i++) {
-                            if (parameterTypes[i].subtypeOf(pool.get("org.apache.http.HttpRequest"))) {
+                            if (parameterTypes[i].subtypeOf(pool.get("org.apache.http.HttpHost"))) {
+                                hostParameter = "$" + (i + 1);
+                            } else if (parameterTypes[i].subtypeOf(pool.get("org.apache.http.client.methods.HttpUriRequest"))) {
                                 requestParameter = "$" + (i + 1);
-                                break;
+                                requestUriParameter = "$" + (i + 1);
+                            } else if (parameterTypes[i].subtypeOf(pool.get("org.apache.http.HttpRequest"))) {
+                                requestParameter = "$" + (i + 1);
                             }
                         }
 
@@ -40,10 +47,16 @@ public class ApacheHttpClientMethodHandler implements MethodInstrumentationHandl
                         cc.addMethod(copiedMethod);
 
                         final String source = Resources.toString(Resources.getResource(getClass(), "HttpClient_execute.javassist"), Charset.forName("utf-8"));
+                        pool.importPackage("java.net");
                         pool.importPackage("org.apache.http");
+                        pool.importPackage("org.apache.http.client.methods");
                         pool.importPackage("com.yammer.telemetry.tracing");
                         pool.importPackage("com.yammer.telemetry.agent.handlers");
-                        method.setBody(source.replace("%HTTP_REQUEST_PARAM%", requestParameter), "this", copiedMethod.getName());
+                        String body = source.replace("%HTTP_HOST_PARAM%", hostParameter)
+                                            .replace("%HTTP_REQUEST_PARAM%", requestParameter)
+                                            .replace("%HTTP_REQUEST_URI_PARAM%", requestUriParameter)
+                                            .replace("%RESPONSE_HANDLER_PARAM%", handlerParameter);
+                        method.setBody(body, "this", copiedMethod.getName());
 
                         transformedOneMethod = true;
                     }
