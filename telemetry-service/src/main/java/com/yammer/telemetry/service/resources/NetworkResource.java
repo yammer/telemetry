@@ -10,6 +10,7 @@ import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
+import java.util.List;
 
 @Path("/data/network")
 @Produces(MediaType.APPLICATION_JSON)
@@ -33,22 +34,28 @@ public class NetworkResource {
     }
 
     private void processTrace(Trace trace, SpanData span, ImmutableSet.Builder<GefxNode> nodeBuilder, ImmutableSet.Builder<GefxEdge> edgeBuilder) {
-        for (AnnotationData annotationData : trace.getAnnotations(span)) {
-            if (AnnotationNames.SERVICE_NAME.equals(annotationData.getName())) {
-                nodeBuilder.add(new GefxNode(annotationData.getMessage(), annotationData.getMessage()));
+        String serviceName = determineServiceName(trace.getAnnotations(span));
+        nodeBuilder.add(new GefxNode(serviceName, serviceName));
 
-                for (SpanData childSpan : trace.getChildren(span)) {
-                    for (AnnotationData childAnnotationData : trace.getAnnotations(childSpan)) {
-                        if (AnnotationNames.SERVICE_NAME.equals(childAnnotationData.getName())) {
-                            edgeBuilder.add(new GefxEdge(annotationData.getMessage(), childAnnotationData.getMessage()));
-                        }
-                    }
-                }
+        for (SpanData childSpan : trace.getChildren(span)) {
+            String childServiceName = determineServiceName(trace.getAnnotations(childSpan));
+            if (childServiceName != null) {
+                edgeBuilder.add(new GefxEdge(serviceName, childServiceName));
             }
 
-            for (SpanData childSpan : trace.getChildren(span)) {
-                processTrace(trace, childSpan, nodeBuilder, edgeBuilder);
+            processTrace(trace, childSpan, nodeBuilder, edgeBuilder);
+        }
+    }
+
+    private String determineServiceName(List<AnnotationData> annotations) {
+        String serviceName = null;
+        for (AnnotationData annotation : annotations) {
+            if (AnnotationNames.SERVICE_NAME.equals(annotation.getName())) {
+                serviceName = annotation.getMessage();
+            } else if (serviceName == null && AnnotationNames.FALLBACK_SERVICE_NAME.equals(annotation.getName())) {
+                serviceName = annotation.getMessage();
             }
         }
+        return serviceName;
     }
 }
