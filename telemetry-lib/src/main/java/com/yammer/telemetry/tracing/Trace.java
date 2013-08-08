@@ -44,7 +44,7 @@ public class Trace {
     }
 
     public List<AnnotationData> getAnnotations(SpanData spanData) {
-        return annotations.get(spanData.getId());
+        return Optional.fromNullable(annotations.get(spanData.getId())).or(Collections.<AnnotationData>emptyList());
     }
 
     public void addSpan(SpanData spanData) {
