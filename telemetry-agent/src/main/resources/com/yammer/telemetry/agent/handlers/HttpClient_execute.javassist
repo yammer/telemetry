@@ -22,7 +22,7 @@
 
     try {
         // Generate the "client has sent its request" annotation.
-        span.addAnnotation("ClientSent");
+        span.addAnnotation(AnnotationNames.CLIENT_SENT);
 
         // Execute the HTTP request, return the response.
         return $proceed($$);
@@ -33,7 +33,7 @@
     } finally {
         // Generate the "client has received the response" annotation.
         // TODO: Should this move to immediately after $proceed($$)? Is it such a bad thing if ClientReceived isn't logged when an exception is thrown?
-        span.addAnnotation("ClientReceived");
+        span.addAnnotation(AnnotationNames.CLIENT_RECEIVED);
         span.end();
     }
 }

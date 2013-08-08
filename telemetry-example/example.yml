@@ -1,3 +1,9 @@
+database:
+  driverClass: org.h2.Driver
+  user: sa
+  password: sa
+  url: jdbc:h2:example
+
 http:
   port: 8080
   adminPort: 8081

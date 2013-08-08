@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.yammer.telemetry.agent.handlers.ApacheHttpClientClassHandler;
 import com.yammer.telemetry.agent.handlers.HttpServletClassHandler;
+import com.yammer.telemetry.agent.jdbc.JdbcDriverClassHandler;
 import com.yammer.telemetry.sinks.TelemetryServiceSpanSink;
 import com.yammer.telemetry.tracing.SpanSinkRegistry;
 
@@ -38,7 +39,7 @@ public class TelemetryAgent {
                         transformer.addHandler(new ApacheHttpClientClassHandler());
                     }
                     if (config.getInstruments().contains("database")) {
-//                        transformer.addHandler(new JdbcDriverClassHandler());
+                        transformer.addHandler(new JdbcDriverClassHandler());
                     }
                     inst.addTransformer(transformer);
                 }

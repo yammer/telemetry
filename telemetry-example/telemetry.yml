@@ -1,6 +1,7 @@
 instruments:
 - inbound-http
 - outbound-http
+- database
 
 sinks:
   telemetry:
