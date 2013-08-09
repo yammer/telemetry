@@ -198,8 +198,8 @@ public class Span implements AutoCloseable, SpanData {
                 LOG.warning("Popped " + extraPops + " unclosed Spans");
             }
         }
-
     }
+
     @Override
     public String toString() {
         return "Span{" +
