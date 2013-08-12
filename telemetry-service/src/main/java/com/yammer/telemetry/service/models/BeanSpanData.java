@@ -1,13 +1,12 @@
 package com.yammer.telemetry.service.models;
 
+import com.google.common.base.Optional;
 import com.yammer.telemetry.tracing.SpanData;
 
-import java.util.UUID;
-
 public class BeanSpanData implements SpanData {
-    private UUID traceId;
-    private UUID id;
-    private UUID parentId;
+    private long traceId;
+    private long id;
+    private Optional<Long> parentId;
     private String name;
     private long startTimeNanos;
     private long duration;
@@ -15,17 +14,17 @@ public class BeanSpanData implements SpanData {
     private BeanSpanData() { }
 
     @Override
-    public UUID getTraceId() {
+    public long getTraceId() {
         return traceId;
     }
 
     @Override
-    public UUID getId() {
+    public long getId() {
         return id;
     }
 
     @Override
-    public UUID getParentId() {
+    public Optional<Long> getParentId() {
         return parentId;
     }
 

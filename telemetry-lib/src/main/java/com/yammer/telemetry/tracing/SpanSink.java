@@ -1,10 +1,8 @@
 package com.yammer.telemetry.tracing;
 
-import java.util.UUID;
-
 public interface SpanSink {
 
     void record(SpanData spanData);
 
-    void recordAnnotation(UUID traceId, UUID spanId, AnnotationData annotation);
+    void recordAnnotation(long traceId, long spanId, AnnotationData annotation);
 }

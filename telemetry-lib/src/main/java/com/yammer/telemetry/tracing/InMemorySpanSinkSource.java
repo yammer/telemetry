@@ -5,7 +5,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 public class InMemorySpanSinkSource implements SpanSink, SpanSource {
-    private final ConcurrentMap<UUID, Trace> traces = new ConcurrentHashMap<>();
+    private final ConcurrentMap<Long, Trace> traces = new ConcurrentHashMap<>();
 
     @Override
     public Collection<Trace> getTraces() {
@@ -13,7 +13,7 @@ public class InMemorySpanSinkSource implements SpanSink, SpanSource {
     }
 
     @Override
-    public Trace getTrace(UUID traceId) {
+    public Trace getTrace(long traceId) {
         return traces.get(traceId);
     }
 
@@ -32,7 +32,7 @@ public class InMemorySpanSinkSource implements SpanSink, SpanSource {
     }
 
     @Override
-    public void recordAnnotation(UUID traceId, UUID spanId, AnnotationData annotation) {
+    public void recordAnnotation(long traceId, long spanId, AnnotationData annotation) {
         final Trace newTrace = new Trace(traceId);
         newTrace.addAnnotation(spanId, annotation);
 

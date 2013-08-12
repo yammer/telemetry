@@ -10,7 +10,6 @@ import com.yammer.telemetry.tracing.SpanSink;
 import com.sun.jersey.api.client.Client;
 
 import javax.ws.rs.core.MediaType;
-import java.util.UUID;
 
 public class TelemetryServiceSpanSink implements SpanSink {
     private final Client client;
@@ -33,7 +32,7 @@ public class TelemetryServiceSpanSink implements SpanSink {
     }
 
     @Override
-    public void recordAnnotation(UUID traceId, UUID spanId, AnnotationData annotation) {
-        spansResource.path(traceId.toString()).path(spanId.toString()).type(MediaType.APPLICATION_JSON).post(annotation);
+    public void recordAnnotation(long traceId, long spanId, AnnotationData annotation) {
+        spansResource.path(Long.toString(traceId)).path(Long.toString(spanId)).type(MediaType.APPLICATION_JSON).post(annotation);
     }
 }

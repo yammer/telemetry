@@ -6,7 +6,6 @@ import com.yammer.telemetry.tracing.SpanSink;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
-import java.util.UUID;
 
 @Path("/spans/{traceId}/{spanId}")
 public class SpanResource {
@@ -17,7 +16,7 @@ public class SpanResource {
     }
 
     @POST
-    public void logAnnotation(@PathParam("traceId") UUID traceId, @PathParam("spanId") UUID spanId, AnnotationData annotation) {
+    public void logAnnotation(@PathParam("traceId") long traceId, @PathParam("spanId") long spanId, AnnotationData annotation) {
         sink.recordAnnotation(traceId, spanId, annotation);
     }
 }

@@ -1,13 +1,13 @@
 package com.yammer.telemetry.tracing;
 
-import java.util.UUID;
+import com.google.common.base.Optional;
 
 public interface SpanData {
-    UUID getTraceId();
+    long getTraceId();
 
-    UUID getId();
+    long getId();
 
-    UUID getParentId();
+    Optional<Long> getParentId();
 
     String getName();
 

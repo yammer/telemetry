@@ -5,25 +5,24 @@ import com.google.common.base.Optional;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 public class Trace {
-    private final UUID id;
-    private final ConcurrentMap<UUID, List<SpanData>> childSpans;
-    private final ConcurrentMap<UUID, List<AnnotationData>> annotations;
+    private final long id;
+    private final ConcurrentMap<Long, List<SpanData>> childSpans;
+    private final ConcurrentMap<Long, List<AnnotationData>> annotations;
     private SpanData root = null;
     private long startTimeNanos = Long.MAX_VALUE;
     private long duration = 0;
 
-    public Trace(UUID id) {
+    public Trace(long id) {
         this.id = id;
         this.childSpans = new ConcurrentHashMap<>();
         this.annotations = new ConcurrentHashMap<>();
     }
 
-    public UUID getId() {
+    public long getId() {
         return id;
     }
 
@@ -51,21 +50,21 @@ public class Trace {
         startTimeNanos = Math.min(startTimeNanos, spanData.getStartTimeNanos());
         duration = Math.max(duration, spanData.getStartTimeNanos() + spanData.getDuration());
 
-        final UUID parentId = spanData.getParentId();
-        if (parentId == null) {
+        final Optional<Long> parentId = spanData.getParentId();
+        if (!parentId.isPresent()) {
             this.root = spanData;
         } else {
             final List<SpanData> newSiblings = new LinkedList<>();
             newSiblings.add(spanData);
 
-            final List<SpanData> siblings = childSpans.putIfAbsent(parentId, newSiblings);
+            final List<SpanData> siblings = childSpans.putIfAbsent(parentId.get(), newSiblings);
             if (siblings != null) {
                 siblings.add(spanData);
             }
         }
     }
 
-    public void addAnnotation(UUID spanId, AnnotationData data) {
+    public void addAnnotation(long spanId, AnnotationData data) {
         final LinkedList<AnnotationData> currentAnnotation = new LinkedList<>();
         currentAnnotation.add(data);
         List<AnnotationData> previousAnnotations = annotations.putIfAbsent(spanId, currentAnnotation);

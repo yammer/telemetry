@@ -1,17 +1,15 @@
 package com.yammer.telemetry.service.api;
 
-import java.util.UUID;
-
 public class Tree {
-    private final UUID id;
+    private final long id;
     private final TreeSpan root;
 
-    public Tree(UUID id, TreeSpan root) {
+    public Tree(long id, TreeSpan root) {
         this.id = id;
         this.root = root;
     }
 
-    public UUID getId() {
+    public long getId() {
         return id;
     }
 

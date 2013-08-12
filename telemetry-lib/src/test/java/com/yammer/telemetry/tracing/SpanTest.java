@@ -1,5 +1,6 @@
 package com.yammer.telemetry.tracing;
 
+import com.google.common.base.Optional;
 import org.junit.After;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
@@ -29,7 +30,7 @@ public class SpanTest {
         verify(sink).record(span);
 
         assertNotNull(span.getId());
-        assertNull(span.getParentId());
+        assertEquals(Optional.absent(), span.getParentId());
         assertEquals("testSpan", span.getName());
         assertTrue(span.getDuration() >= 0);
     }
@@ -56,7 +57,7 @@ public class SpanTest {
         outer.end();
         verify(sink).record(outer);
 
-        assertEquals(outer.getId(), inner.getParentId());
+        assertEquals(Optional.of(outer.getId()), inner.getParentId());
     }
 
     @Test
@@ -93,8 +94,8 @@ public class SpanTest {
 
         final List<Span> spans = captor.getAllValues();
         assertEquals(2, spans.size());
-        assertNull(spans.get(0).getParentId());
-        assertNull(spans.get(1).getParentId());
+        assertEquals(Optional.absent(), spans.get(0).getParentId());
+        assertEquals(Optional.absent(), spans.get(1).getParentId());
     }
 
     private class BarrierSpanRunner implements Runnable {
