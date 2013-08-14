@@ -32,13 +32,13 @@ public class InMemorySpanSinkSource implements SpanSink, SpanSource {
     }
 
     @Override
-    public void recordAnnotation(long traceId, long spanId, AnnotationData annotation) {
+    public void recordAnnotation(long traceId, long spanId, AnnotationData annotationData) {
         final Trace newTrace = new Trace(traceId);
-        newTrace.addAnnotation(spanId, annotation);
+        newTrace.addAnnotation(spanId, annotationData);
 
         final Trace trace = traces.putIfAbsent(traceId, newTrace);
         if (trace != null) {
-            trace.addAnnotation(spanId, annotation);
+            trace.addAnnotation(spanId, annotationData);
         }
     }
 }

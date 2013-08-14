@@ -1,40 +1,16 @@
 package com.yammer.telemetry.tracing;
 
-public class AnnotationData {
-    private long startTimeNanos;
-    private String name;
-    private String message;
+/**
+ * Created with IntelliJ IDEA.
+ * User: rkennedy
+ * Date: 8/13/13
+ * Time: 10:02 PM
+ * To change this template use File | Settings | File Templates.
+ */
+public interface AnnotationData {
+    long getStartTimeNanos();
 
-    private AnnotationData() { }
+    String getName();
 
-    public AnnotationData(long startTimeNanos, String name) {
-        this(startTimeNanos, name, null);
-    }
-
-    public AnnotationData(long startTimeNanos, String name, String message) {
-        this.startTimeNanos = startTimeNanos;
-        this.name = name;
-        this.message = message;
-    }
-
-    public long getStartTimeNanos() {
-        return startTimeNanos;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public String getMessage() {
-        return message;
-    }
-
-    @Override
-    public String toString() {
-        return "AnnotationData{" +
-                "startTimeNanos=" + startTimeNanos +
-                ", name='" + name + '\'' +
-                ", message='" + message + '\'' +
-                '}';
-    }
+    String getMessage();
 }

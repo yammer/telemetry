@@ -95,11 +95,11 @@ public class Span implements AutoCloseable, SpanData {
     }
 
     public void addAnnotation(String name) {
-        annotations.add(new AnnotationData(nowInNanoseconds(), name));
+        annotations.add(new Annotation(nowInNanoseconds(), name));
     }
 
     public void addAnnotation(String name, String message) {
-        annotations.add(new AnnotationData(nowInNanoseconds(), name, message));
+        annotations.add(new Annotation(nowInNanoseconds(), name, message));
     }
 
     public void end() {

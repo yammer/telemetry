@@ -5,6 +5,7 @@ import com.yammer.telemetry.tracing.SpanSink;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.validation.Valid;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
@@ -21,7 +22,7 @@ public class SpansResource {
     }
 
     @POST
-    public void logSpan(BeanSpanData span) {
+    public void logSpan(@Valid BeanSpanData span) {
         LOG.debug("Logging inbound span data: {}", span);
         sink.record(span);
     }

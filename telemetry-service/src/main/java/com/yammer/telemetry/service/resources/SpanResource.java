@@ -1,8 +1,9 @@
 package com.yammer.telemetry.service.resources;
 
-import com.yammer.telemetry.tracing.AnnotationData;
+import com.yammer.telemetry.service.models.BeanAnnotationData;
 import com.yammer.telemetry.tracing.SpanSink;
 
+import javax.validation.Valid;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
@@ -16,7 +17,9 @@ public class SpanResource {
     }
 
     @POST
-    public void logAnnotation(@PathParam("traceId") long traceId, @PathParam("spanId") long spanId, AnnotationData annotation) {
-        sink.recordAnnotation(traceId, spanId, annotation);
+    public void logAnnotation(@PathParam("traceId") long traceId,
+                              @PathParam("spanId") long spanId,
+                              @Valid BeanAnnotationData annotationData) {
+        sink.recordAnnotation(traceId, spanId, annotationData);
     }
 }

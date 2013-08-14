@@ -1,8 +1,10 @@
 package com.yammer.telemetry.service.models;
 
 import com.google.common.base.Optional;
+import com.yammer.dropwizard.json.JsonSnakeCase;
 import com.yammer.telemetry.tracing.SpanData;
 
+@JsonSnakeCase
 public class BeanSpanData implements SpanData {
     private long traceId;
     private long id;
