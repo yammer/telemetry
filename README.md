@@ -10,7 +10,7 @@ execution of the [TracedResource](telemetry-example/src/main/java/com/yammer/tel
 
 ## IDs
 
-Trace and span IDs will be expressed as [UUIDs](https://en.wikipedia.org/wiki/Universally_unique_identifier).
+Trace and span IDs will be expressed as 64-bit longs.
 
 ## Trace/Span Passing
 
