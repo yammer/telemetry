@@ -12,12 +12,11 @@ import com.sun.jersey.api.client.Client;
 import javax.ws.rs.core.MediaType;
 
 public class TelemetryServiceSpanSink implements SpanSink {
-    private final Client client;
     private final AsyncWebResource spansResource;
 
     public TelemetryServiceSpanSink(String host, int port) {
-        ClientConfig config = new DefaultClientConfig(JacksonJsonProvider.class);
-        this.client = Client.create(config);
+        final ClientConfig config = new DefaultClientConfig(JacksonJsonProvider.class);
+        final Client client = Client.create(config);
         this.spansResource = client.asyncResource("http://" + host + ":" + port + "/spans");
     }
 
@@ -32,7 +31,7 @@ public class TelemetryServiceSpanSink implements SpanSink {
     }
 
     @Override
-    public void recordAnnotation(long traceId, long spanId, AnnotationData annotation) {
-        spansResource.path(Long.toString(traceId)).path(Long.toString(spanId)).type(MediaType.APPLICATION_JSON).post(annotation);
+    public void recordAnnotation(long traceId, long spanId, AnnotationData annotationData) {
+        spansResource.path(Long.toString(traceId)).path(Long.toString(spanId)).type(MediaType.APPLICATION_JSON).post(annotationData);
     }
 }
