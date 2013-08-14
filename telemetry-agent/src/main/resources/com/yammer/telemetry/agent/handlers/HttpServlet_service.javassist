@@ -4,9 +4,9 @@
     final String traceId = $1.getHeader(HttpHeaderNames.TRACE_ID);
     final String spanId = $1.getHeader(HttpHeaderNames.SPAN_ID);
     if (traceId != null && spanId != null) {
-        UUID traceIdUuid = UUID.fromString(traceId);
-        UUID spanIdUuid = (spanId != null) ? UUID.fromString(spanId) : null;
-        span = Span.attachSpan(traceIdUuid, spanIdUuid);
+        long traceIdLong = Long.parseLong(traceId);
+        long spanIdLong = Long.parseLong(spanId);
+        span = Span.attachSpan(traceIdLong, spanIdLong);
     } else {
         span = Span.startTrace($1.getRequestURL().toString());
     }
