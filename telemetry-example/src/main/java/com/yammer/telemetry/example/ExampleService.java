@@ -1,10 +1,7 @@
 package com.yammer.telemetry.example;
 
-import com.yammer.dropwizard.config.Configuration;
-import com.yammer.dropwizard.db.ConfigurationStrategy;
 import com.yammer.dropwizard.db.DatabaseConfiguration;
 import com.yammer.dropwizard.hibernate.HibernateBundle;
-import com.yammer.dropwizard.migrations.DbCommand;
 import com.yammer.dropwizard.migrations.MigrationsBundle;
 import com.yammer.telemetry.example.core.Nap;
 import com.yammer.telemetry.example.db.NapDAO;
