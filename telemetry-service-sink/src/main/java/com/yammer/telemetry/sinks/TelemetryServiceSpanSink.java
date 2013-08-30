@@ -1,9 +1,11 @@
 package com.yammer.telemetry.sinks;
 
-import com.fasterxml.jackson.jaxrs.json.JacksonJsonProvider;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.guava.GuavaModule;
 import com.sun.jersey.api.client.AsyncWebResource;
-import com.sun.jersey.api.client.config.ClientConfig;
-import com.sun.jersey.api.client.config.DefaultClientConfig;
+import com.sun.jersey.client.apache4.config.DefaultApacheHttpClient4Config;
+import com.yammer.dropwizard.jersey.JacksonMessageBodyProvider;
+import com.yammer.dropwizard.validation.Validator;
 import com.yammer.telemetry.tracing.AnnotationData;
 import com.yammer.telemetry.tracing.SpanData;
 import com.yammer.telemetry.tracing.SpanSink;
@@ -15,7 +17,10 @@ public class TelemetryServiceSpanSink implements SpanSink {
     private final AsyncWebResource spansResource;
 
     public TelemetryServiceSpanSink(String host, int port) {
-        final ClientConfig config = new DefaultClientConfig(JacksonJsonProvider.class);
+        final DefaultApacheHttpClient4Config config = new DefaultApacheHttpClient4Config();
+        final ObjectMapper objectMapper = new ObjectMapper();
+        objectMapper.registerModule(new GuavaModule());
+        config.getSingletons().add(new JacksonMessageBodyProvider(objectMapper, new Validator()));
         final Client client = Client.create(config);
         this.spansResource = client.asyncResource("http://" + host + ":" + port + "/spans");
     }
