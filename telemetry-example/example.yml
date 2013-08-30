@@ -1,3 +1,6 @@
+proxyClient:
+  timeout: 10 seconds
+
 database:
   driverClass: org.h2.Driver
   user: sa

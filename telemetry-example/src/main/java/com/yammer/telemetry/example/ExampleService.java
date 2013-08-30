@@ -40,7 +40,7 @@ public class ExampleService extends Service<ExampleConfiguration> {
 
     @Override
     public void run(ExampleConfiguration configuration, Environment environment) throws Exception {
-        Client client = new JerseyClientBuilder().using(environment).build();
+        Client client = new JerseyClientBuilder().using(environment).using(configuration.getProxyClient()).build();
         environment.addResource(new ProxyResource(client));
 
         final NapDAO napDAO = new NapDAO(hibernate.getSessionFactory());
