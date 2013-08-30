@@ -11,8 +11,8 @@
 
     // Set the request headers to link up this client request with the corresponding
     // service request.
-    request.setHeader(HttpHeaderNames.TRACE_ID, span.getTraceId().toString());
-    request.setHeader(HttpHeaderNames.SPAN_ID, span.getId().toString());
+    request.setHeader(HttpHeaderNames.TRACE_ID, Long.toString(span.getTraceId()));
+    request.setHeader(HttpHeaderNames.SPAN_ID, Long.toString(span.getId()));
 
     if (host != null) {
         span.addAnnotation(AnnotationNames.FALLBACK_SERVICE_NAME, host.getHostName());
