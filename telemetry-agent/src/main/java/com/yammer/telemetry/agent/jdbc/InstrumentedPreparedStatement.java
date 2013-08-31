@@ -1,5 +1,7 @@
 package com.yammer.telemetry.agent.jdbc;
 
+import com.yammer.telemetry.tracing.Span;
+
 import java.io.InputStream;
 import java.io.Reader;
 import java.math.BigDecimal;
@@ -10,19 +12,23 @@ import java.util.Calendar;
 public class InstrumentedPreparedStatement extends InstrumentedStatement implements PreparedStatement {
     private final PreparedStatement underlying;
 
-    public InstrumentedPreparedStatement(InstrumentedConnection connection, PreparedStatement underlying) {
-        super(connection, underlying);
+    public InstrumentedPreparedStatement(InstrumentedConnection connection, PreparedStatement underlying, String sql) {
+        super(connection, underlying, sql);
         this.underlying = underlying;
     }
 
     @Override
     public ResultSet executeQuery() throws SQLException {
-        return underlying.executeQuery();
+        try (Span span = Span.startSpan("Execute Query: " + getSql())) {
+            return underlying.executeQuery();
+        }
     }
 
     @Override
     public int executeUpdate() throws SQLException {
-        return underlying.executeUpdate();
+        try (Span span = Span.startSpan("Execute Update: " + getSql())) {
+            return underlying.executeUpdate();
+        }
     }
 
     @Override
@@ -127,7 +133,9 @@ public class InstrumentedPreparedStatement extends InstrumentedStatement impleme
 
     @Override
     public boolean execute() throws SQLException {
-        return underlying.execute();
+        try (Span span = Span.startSpan("Execute: " + getSql())) {
+            return underlying.execute();
+        }
     }
 
     @Override
