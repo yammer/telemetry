@@ -12,6 +12,7 @@ import com.yammer.telemetry.tracing.SpanSink;
 import com.sun.jersey.api.client.Client;
 
 import javax.ws.rs.core.MediaType;
+import java.net.URI;
 
 public class TelemetryServiceSpanSink implements SpanSink {
     private final AsyncWebResource spansResource;
@@ -38,5 +39,9 @@ public class TelemetryServiceSpanSink implements SpanSink {
     @Override
     public void recordAnnotation(long traceId, long spanId, AnnotationData annotationData) {
         spansResource.path(Long.toString(traceId)).path(Long.toString(spanId)).type(MediaType.APPLICATION_JSON).post(annotationData);
+    }
+
+    public URI getBaseUri() {
+        return spansResource.getURI();
     }
 }

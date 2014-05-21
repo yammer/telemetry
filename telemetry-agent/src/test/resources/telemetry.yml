@@ -1,0 +1,13 @@
+instruments:
+- inbound-http
+- outbound-http
+- database
+
+sinks:
+  telemetry:
+    enabled: true
+    host: localhost
+    port: 9090
+
+annotations:
+  service: example

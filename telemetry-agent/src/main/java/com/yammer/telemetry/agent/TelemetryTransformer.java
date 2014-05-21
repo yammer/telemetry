@@ -1,5 +1,6 @@
 package com.yammer.telemetry.agent;
 
+import com.google.common.collect.ImmutableSet;
 import com.yammer.telemetry.agent.handlers.ClassInstrumentationHandler;
 import javassist.*;
 
@@ -48,5 +49,9 @@ public class TelemetryTransformer implements ClassFileTransformer {
             t.printStackTrace();
             throw t;
         }
+    }
+
+    Set<ClassInstrumentationHandler> getHandlers() {
+        return ImmutableSet.copyOf(handlers);
     }
 }
