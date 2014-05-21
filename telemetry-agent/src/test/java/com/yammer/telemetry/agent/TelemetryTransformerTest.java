@@ -1,9 +1,12 @@
 package com.yammer.telemetry.agent;
 
 import com.yammer.telemetry.agent.handlers.ClassInstrumentationHandler;
+import com.yammer.telemetry.agent.handlers.SubTypeInstrumentationHandler;
 import com.yammer.telemetry.agent.test.TransformingClassLoader;
 import javassist.*;
 import org.junit.Test;
+
+import java.io.IOException;
 
 import static com.yammer.telemetry.agent.TelemetryTransformerTest.ClassUtils.wrapMethod;
 import static org.junit.Assert.*;
@@ -45,12 +48,9 @@ public class TelemetryTransformerTest {
     @Test
     public void testModificationViaClassLoader() throws Exception {
         TelemetryTransformer transformer = new TelemetryTransformer();
-        transformer.addHandler(new ClassInstrumentationHandler() {
+        transformer.addHandler(new SubTypeInstrumentationHandler("com.yammer.telemetry.agent.test.SimpleBean") {
             @Override
-            public boolean transformed(CtClass cc, ClassPool pool) {
-                //noinspection SimplifiableIfStatement
-                if (!"com.yammer.telemetry.agent.test.SimpleBean".equals(cc.getName())) return false;
-
+            protected boolean transform(CtClass cc, ClassPool pool) throws NotFoundException, CannotCompileException, IOException {
                 return wrapMethod(cc, "getValue", "{ return $proceed() + \"bar\"; }");
             }
         });
