@@ -72,9 +72,6 @@ public class TelemetryAgentTest {
 
     @Test
     public void validArgsAddsServiceAnnotations() throws Exception {
-        File f = new File("src/test/resources/telemetry.yml");
-        System.out.println("><><>< " + f.getAbsolutePath() + " ><><><><");
-
         TelemetryAgent.agentmain("src/test/resources/telemetry.yml", instrumentation);
 
         assertEquals("example", Annotations.getServiceAnnotations().getService());
