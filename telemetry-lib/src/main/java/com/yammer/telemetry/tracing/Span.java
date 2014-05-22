@@ -2,6 +2,7 @@ package com.yammer.telemetry.tracing;
 
 import com.google.common.base.Optional;
 
+import java.math.BigInteger;
 import java.util.*;
 import java.util.logging.Logger;
 
@@ -15,9 +16,9 @@ public class Span implements AutoCloseable, SpanData {
     private static final Random ID_GENERATOR = new Random(System.currentTimeMillis());
     private static final ThreadLocal<SpanContext> spanContext = new ThreadLocal<>();
 
-    private final long traceId;
-    private final Optional<Long> parentId;
-    private final long id;
+    private final BigInteger traceId;
+    private final Optional<BigInteger> parentId;
+    private final BigInteger id;
     private final String name;
     private final long startTimeNanos;
     private long duration;
@@ -31,7 +32,7 @@ public class Span implements AutoCloseable, SpanData {
      * @return The root span of the newly created trace.
      */
     public static Span startTrace(String name) {
-        return start(name, Optional.<Long>absent(), Optional.<Long>absent(), Optional.<Long>absent(), true);
+        return start(name, Optional.<BigInteger>absent(), Optional.<BigInteger>absent(), Optional.<BigInteger>absent(), true);
     }
 
     /**
@@ -42,7 +43,7 @@ public class Span implements AutoCloseable, SpanData {
      * @return The newly started span.
      */
     public static Span startSpan(String name) {
-        return start(name, Optional.<Long>absent(), Optional.<Long>absent(), Optional.<Long>absent(), true);
+        return start(name, Optional.<BigInteger>absent(), Optional.<BigInteger>absent(), Optional.<BigInteger>absent(), true);
     }
 
     /**
@@ -53,11 +54,11 @@ public class Span implements AutoCloseable, SpanData {
      * @param spanId ID of the span being attached.
      * @return The attached span.
      */
-    public static Span attachSpan(long traceId, long spanId) {
-        return start(null, Optional.of(traceId), Optional.of(spanId), Optional.<Long>absent(), false);
+    public static Span attachSpan(BigInteger traceId, BigInteger spanId) {
+        return start(null, Optional.of(traceId), Optional.of(spanId), Optional.<BigInteger>absent(), false);
     }
 
-    private static Span start(String name, Optional<Long> traceId, Optional<Long> spanId, Optional<Long> parentSpanId, boolean logSpan) {
+    private static Span start(String name, Optional<BigInteger> traceId, Optional<BigInteger> spanId, Optional<BigInteger> parentSpanId, boolean logSpan) {
         SpanContext context = spanContext.get();
         if (context == null) {
             context = new SpanContext();
@@ -83,7 +84,7 @@ public class Span implements AutoCloseable, SpanData {
         return span;
     }
 
-    private Span(long traceId, long id, Optional<Long> parentId, String name, long startTimeNanos, long startNanos, boolean logSpan) {
+    private Span(BigInteger traceId, BigInteger id, Optional<BigInteger> parentId, String name, long startTimeNanos, long startNanos, boolean logSpan) {
         this.traceId = traceId;
         this.parentId = parentId;
         this.id = id;
@@ -130,15 +131,15 @@ public class Span implements AutoCloseable, SpanData {
         end();
     }
 
-    public long getTraceId() {
+    public BigInteger getTraceId() {
         return traceId;
     }
 
-    public long getId() {
+    public BigInteger getId() {
         return id;
     }
 
-    public Optional<Long> getParentId() {
+    public Optional<BigInteger> getParentId() {
         return parentId;
     }
 
@@ -154,8 +155,8 @@ public class Span implements AutoCloseable, SpanData {
         return duration;
     }
 
-    private static long generateSpanId() {
-        return ID_GENERATOR.nextLong();
+    private static BigInteger generateSpanId() {
+        return new BigInteger(64, ID_GENERATOR);
     }
 
     private static class SpanContext {
@@ -165,7 +166,7 @@ public class Span implements AutoCloseable, SpanData {
             spans = new Stack<>();
         }
 
-        public Optional<Long> currentTraceId() {
+        public Optional<BigInteger> currentTraceId() {
             if (spans.isEmpty()) {
                 return Optional.absent();
             } else {
@@ -173,7 +174,7 @@ public class Span implements AutoCloseable, SpanData {
             }
         }
 
-        public Optional<Long> currentSpanId() {
+        public Optional<BigInteger> currentSpanId() {
             if (spans.isEmpty()) {
                 return Optional.absent();
             } else {
@@ -189,7 +190,7 @@ public class Span implements AutoCloseable, SpanData {
             Span poppedSpan = spans.pop();
 
             int extraPops = 0;
-            while (poppedSpan.getId() != span.getId()) {
+            while (!poppedSpan.getId().equals(span.getId())) {
                 extraPops++;
                 poppedSpan = spans.pop();
             }

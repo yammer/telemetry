@@ -1,8 +1,6 @@
 package com.yammer.telemetry.agent.handlers;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Function;
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 import com.yammer.telemetry.agent.Annotations;
@@ -13,7 +11,6 @@ import com.yammer.telemetry.tracing.*;
 import javassist.ClassPool;
 import javassist.CtClass;
 import org.junit.After;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import javax.servlet.ServletRequest;
@@ -23,7 +20,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.lang.reflect.Method;
-import java.util.List;
+import java.math.BigInteger;
 import java.util.Set;
 
 import static org.junit.Assert.*;
@@ -145,9 +142,9 @@ public class HttpServletClassHandlerTest {
         Trace trace = sink.getTraces().iterator().next();
 
 //        assertEquals(trace.getId(), trace.getRoot().getTraceId());
-        assertEquals(1, trace.getId());
+        assertEquals(new BigInteger("1"), trace.getId());
         assertNull(trace.getRoot()); // we didn't have the root captured..
-        SpanData spanData = when(mock(SpanData.class).getId()).thenReturn(2L).getMock();
+        SpanData spanData = when(mock(SpanData.class).getId()).thenReturn(new BigInteger("2")).getMock();
         assertTrue(trace.getChildren(spanData).isEmpty());
         // TODO - if this is a list we get duplicates, which means we've instrumented multiple times?
         Set<String> annotationNames = ImmutableSet.copyOf(Iterables.transform(trace.getAnnotations(spanData), new Function<AnnotationData, String>() {

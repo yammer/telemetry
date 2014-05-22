@@ -2,6 +2,7 @@ package com.yammer.telemetry.tracing;
 
 import com.google.common.base.Optional;
 
+import java.math.BigInteger;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
@@ -9,20 +10,20 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 public class Trace {
-    private final long id;
-    private final ConcurrentMap<Long, List<SpanData>> childSpans;
-    private final ConcurrentMap<Long, List<AnnotationData>> annotations;
+    private final BigInteger id;
+    private final ConcurrentMap<BigInteger, List<SpanData>> childSpans;
+    private final ConcurrentMap<BigInteger, List<AnnotationData>> annotations;
     private SpanData root = null;
     private long startTimeNanos = Long.MAX_VALUE;
     private long duration = 0;
 
-    public Trace(long id) {
+    public Trace(BigInteger id) {
         this.id = id;
         this.childSpans = new ConcurrentHashMap<>();
         this.annotations = new ConcurrentHashMap<>();
     }
 
-    public long getId() {
+    public BigInteger getId() {
         return id;
     }
 
@@ -50,7 +51,7 @@ public class Trace {
         startTimeNanos = Math.min(startTimeNanos, spanData.getStartTimeNanos());
         duration = Math.max(duration, spanData.getStartTimeNanos() + spanData.getDuration());
 
-        final Optional<Long> parentId = spanData.getParentId();
+        final Optional<BigInteger> parentId = spanData.getParentId();
         if (!parentId.isPresent()) {
             this.root = spanData;
         } else {
@@ -64,7 +65,7 @@ public class Trace {
         }
     }
 
-    public void addAnnotation(long spanId, AnnotationData data) {
+    public void addAnnotation(BigInteger spanId, AnnotationData data) {
         final LinkedList<AnnotationData> currentAnnotation = new LinkedList<>();
         currentAnnotation.add(data);
         List<AnnotationData> previousAnnotations = annotations.putIfAbsent(spanId, currentAnnotation);

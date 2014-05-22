@@ -1,15 +1,17 @@
 package com.yammer.telemetry.service.api;
 
+import java.math.BigInteger;
+
 public class Tree {
-    private final long id;
+    private final BigInteger id;
     private final TreeSpan root;
 
-    public Tree(long id, TreeSpan root) {
+    public Tree(BigInteger id, TreeSpan root) {
         this.id = id;
         this.root = root;
     }
 
-    public long getId() {
+    public BigInteger getId() {
         return id;
     }
 

@@ -4,8 +4,8 @@
     final String traceId = $1.getHeader(HttpHeaderNames.TRACE_ID);
     final String spanId = $1.getHeader(HttpHeaderNames.SPAN_ID);
     if (traceId != null && spanId != null) {
-        long traceIdLong = Long.parseLong(traceId);
-        long spanIdLong = Long.parseLong(spanId);
+        BigInteger traceIdLong = new BigInteger(traceId);
+        BigInteger spanIdLong = new BigInteger(spanId);
         span = Span.attachSpan(traceIdLong, spanIdLong);
     } else {
         span = Span.startTrace($1.getRequestURL().toString());

@@ -31,6 +31,7 @@ public class HttpServletClassHandler extends SubTypeInstrumentationHandler {
         // Swap in a new method body for service() that invokes the copied version of service().
         final String source = Resources.toString(Resources.getResource(getClass(), "HttpServlet_service.javassist"), Charset.forName("utf-8"));
         pool.importPackage("java.util");
+        pool.importPackage("java.math");
         pool.importPackage("com.yammer.telemetry.agent");
         pool.importPackage("com.yammer.telemetry.agent.handlers");
         pool.importPackage("com.yammer.telemetry.tracing");

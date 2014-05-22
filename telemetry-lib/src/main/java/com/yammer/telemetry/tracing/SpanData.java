@@ -2,12 +2,14 @@ package com.yammer.telemetry.tracing;
 
 import com.google.common.base.Optional;
 
+import java.math.BigInteger;
+
 public interface SpanData {
-    long getTraceId();
+    BigInteger getTraceId();
 
-    long getId();
+    BigInteger getId();
 
-    Optional<Long> getParentId();
+    Optional<BigInteger> getParentId();
 
     String getName();
 

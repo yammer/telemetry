@@ -1,7 +1,7 @@
 <#-- @ftlvariable name="" type="com.yammer.telemetry.service.views.TraceView" -->
 <html>
 <head>
-    <title>Trace - ${trace.root.name}</title>
+    <title>Trace - <@traceName trace=trace/></title>
     <style>
         .trace {
             width: 100%;
@@ -29,10 +29,14 @@
     </script>
 </head>
 <body>
-<h1>Trace - ${trace.root.name}</h1>
+<h1>Trace - <@traceName trace=trace/></h1>
 <div id="trace-${trace.id}" class="trace">
     (start = ${trace.startTimeNanos} ; duration = ${trace.duration})
-    <@renderSpan span=trace.root trace=trace/>
+    <#if trace.root??>
+        <@renderSpan span=trace.root trace=trace/>
+    <#else>
+        <@renderAnnotations trace=trace/>
+    </#if>
 </div>
 </body>
 </html>
@@ -49,4 +53,14 @@
 <#list trace.getChildren(span) as child>
     <@renderSpan span=child trace=trace/>
 </#list>
+</#macro>
+
+<#macro renderAnnotations trace>
+<#-- @ftlvariable name="trace" type="com.yammer.telemetry.tracing.Trace" -->
+    <div>Unable to render trace with no spans.</div>
+</#macro>
+
+<#macro traceName trace>
+<#-- @ftlvariable name="trace" type="com.yammer.telemetry.tracing.Trace" -->
+<#if trace.root??>${trace.root.name}<#else>Unknown</#if>
 </#macro>

@@ -3,10 +3,12 @@ package com.yammer.telemetry.service.models;
 import com.google.common.base.Optional;
 import com.yammer.telemetry.tracing.SpanData;
 
+import java.math.BigInteger;
+
 public class BeanSpanData implements SpanData {
-    private long traceId;
-    private long id;
-    private Optional<Long> parentId;
+    private BigInteger traceId;
+    private BigInteger id;
+    private Optional<BigInteger> parentId;
     private String name;
     private long startTimeNanos;
     private long duration;
@@ -14,17 +16,17 @@ public class BeanSpanData implements SpanData {
     private BeanSpanData() { }
 
     @Override
-    public long getTraceId() {
+    public BigInteger getTraceId() {
         return traceId;
     }
 
     @Override
-    public long getId() {
+    public BigInteger getId() {
         return id;
     }
 
     @Override
-    public Optional<Long> getParentId() {
+    public Optional<BigInteger> getParentId() {
         return parentId;
     }
 
