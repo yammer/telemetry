@@ -40,10 +40,16 @@ public class Trace {
     }
 
     public List<SpanData> getChildren(SpanData spanData) {
+        if (spanData == null) {
+            return Collections.emptyList();
+        }
         return Optional.fromNullable(childSpans.get(spanData.getId())).or(Collections.<SpanData>emptyList());
     }
 
     public List<AnnotationData> getAnnotations(SpanData spanData) {
+        if (spanData == null) {
+            return Collections.emptyList();
+        }
         return Optional.fromNullable(annotations.get(spanData.getId())).or(Collections.<AnnotationData>emptyList());
     }
 
