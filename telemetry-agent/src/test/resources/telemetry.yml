@@ -8,6 +8,9 @@ sinks:
     enabled: true
     host: localhost
     port: 9090
+  log:
+    enabled: true
+    file: example-telemetry.log
 
 annotations:
   service: example

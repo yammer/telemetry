@@ -2,3 +2,4 @@
 target
 *.iml
 *.gem
+telemetry-agent/example-telemetry.log

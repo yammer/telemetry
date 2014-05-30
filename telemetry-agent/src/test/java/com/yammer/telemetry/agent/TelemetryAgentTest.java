@@ -9,22 +9,19 @@ import com.yammer.telemetry.agent.handlers.ClassInstrumentationHandler;
 import com.yammer.telemetry.agent.handlers.HttpServletClassHandler;
 import com.yammer.telemetry.agent.jdbc.JdbcDriverClassHandler;
 import com.yammer.telemetry.sinks.TelemetryServiceSpanSink;
+import com.yammer.telemetry.tracing.AsynchronousSpanSink;
 import com.yammer.telemetry.tracing.SpanSink;
 import com.yammer.telemetry.tracing.SpanSinkRegistry;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 
-import javax.annotation.Nullable;
-import java.io.File;
-import java.io.FileNotFoundException;
 import java.lang.instrument.ClassFileTransformer;
 import java.lang.instrument.Instrumentation;
 import java.net.URI;
 import java.util.List;
 import java.util.Set;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
 
 public class TelemetryAgentTest {
@@ -82,9 +79,12 @@ public class TelemetryAgentTest {
         TelemetryAgent.agentmain("src/test/resources/telemetry.yml", instrumentation);
 
         ImmutableList<SpanSink> registeredSinks = ImmutableList.copyOf(SpanSinkRegistry.getSpanSinks());
-        assertEquals(1, registeredSinks.size());
+        assertEquals(2, registeredSinks.size());
 
         TelemetryServiceSpanSink telemetrySink = (TelemetryServiceSpanSink) registeredSinks.get(0);
         assertEquals(URI.create("http://localhost:9090/spans"), telemetrySink.getBaseUri());
+
+        // todo - improve this test
+        assertTrue(registeredSinks.get(1) instanceof AsynchronousSpanSink);
     }
 }

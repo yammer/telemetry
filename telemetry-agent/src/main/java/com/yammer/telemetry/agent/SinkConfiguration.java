@@ -2,6 +2,7 @@ package com.yammer.telemetry.agent;
 
 public class SinkConfiguration {
     private TelemetryServiceConfiguration telemetry = new TelemetryServiceConfiguration();
+    private LogConfiguration log = new LogConfiguration();
 
     public SinkConfiguration() {
     }
@@ -10,7 +11,9 @@ public class SinkConfiguration {
         return telemetry;
     }
 
+    public LogConfiguration getLog() { return log; }
+
     public boolean isEnabled() {
-        return telemetry.isEnabled();
+        return telemetry.isEnabled() || log.isEnabled();
     }
 }
