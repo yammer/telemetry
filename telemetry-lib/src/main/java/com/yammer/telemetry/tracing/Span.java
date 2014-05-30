@@ -1,6 +1,7 @@
 package com.yammer.telemetry.tracing;
 
 import com.google.common.base.Optional;
+import com.google.common.collect.ImmutableList;
 
 import java.math.BigInteger;
 import java.util.*;
@@ -46,16 +47,30 @@ public class Span implements AutoCloseable, SpanData {
         return start(name, Optional.<BigInteger>absent(), Optional.<BigInteger>absent(), Optional.<BigInteger>absent(), true);
     }
 
+//    /**
+//     * Attach to an existing span. This is useful when a span has been created elsewhere
+//     * (probably on another host) and you'd like to log annotations against that span locally.
+//     *
+//     * @param traceId ID of the trace of the span being attached.
+//     * @param spanId ID of the span being attached.
+//     * @return The attached span.
+//     */
+//    @Deprecated
+//    public static Span attachSpan(BigInteger traceId, BigInteger spanId) {
+//        return attachSpan(traceId, spanId, null);
+//    }
+
     /**
      * Attach to an existing span. This is useful when a span has been created elsewhere
      * (probably on another host) and you'd like to log annotations against that span locally.
      *
      * @param traceId ID of the trace of the span being attached.
-     * @param spanId ID of the span being attached.
+     * @param spanId  ID of the span being attached.
+     * @param name    Name for the span - useful for debug
      * @return The attached span.
      */
-    public static Span attachSpan(BigInteger traceId, BigInteger spanId) {
-        return start(null, Optional.of(traceId), Optional.of(spanId), Optional.<BigInteger>absent(), false);
+    public static Span attachSpan(BigInteger traceId, BigInteger spanId, String name) {
+        return start(name, Optional.of(traceId), Optional.of(spanId), Optional.<BigInteger>absent(), false);
     }
 
     private static Span start(String name, Optional<BigInteger> traceId, Optional<BigInteger> spanId, Optional<BigInteger> parentSpanId, boolean logSpan) {
@@ -104,19 +119,21 @@ public class Span implements AutoCloseable, SpanData {
     }
 
     public void end() {
-        if (logSpan) {
-            duration = System.nanoTime() - duration;
+        duration = System.nanoTime() - duration;
 
-            SpanContext context = spanContext.get();
-            if (context != null) {
-                final Iterable<SpanSink> sinks = SpanSinkRegistry.getSpanSinks();
-                context.endSpan(this);
+        // we need to ensure this span context is ended even if it's not being logged,
+        // otherwise we risk pollution of the context for subsequent operations.
+        SpanContext context = spanContext.get();
+        if (context != null) {
+            final Iterable<SpanSink> sinks = SpanSinkRegistry.getSpanSinks();
+            context.endSpan(this);
+            if (logSpan) {
                 for (SpanSink sink : sinks) {
                     sink.record(this);
                 }
-            } else {
-                throw new IllegalStateException("Span.end() from a detached span.");
             }
+        } else {
+            throw new IllegalStateException("Span.end() from a detached span.");
         }
 
         for (SpanSink sink : SpanSinkRegistry.getSpanSinks()) {
@@ -124,6 +141,20 @@ public class Span implements AutoCloseable, SpanData {
                 sink.recordAnnotation(getTraceId(), getId(), annotation);
             }
         }
+    }
+
+    /**
+     * This is available for testing to allow checking before and after states are as expected on the span context.
+     *
+     * @return an immutable list of the current state of spans in the thread local context.
+     */
+    static ImmutableList<Span> captureSpans() {
+        SpanContext context = spanContext.get();
+        if (context != null) {
+            return ImmutableList.copyOf(context.spans);
+        }
+
+        return ImmutableList.of();
     }
 
     @Override

@@ -6,7 +6,7 @@
     if (traceId != null && spanId != null) {
         BigInteger traceIdLong = new BigInteger(traceId);
         BigInteger spanIdLong = new BigInteger(spanId);
-        span = Span.attachSpan(traceIdLong, spanIdLong);
+        span = Span.attachSpan(traceIdLong, spanIdLong, $1.getRequestURL().toString());
     } else {
         span = Span.startTrace($1.getRequestURL().toString());
     }

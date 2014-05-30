@@ -1,6 +1,7 @@
 package com.yammer.telemetry.tracing;
 
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
@@ -11,6 +12,9 @@ public class TraceTest {
     private Span foo;
     private Span bar;
     private Span baz;
+
+    @Rule
+    public SpanContextRule spanContextRule = new SpanContextRule();
 
     @Before
     public void setUp() {
