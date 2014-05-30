@@ -20,16 +20,19 @@ public class SpanUsageTest {
     public SpanContextRule spanContextRule = new SpanContextRule();
 
     private InMemorySpanSinkSource sink;
+    private Sampling defaultSampler;
 
     @Before
     public void setUp() throws Exception {
         sink = new InMemorySpanSinkSource();
         SpanSinkRegistry.register(sink);
+        defaultSampler = Span.getSampler();
     }
 
     @After
     public void tearDown() {
         SpanSinkRegistry.clear();
+        Span.setSampler(defaultSampler);
     }
 
     @Test
@@ -82,6 +85,121 @@ public class SpanUsageTest {
                 return input.getName() + message;
             }
         })));
+    }
+
+    @Test(expected = NullPointerException.class)
+    public void testCannotAttachWithoutTraceId() {
+        Span.attachSpan(null, BigInteger.ONE, "name");
+    }
+
+    @Test(expected = NullPointerException.class)
+    public void testCannotAttachWithoutSpanId() {
+        Span.attachSpan(BigInteger.ONE, null, "name");
+    }
+
+    @Test(expected = NullPointerException.class)
+    public void testCannotAttachWithoutTraceAndSpanIds() {
+        Span.attachSpan(null, null, "name");
+    }
+
+    @Test
+    public void testDefaultSamplerIsOn() {
+        assertEquals(Sampling.ON, defaultSampler);
+    }
+
+    @Test
+    public void testStartTraceRecordsWhenSamplingIsOn() {
+        Span.setSampler(Sampling.ON);
+        Span trace = Span.startTrace("Foof");
+        trace.end();
+
+        assertFalse(sink.getTraces().isEmpty());
+    }
+
+    @Test
+    public void testStartTraceRecordsNothingWhenSamplingIsOff() {
+        Span.setSampler(Sampling.OFF);
+        Span trace = Span.startTrace("Foof");
+        trace.end();
+
+        assertTrue(sink.getTraces().isEmpty());
+    }
+
+    @Test
+    public void testStartSpanRecordsWhenSamplingIsOn() {
+        Span.setSampler(Sampling.ON);
+        Span trace = Span.startSpan("Foof");
+        trace.end();
+
+        assertFalse(sink.getTraces().isEmpty());
+    }
+
+    @Test
+    public void testStartSpanRecordsNothingWhenSamplingIsOff() {
+        Span.setSampler(Sampling.OFF);
+        Span trace = Span.startSpan("Foof");
+        trace.end();
+
+        assertTrue(sink.getTraces().isEmpty());
+    }
+
+    @Test
+    public void testSpanRecordsAfterAttachSpanIfSamplingIsOn() {
+        Span.setSampler(Sampling.ON);
+        Span foof = Span.attachSpan(BigInteger.ONE, BigInteger.TEN, "Foof");
+        Span subFoof = Span.startSpan("SubFoof");
+        subFoof.addAnnotation("A");
+        subFoof.end();
+        foof.end();
+
+        assertEquals(1, sink.getTraces().size());
+        Trace trace = sink.getTrace(BigInteger.ONE);
+        assertNull(trace.getRoot());
+        assertEquals(ImmutableList.<SpanData>of(subFoof), trace.getChildren(foof));
+    }
+
+    @Test
+    public void testSpanRecordsAfterAttachSpanEvenIfSamplingIsOff() {
+        Span.setSampler(Sampling.OFF);
+        Span foof = Span.attachSpan(BigInteger.ONE, BigInteger.TEN, "Foof");
+        Span subFoof = Span.startSpan("SubFoof");
+        subFoof.addAnnotation("A");
+        subFoof.end();
+        foof.end();
+
+        assertEquals(1, sink.getTraces().size());
+        Trace trace = sink.getTrace(BigInteger.ONE);
+        assertNull(trace.getRoot());
+        assertEquals(ImmutableList.<SpanData>of(subFoof), trace.getChildren(foof));
+    }
+
+    @Test
+    public void testSpanRecordsAfterStartTraceIfSamplingIsOn() {
+        Span.setSampler(Sampling.ON);
+        Span foof = Span.startTrace("Foof");
+        Span subFoof = Span.startSpan("SubFoof");
+        subFoof.addAnnotation("A");
+        subFoof.end();
+        foof.end();
+
+        assertEquals(1, sink.getTraces().size());
+        Trace trace = sink.getTrace(foof.getTraceId());
+        assertEquals(foof, trace.getRoot());
+        assertEquals(ImmutableList.<SpanData>of(subFoof), trace.getChildren(foof));
+    }
+
+    @Test
+    public void testSpanDoesNotRecordAfterStartTraceIfSamplingIsOff() {
+        Span.setSampler(Sampling.OFF);
+        Span foof = Span.startTrace("Foof");
+        Span subFoof = Span.startSpan("SubFoof");
+        subFoof.addAnnotation("A");
+        subFoof.end();
+        foof.end();
+
+        assertEquals(0, sink.getTraces().size());
+        Trace trace = sink.getTrace(foof.getTraceId());
+        assertNull(trace);
     }
 
     private Trace testSpan(Strategy strategy) {

@@ -17,6 +17,8 @@ public class Span implements AutoCloseable, SpanData {
     private static final Random ID_GENERATOR = new Random(System.currentTimeMillis());
     private static final ThreadLocal<SpanContext> spanContext = new ThreadLocal<>();
 
+    private static Sampling sampler = Sampling.ON;
+
     private final BigInteger traceId;
     private final Optional<BigInteger> parentId;
     private final BigInteger id;
@@ -24,6 +26,7 @@ public class Span implements AutoCloseable, SpanData {
     private final long startTimeNanos;
     private long duration;
     private final boolean logSpan;
+    private final TraceLevel traceLevel;
     private final List<AnnotationData> annotations;
 
     /**
@@ -33,7 +36,7 @@ public class Span implements AutoCloseable, SpanData {
      * @return The root span of the newly created trace.
      */
     public static Span startTrace(String name) {
-        return start(name, Optional.<BigInteger>absent(), Optional.<BigInteger>absent(), Optional.<BigInteger>absent(), true);
+        return start(name, Optional.<BigInteger>absent(), Optional.<BigInteger>absent(), Optional.<BigInteger>absent(), true, sampler.trace() ? TraceLevel.ON : TraceLevel.OFF);
     }
 
     /**
@@ -44,7 +47,7 @@ public class Span implements AutoCloseable, SpanData {
      * @return The newly started span.
      */
     public static Span startSpan(String name) {
-        return start(name, Optional.<BigInteger>absent(), Optional.<BigInteger>absent(), Optional.<BigInteger>absent(), true);
+        return start(name, Optional.<BigInteger>absent(), Optional.<BigInteger>absent(), Optional.<BigInteger>absent(), true, TraceLevel.INHERIT);
     }
 
     /**
@@ -57,10 +60,10 @@ public class Span implements AutoCloseable, SpanData {
      * @return The attached span.
      */
     public static Span attachSpan(BigInteger traceId, BigInteger spanId, String name) {
-        return start(name, Optional.of(traceId), Optional.of(spanId), Optional.<BigInteger>absent(), false);
+        return start(name, Optional.of(traceId), Optional.of(spanId), Optional.<BigInteger>absent(), false, TraceLevel.ON);
     }
 
-    private static Span start(String name, Optional<BigInteger> traceId, Optional<BigInteger> spanId, Optional<BigInteger> parentSpanId, boolean logSpan) {
+    private static Span start(String name, Optional<BigInteger> traceId, Optional<BigInteger> spanId, Optional<BigInteger> parentSpanId, boolean logSpan, TraceLevel traceLevel) {
         SpanContext context = spanContext.get();
         if (context == null) {
             context = new SpanContext();
@@ -81,12 +84,17 @@ public class Span implements AutoCloseable, SpanData {
         if (!spanId.isPresent()) {
             spanId = Optional.of(generateSpanId());
         }
-        final Span span = new Span(traceId.get(), spanId.get(), parentSpanId, name, nowInNanoseconds(), System.nanoTime(), logSpan);
+
+        if (traceLevel == TraceLevel.INHERIT) {
+            traceLevel = context.currentTraceLevel();
+        }
+
+        final Span span = new Span(traceId.get(), spanId.get(), parentSpanId, name, nowInNanoseconds(), System.nanoTime(), logSpan, traceLevel);
         context.startSpan(span);
         return span;
     }
 
-    private Span(BigInteger traceId, BigInteger id, Optional<BigInteger> parentId, String name, long startTimeNanos, long startNanos, boolean logSpan) {
+    private Span(BigInteger traceId, BigInteger id, Optional<BigInteger> parentId, String name, long startTimeNanos, long startNanos, boolean logSpan, TraceLevel traceLevel) {
         this.traceId = traceId;
         this.parentId = parentId;
         this.id = id;
@@ -94,6 +102,7 @@ public class Span implements AutoCloseable, SpanData {
         this.startTimeNanos = startTimeNanos;
         this.duration = startNanos;
         this.logSpan = logSpan;
+        this.traceLevel = traceLevel;
         this.annotations = new LinkedList<>();
     }
 
@@ -114,7 +123,7 @@ public class Span implements AutoCloseable, SpanData {
         if (context != null) {
             final Iterable<SpanSink> sinks = SpanSinkRegistry.getSpanSinks();
             context.endSpan(this);
-            if (logSpan) {
+            if (logSpan && traceLevel == TraceLevel.ON) {
                 for (SpanSink sink : sinks) {
                     sink.record(this);
                 }
@@ -123,9 +132,11 @@ public class Span implements AutoCloseable, SpanData {
             throw new IllegalStateException("Span.end() from a detached span.");
         }
 
-        for (SpanSink sink : SpanSinkRegistry.getSpanSinks()) {
-            for (AnnotationData annotation : annotations) {
-                sink.recordAnnotation(getTraceId(), getId(), annotation);
+        if (traceLevel == TraceLevel.ON) {
+            for (SpanSink sink : SpanSinkRegistry.getSpanSinks()) {
+                for (AnnotationData annotation : annotations) {
+                    sink.recordAnnotation(getTraceId(), getId(), annotation);
+                }
             }
         }
     }
@@ -177,6 +188,14 @@ public class Span implements AutoCloseable, SpanData {
         return new BigInteger(64, ID_GENERATOR);
     }
 
+    public static Sampling getSampler() {
+        return sampler;
+    }
+
+    public static void setSampler(Sampling sampler) {
+        Span.sampler = sampler;
+    }
+
     private static class SpanContext {
         private final Stack<Span> spans;
 
@@ -217,6 +236,15 @@ public class Span implements AutoCloseable, SpanData {
                 LOG.warning("Popped " + extraPops + " unclosed Spans");
             }
         }
+
+        public TraceLevel currentTraceLevel() {
+            if (spans.isEmpty()) {
+                if (sampler == Sampling.ON) return TraceLevel.ON;
+                return TraceLevel.OFF; // default when not explicitly requested
+            } else {
+                return spans.peek().traceLevel;
+            }
+        }
     }
 
     @Override
@@ -233,5 +261,9 @@ public class Span implements AutoCloseable, SpanData {
 
     private static long nowInNanoseconds() {
         return System.currentTimeMillis() * 1000000;
+    }
+
+    private static enum TraceLevel {
+        ON, OFF, INHERIT
     }
 }
