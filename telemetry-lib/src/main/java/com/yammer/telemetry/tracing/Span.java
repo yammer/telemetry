@@ -47,19 +47,6 @@ public class Span implements AutoCloseable, SpanData {
         return start(name, Optional.<BigInteger>absent(), Optional.<BigInteger>absent(), Optional.<BigInteger>absent(), true);
     }
 
-//    /**
-//     * Attach to an existing span. This is useful when a span has been created elsewhere
-//     * (probably on another host) and you'd like to log annotations against that span locally.
-//     *
-//     * @param traceId ID of the trace of the span being attached.
-//     * @param spanId ID of the span being attached.
-//     * @return The attached span.
-//     */
-//    @Deprecated
-//    public static Span attachSpan(BigInteger traceId, BigInteger spanId) {
-//        return attachSpan(traceId, spanId, null);
-//    }
-
     /**
      * Attach to an existing span. This is useful when a span has been created elsewhere
      * (probably on another host) and you'd like to log annotations against that span locally.
