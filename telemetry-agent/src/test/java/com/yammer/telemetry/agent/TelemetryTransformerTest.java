@@ -2,6 +2,7 @@ package com.yammer.telemetry.agent;
 
 import com.yammer.telemetry.agent.handlers.ClassInstrumentationHandler;
 import com.yammer.telemetry.agent.handlers.SubTypeInstrumentationHandler;
+import com.yammer.telemetry.agent.test.SimpleBean;
 import com.yammer.telemetry.agent.test.TransformingClassLoader;
 import javassist.*;
 import org.junit.Test;
@@ -56,15 +57,16 @@ public class TelemetryTransformerTest {
         });
 
         // Ugh we need to do this via reflection to avoid loading the class first..
-        TransformingClassLoader loader = new TransformingClassLoader(transformer);
-        Class<?> aClass = loader.loadClass("com.yammer.telemetry.agent.test.SimpleBean");
+        try (TransformingClassLoader loader = new TransformingClassLoader(SimpleBean.class, transformer)) {
+            Class<?> aClass = loader.loadClass("com.yammer.telemetry.agent.test.SimpleBean");
 
-        String value = "foo";
-        Object bean = aClass.newInstance();
-        aClass.getDeclaredMethod("setValue", String.class).invoke(bean, value);
-        Object result = aClass.getDeclaredMethod("getValue").invoke(bean);
+            String value = "foo";
+            Object bean = aClass.newInstance();
+            aClass.getDeclaredMethod("setValue", String.class).invoke(bean, value);
+            Object result = aClass.getDeclaredMethod("getValue").invoke(bean);
 
-        assertEquals(String.format("%sbar", value), result);
+            assertEquals(String.format("%sbar", value), result);
+        }
     }
 
     public static class ClassUtils {

@@ -36,12 +36,6 @@ public class SpanUsageTest {
     }
 
     @Test
-    public void foof() {
-        Span floop = Span.attachSpan(BigInteger.ZERO, BigInteger.ONE, "floop");
-        floop.end();
-    }
-
-    @Test
     public void testAttachSpan() {
         Trace trace = testSpan(new Strategy() {
             @Override

@@ -1,31 +1,36 @@
 package com.yammer.telemetry.agent.handlers;
 
 import com.google.common.base.Function;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 import com.yammer.telemetry.agent.Annotations;
 import com.yammer.telemetry.agent.ServiceAnnotations;
 import com.yammer.telemetry.agent.TelemetryTransformer;
+import com.yammer.telemetry.agent.test.SimpleServlet;
 import com.yammer.telemetry.agent.test.TransformingClassLoader;
 import com.yammer.telemetry.tracing.*;
 import javassist.ClassPool;
 import javassist.CtClass;
 import org.junit.After;
 import org.junit.Test;
+import org.mockito.ArgumentCaptor;
+import org.mockito.InOrder;
 
+import javax.annotation.Nullable;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
+import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.lang.reflect.Method;
 import java.math.BigInteger;
-import java.util.Set;
+import java.util.List;
 
 import static org.junit.Assert.*;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 public class HttpServletClassHandlerTest {
     private HttpServletClassHandler handler = new HttpServletClassHandler();
@@ -63,48 +68,8 @@ public class HttpServletClassHandlerTest {
         assertFalse(handler.transformed(ctClass, cp));
     }
 
-//    @Test
-//    public void testWrapsMethodToRecordSpan() throws Exception{
-//        Annotations.setServiceAnnotations(new ServiceAnnotations("test HttpServlet"));
-//
-//        InMemorySpanSinkSource sink = new InMemorySpanSinkSource();
-//        SpanSinkRegistry.register(sink);
-//
-//        TelemetryTransformer transformer = new TelemetryTransformer();
-//        transformer.addHandler(handler);
-//
-//        StringWriter underlyingWriter = new StringWriter();
-//
-//        HttpServletRequest request = mock(HttpServletRequest.class);
-//        when(request.getMethod()).thenReturn("GET");
-//        when(request.getRequestURL()).thenReturn(new StringBuffer("http://localhost:8080/foo"));
-//
-//        HttpServletResponse response = mock(HttpServletResponse.class);
-//        when(response.getWriter()).thenReturn(new PrintWriter(underlyingWriter));
-//
-//        TransformingClassLoader loader = new TransformingClassLoader(transformer);
-//
-//        Class<?> servletClass = loader.loadClass("com.yammer.telemetry.agent.test.SimpleServlet");
-//        Method serviceMethod = servletClass.getMethod("service", ServletRequest.class, ServletResponse.class);
-//
-//        Object instance = servletClass.newInstance();
-//
-//        assertTrue(sink.getTraces().isEmpty());
-//
-//        serviceMethod.invoke(instance, request, response);
-//
-//        assertEquals("foof", underlyingWriter.toString());
-//
-//        assertFalse(sink.getTraces().isEmpty());
-//        assertEquals(1, sink.getTraces().size());
-//        Trace trace = sink.getTraces().iterator().next();
-//
-//        assertEquals(trace.getId(), trace.getRoot().getTraceId());
-//        assertEquals("http://localhost:8080/foo", trace.getRoot().getName());
-//    }
-
     @Test
-    public void testWrapsMethodToRecordSpanWithIncomingIds() throws Exception{
+    public void testWrapsMethodToRecordSpan() throws Exception{
         Annotations.setServiceAnnotations(new ServiceAnnotations("test HttpServlet"));
 
         InMemorySpanSinkSource sink = new InMemorySpanSinkSource();
@@ -118,43 +83,30 @@ public class HttpServletClassHandlerTest {
         HttpServletRequest request = mock(HttpServletRequest.class);
         when(request.getMethod()).thenReturn("GET");
         when(request.getRequestURL()).thenReturn(new StringBuffer("http://localhost:8080/foo"));
-        when(request.getHeader(HttpHeaderNames.TRACE_ID)).thenReturn("1");
-        when(request.getHeader(HttpHeaderNames.SPAN_ID)).thenReturn("2");
 
         HttpServletResponse response = mock(HttpServletResponse.class);
         when(response.getWriter()).thenReturn(new PrintWriter(underlyingWriter));
 
-        TransformingClassLoader loader = new TransformingClassLoader(transformer);
+        try (TransformingClassLoader loader = new TransformingClassLoader(SimpleServlet.class, transformer)) {
 
-        Class<?> servletClass = loader.loadClass("com.yammer.telemetry.agent.test.SimpleServlet");
-        Method serviceMethod = servletClass.getMethod("service", ServletRequest.class, ServletResponse.class);
+            Class<?> servletClass = loader.loadClass("com.yammer.telemetry.agent.test.SimpleServlet");
+            Method serviceMethod = servletClass.getMethod("service", ServletRequest.class, ServletResponse.class);
 
-        Object instance = servletClass.newInstance();
+            Object instance = servletClass.newInstance();
 
-        assertTrue(sink.getTraces().isEmpty());
+            assertTrue(sink.getTraces().isEmpty());
 
-        serviceMethod.invoke(instance, request, response);
+            serviceMethod.invoke(instance, request, response);
 
-        assertEquals("foof", underlyingWriter.toString());
+            assertEquals("foof", underlyingWriter.toString());
 
-        assertFalse(sink.getTraces().isEmpty());
-        assertEquals(1, sink.getTraces().size());
-        Trace trace = sink.getTraces().iterator().next();
+            assertFalse(sink.getTraces().isEmpty());
+            assertEquals(1, sink.getTraces().size());
+            Trace trace = sink.getTraces().iterator().next();
 
-//        assertEquals(trace.getId(), trace.getRoot().getTraceId());
-        assertEquals(new BigInteger("1"), trace.getId());
-        assertNull(trace.getRoot()); // we didn't have the root captured..
-        SpanData spanData = when(mock(SpanData.class).getId()).thenReturn(new BigInteger("2")).getMock();
-        assertTrue(trace.getChildren(spanData).isEmpty());
-        // TODO - if this is a list we get duplicates, which means we've instrumented multiple times?
-        Set<String> annotationNames = ImmutableSet.copyOf(Iterables.transform(trace.getAnnotations(spanData), new Function<AnnotationData, String>() {
-            @Override
-            public String apply(AnnotationData input) {
-                return input.getName();
-            }
-        }));
-        assertEquals(ImmutableSet.of(AnnotationNames.SERVER_RECEIVED, AnnotationNames.SERVICE_NAME, AnnotationNames.SERVER_SENT), annotationNames);
-        assertFalse(annotationNames.isEmpty());
+            assertEquals(trace.getId(), trace.getRoot().getTraceId());
+            assertEquals("http://localhost:8080/foo", trace.getRoot().getName());
+        }
     }
 
 }

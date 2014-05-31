@@ -22,4 +22,18 @@ public class SamplingTest {
             assertTrue(sampler.trace());
         }
     }
+
+    @Test
+    public void testSamplingValueOfString() {
+        assertNull(Sampling.valueOf(null));
+        assertNull(Sampling.valueOf("unknown"));
+
+        assertEquals(Sampling.ON, Sampling.valueOf("on"));
+        assertEquals(Sampling.ON, Sampling.valueOf("ON"));
+        assertEquals(Sampling.ON, Sampling.valueOf("oN"));
+
+        assertEquals(Sampling.OFF, Sampling.valueOf("off"));
+        assertEquals(Sampling.OFF, Sampling.valueOf("OFF"));
+        assertEquals(Sampling.OFF, Sampling.valueOf("oFf"));
+    }
 }

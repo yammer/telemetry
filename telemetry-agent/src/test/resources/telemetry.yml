@@ -14,3 +14,5 @@ sinks:
 
 annotations:
   service: example
+
+sampler: off

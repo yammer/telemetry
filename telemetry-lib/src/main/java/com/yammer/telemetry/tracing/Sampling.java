@@ -6,6 +6,12 @@ public abstract class Sampling {
 
     public abstract boolean trace();
 
+    public static Sampling valueOf(String samplerName) {
+        if ("off".equalsIgnoreCase(samplerName)) return OFF;
+        if ("on".equalsIgnoreCase(samplerName)) return ON;
+        return null;
+    }
+
     private static class SamplingOff extends Sampling {
         @Override
         public boolean trace() {

@@ -7,6 +7,7 @@ import com.yammer.telemetry.agent.handlers.HttpServletClassHandler;
 import com.yammer.telemetry.agent.jdbc.JdbcDriverClassHandler;
 import com.yammer.telemetry.sinks.TelemetryServiceSpanSink;
 import com.yammer.telemetry.tracing.LoggingSpanSinkBuilder;
+import com.yammer.telemetry.tracing.Span;
 import com.yammer.telemetry.tracing.SpanSinkRegistry;
 
 import java.io.File;
@@ -24,6 +25,7 @@ public class TelemetryAgent {
             try {
                 TelemetryConfiguration config = loadConfiguration(agentArgs);
 
+                Span.setSampler(config.getSampler());
                 Annotations.setServiceAnnotations(config.getAnnotations());
 
                 if (config.isEnabled()) {

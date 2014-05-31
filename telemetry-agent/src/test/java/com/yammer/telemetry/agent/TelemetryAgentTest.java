@@ -9,15 +9,17 @@ import com.yammer.telemetry.agent.handlers.ClassInstrumentationHandler;
 import com.yammer.telemetry.agent.handlers.HttpServletClassHandler;
 import com.yammer.telemetry.agent.jdbc.JdbcDriverClassHandler;
 import com.yammer.telemetry.sinks.TelemetryServiceSpanSink;
-import com.yammer.telemetry.tracing.AsynchronousSpanSink;
-import com.yammer.telemetry.tracing.SpanSink;
-import com.yammer.telemetry.tracing.SpanSinkRegistry;
+import com.yammer.telemetry.tracing.*;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 
+import java.io.File;
 import java.lang.instrument.ClassFileTransformer;
 import java.lang.instrument.Instrumentation;
 import java.net.URI;
+import java.net.URL;
 import java.util.List;
 import java.util.Set;
 
@@ -26,6 +28,17 @@ import static org.mockito.Mockito.*;
 
 public class TelemetryAgentTest {
     private Instrumentation instrumentation = mock(Instrumentation.class);
+    private Sampling defaultSampler;
+
+    @Before
+    public void captureDefaultSampling() {
+        defaultSampler = Span.getSampler();
+    }
+
+    @After
+    public void resetDefaultSampling() {
+        Span.setSampler(defaultSampler);
+    }
 
     @Test(expected = NullPointerException.class)
     public void nullArgs() {
@@ -50,7 +63,7 @@ public class TelemetryAgentTest {
         ArgumentCaptor<ClassFileTransformer> captor = ArgumentCaptor.forClass(ClassFileTransformer.class);
         doNothing().when(instrumentation).addTransformer(captor.capture());
 
-        TelemetryAgent.agentmain("src/test/resources/telemetry.yml", instrumentation);
+        TelemetryAgent.agentmain(getConfigurationPath(), instrumentation);
 
         List<ClassFileTransformer> allValues = captor.getAllValues();
         assertNotNull(allValues);
@@ -69,14 +82,14 @@ public class TelemetryAgentTest {
 
     @Test
     public void validArgsAddsServiceAnnotations() throws Exception {
-        TelemetryAgent.agentmain("src/test/resources/telemetry.yml", instrumentation);
+        TelemetryAgent.agentmain(getConfigurationPath(), instrumentation);
 
         assertEquals("example", Annotations.getServiceAnnotations().getService());
     }
 
     @Test
     public void validArgsRegistersSinks() throws Exception {
-        TelemetryAgent.agentmain("src/test/resources/telemetry.yml", instrumentation);
+        TelemetryAgent.agentmain(getConfigurationPath(), instrumentation);
 
         ImmutableList<SpanSink> registeredSinks = ImmutableList.copyOf(SpanSinkRegistry.getSpanSinks());
         assertEquals(2, registeredSinks.size());
@@ -86,5 +99,20 @@ public class TelemetryAgentTest {
 
         // todo - improve this test
         assertTrue(registeredSinks.get(1) instanceof AsynchronousSpanSink);
+    }
+
+    @Test
+    public void configuresSpanSampleLevels() throws Exception {
+        assertEquals(Sampling.ON, Span.getSampler());
+
+        TelemetryAgent.agentmain(getConfigurationPath(), instrumentation);
+
+        assertEquals(Sampling.OFF, Span.getSampler());
+    }
+
+    private String getConfigurationPath() {
+        URL url = this.getClass().getResource("/telemetry.yml");
+        File file = new File(url.getFile());
+        return file.getAbsolutePath();
     }
 }
