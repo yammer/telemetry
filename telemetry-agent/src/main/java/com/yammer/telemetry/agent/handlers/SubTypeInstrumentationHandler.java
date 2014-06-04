@@ -11,7 +11,7 @@ import java.util.logging.Logger;
 
 public abstract class SubTypeInstrumentationHandler implements ClassInstrumentationHandler {
     private static final Logger LOGGER = Logger.getLogger(JdbcDriverClassHandler.class.getName());
-    private final String superTypeName;
+    protected final String superTypeName;
     private boolean enabled = true;
 
     public SubTypeInstrumentationHandler(String superTypeName) {

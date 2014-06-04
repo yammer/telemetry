@@ -1,9 +1,5 @@
 package com.yammer.telemetry.agent.handlers;
 
-import com.google.common.base.Function;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Iterables;
 import com.yammer.telemetry.agent.Annotations;
 import com.yammer.telemetry.agent.ServiceAnnotations;
 import com.yammer.telemetry.agent.TelemetryTransformer;
@@ -14,23 +10,15 @@ import javassist.ClassPool;
 import javassist.CtClass;
 import org.junit.After;
 import org.junit.Test;
-import org.mockito.ArgumentCaptor;
-import org.mockito.InOrder;
 
-import javax.annotation.Nullable;
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import java.io.PrintWriter;
-import java.io.StringWriter;
+import javax.servlet.*;
+import javax.servlet.http.*;
+import java.io.*;
 import java.lang.reflect.Method;
-import java.math.BigInteger;
-import java.util.List;
+import java.security.Principal;
+import java.util.*;
 
 import static org.junit.Assert.*;
-import static org.mockito.Mockito.*;
 
 public class HttpServletClassHandlerTest {
     private HttpServletClassHandler handler = new HttpServletClassHandler();
@@ -69,43 +57,591 @@ public class HttpServletClassHandlerTest {
     }
 
     @Test
-    public void testWrapsMethodToRecordSpan() throws Exception{
-        Annotations.setServiceAnnotations(new ServiceAnnotations("test HttpServlet"));
+    public void testRunTransformed() throws Exception {
+        runTransformed(TransformedTests.class, "testTheory", handler);
+    }
 
-        InMemorySpanSinkSource sink = new InMemorySpanSinkSource();
-        SpanSinkRegistry.register(sink);
-
+    private void runTransformed(Class<TransformedTests> clazz, String method, ClassInstrumentationHandler... handlers) throws Exception {
         TelemetryTransformer transformer = new TelemetryTransformer();
-        transformer.addHandler(handler);
-
-        StringWriter underlyingWriter = new StringWriter();
-
-        HttpServletRequest request = mock(HttpServletRequest.class);
-        when(request.getMethod()).thenReturn("GET");
-        when(request.getRequestURL()).thenReturn(new StringBuffer("http://localhost:8080/foo"));
-
-        HttpServletResponse response = mock(HttpServletResponse.class);
-        when(response.getWriter()).thenReturn(new PrintWriter(underlyingWriter));
+        for (ClassInstrumentationHandler handler : handlers) {
+            transformer.addHandler(handler);
+        }
 
         try (TransformingClassLoader loader = new TransformingClassLoader(SimpleServlet.class, transformer)) {
+            Class<?> aClass = loader.loadClass(clazz.getName());
+            Method declaredMethod = aClass.getDeclaredMethod(method);
+            declaredMethod.invoke(null);
+        }
+    }
 
-            Class<?> servletClass = loader.loadClass("com.yammer.telemetry.agent.test.SimpleServlet");
-            Method serviceMethod = servletClass.getMethod("service", ServletRequest.class, ServletResponse.class);
+    @SuppressWarnings("UnusedDeclaration")
+    /**
+     * This provides static methods which get invoked within the transformed classloader context.  This means we can
+     * largely just write code for tests as we would.  Right now mockito doesn't play happily in this environment
+     * however so instead rely on fake objects, defined below.
+     */
+    public static class TransformedTests {
+        public static void testTheory() throws Exception {
+            InMemorySpanSinkSource sink = new InMemorySpanSinkSource();
 
-            Object instance = servletClass.newInstance();
+            Annotations.setServiceAnnotations(new ServiceAnnotations("testing"));
+            SpanSinkRegistry.register(sink);
 
-            assertTrue(sink.getTraces().isEmpty());
+            StringWriter underlyingWriter = new StringWriter();
 
-            serviceMethod.invoke(instance, request, response);
+            HttpServletRequest request = new FakeHttpServletRequest("GET", "http://localhost:8080/foo");
+
+            HttpServletResponse response = new FakeHttpServletRespone(underlyingWriter);
+
+            SimpleServlet servlet = new SimpleServlet();
+            servlet.service(request, response);
 
             assertEquals("foof", underlyingWriter.toString());
 
-            assertFalse(sink.getTraces().isEmpty());
-            assertEquals(1, sink.getTraces().size());
-            Trace trace = sink.getTraces().iterator().next();
+            Collection<Trace> traces = sink.getTraces();
+            assertEquals(1, traces.size());
+            Trace trace = traces.iterator().next();
 
-            assertEquals(trace.getId(), trace.getRoot().getTraceId());
-            assertEquals("http://localhost:8080/foo", trace.getRoot().getName());
+            SpanData root = trace.getRoot();
+            assertNotNull(root);
+
+            List<AnnotationData> annotations = trace.getAnnotations(root);
+            assertEquals(3, annotations.size());
+
+            assertEquals(AnnotationNames.SERVER_RECEIVED, annotations.get(0).getName());
+            assertNull(annotations.get(0).getMessage());
+            assertEquals(AnnotationNames.SERVICE_NAME, annotations.get(1).getName());
+            assertEquals("testing", annotations.get(1).getMessage());
+            assertEquals(AnnotationNames.SERVER_SENT, annotations.get(2).getName());
+            assertNull(annotations.get(2).getMessage());
+        }
+    }
+
+    public static class FakeHttpServletRespone implements HttpServletResponse {
+        private final PrintWriter underlying;
+
+        public FakeHttpServletRespone(StringWriter underlying) {
+            this.underlying = new PrintWriter(underlying);
+        }
+
+        @Override
+        public void addCookie(Cookie cookie) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public boolean containsHeader(String name) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public String encodeURL(String url) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public String encodeRedirectURL(String url) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public String encodeUrl(String url) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public String encodeRedirectUrl(String url) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public void sendError(int sc, String msg) throws IOException {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public void sendError(int sc) throws IOException {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public void sendRedirect(String location) throws IOException {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public void setDateHeader(String name, long date) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public void addDateHeader(String name, long date) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public void setHeader(String name, String value) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public void addHeader(String name, String value) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public void setIntHeader(String name, int value) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public void addIntHeader(String name, int value) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public void setStatus(int sc) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public void setStatus(int sc, String sm) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public int getStatus() {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public String getHeader(String name) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public Collection<String> getHeaders(String name) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public Collection<String> getHeaderNames() {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public String getCharacterEncoding() {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public String getContentType() {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public ServletOutputStream getOutputStream() throws IOException {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public PrintWriter getWriter() throws IOException {
+            return underlying;
+        }
+
+        @Override
+        public void setCharacterEncoding(String charset) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public void setContentLength(int len) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public void setContentType(String type) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public void setBufferSize(int size) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public int getBufferSize() {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public void flushBuffer() throws IOException {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public void resetBuffer() {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public boolean isCommitted() {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public void reset() {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public void setLocale(Locale loc) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public Locale getLocale() {
+            throw new UnsupportedOperationException();
+        }
+    }
+
+    public static class FakeHttpServletRequest implements HttpServletRequest {
+        private final String method;
+        private final StringBuffer requestURL;
+
+        public FakeHttpServletRequest(String method, String requestURL) {
+            this.method = method;
+            this.requestURL = new StringBuffer(requestURL);
+        }
+
+        @Override
+        public String getAuthType() {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public Cookie[] getCookies() {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public long getDateHeader(String name) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public String getHeader(String name) {
+            return null;
+        }
+
+        @Override
+        public Enumeration<String> getHeaders(String name) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public Enumeration<String> getHeaderNames() {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public int getIntHeader(String name) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public String getMethod() {
+            return method;
+        }
+
+        @Override
+        public String getPathInfo() {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public String getPathTranslated() {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public String getContextPath() {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public String getQueryString() {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public String getRemoteUser() {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public boolean isUserInRole(String role) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public Principal getUserPrincipal() {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public String getRequestedSessionId() {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public String getRequestURI() {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public StringBuffer getRequestURL() {
+            return requestURL;
+        }
+
+        @Override
+        public String getServletPath() {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public HttpSession getSession(boolean create) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public HttpSession getSession() {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public boolean isRequestedSessionIdValid() {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public boolean isRequestedSessionIdFromCookie() {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public boolean isRequestedSessionIdFromURL() {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public boolean isRequestedSessionIdFromUrl() {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public boolean authenticate(HttpServletResponse response) throws IOException, ServletException {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public void login(String username, String password) throws ServletException {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public void logout() throws ServletException {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public Collection<Part> getParts() throws IOException, ServletException {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public Part getPart(String name) throws IOException, ServletException {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public Object getAttribute(String name) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public Enumeration<String> getAttributeNames() {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public String getCharacterEncoding() {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public void setCharacterEncoding(String env) throws UnsupportedEncodingException {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public int getContentLength() {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public String getContentType() {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public ServletInputStream getInputStream() throws IOException {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public String getParameter(String name) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public Enumeration<String> getParameterNames() {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public String[] getParameterValues(String name) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public Map<String, String[]> getParameterMap() {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public String getProtocol() {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public String getScheme() {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public String getServerName() {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public int getServerPort() {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public BufferedReader getReader() throws IOException {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public String getRemoteAddr() {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public String getRemoteHost() {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public void setAttribute(String name, Object o) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public void removeAttribute(String name) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public Locale getLocale() {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public Enumeration<Locale> getLocales() {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public boolean isSecure() {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public RequestDispatcher getRequestDispatcher(String path) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public String getRealPath(String path) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public int getRemotePort() {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public String getLocalName() {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public String getLocalAddr() {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public int getLocalPort() {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public ServletContext getServletContext() {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public AsyncContext startAsync() throws IllegalStateException {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public AsyncContext startAsync(ServletRequest servletRequest, ServletResponse servletResponse) throws IllegalStateException {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public boolean isAsyncStarted() {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public boolean isAsyncSupported() {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public AsyncContext getAsyncContext() {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public DispatcherType getDispatcherType() {
+            throw new UnsupportedOperationException();
         }
     }
 

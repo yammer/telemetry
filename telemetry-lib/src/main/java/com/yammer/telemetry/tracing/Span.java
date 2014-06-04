@@ -1,5 +1,6 @@
 package com.yammer.telemetry.tracing;
 
+import com.google.common.base.Function;
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
 
@@ -106,6 +107,15 @@ public class Span implements AutoCloseable, SpanData {
         this.annotations = new LinkedList<>();
     }
 
+    public static Optional<Span> currentSpan() {
+        SpanContext context = spanContext.get();
+        if (context == null) {
+            return Optional.absent();
+        } else {
+            return context.currentSpan();
+        }
+    }
+
     public void addAnnotation(String name) {
         annotations.add(new Annotation(nowInNanoseconds(), name));
     }
@@ -203,20 +213,30 @@ public class Span implements AutoCloseable, SpanData {
             spans = new Stack<>();
         }
 
-        public Optional<BigInteger> currentTraceId() {
+        public Optional<Span> currentSpan() {
             if (spans.isEmpty()) {
                 return Optional.absent();
             } else {
-                return Optional.of(spans.peek().getTraceId());
+                return Optional.of(spans.peek());
             }
         }
 
+        public Optional<BigInteger> currentTraceId() {
+            return currentSpan().transform(new Function<Span, BigInteger>() {
+                @Override
+                public BigInteger apply(Span input) {
+                    return input.getTraceId();
+                }
+            });
+        }
+
         public Optional<BigInteger> currentSpanId() {
-            if (spans.isEmpty()) {
-                return Optional.absent();
-            } else {
-                return Optional.of(spans.peek().getId());
-            }
+            return currentSpan().transform(new Function<Span, BigInteger>() {
+                @Override
+                public BigInteger apply(Span input) {
+                    return input.getId();
+                }
+            });
         }
 
         public void startSpan(Span span) {
