@@ -2,9 +2,7 @@ package com.yammer.telemetry.agent.handlers;
 
 import com.yammer.telemetry.agent.Annotations;
 import com.yammer.telemetry.agent.ServiceAnnotations;
-import com.yammer.telemetry.agent.TelemetryTransformer;
 import com.yammer.telemetry.agent.test.SimpleServlet;
-import com.yammer.telemetry.agent.test.TransformingClassLoader;
 import com.yammer.telemetry.tracing.*;
 import javassist.ClassPool;
 import javassist.CtClass;
@@ -14,10 +12,10 @@ import org.junit.Test;
 import javax.servlet.*;
 import javax.servlet.http.*;
 import java.io.*;
-import java.lang.reflect.Method;
 import java.security.Principal;
 import java.util.*;
 
+import static com.yammer.telemetry.test.TelemetryTestHelpers.runTransformed;
 import static org.junit.Assert.*;
 
 public class HttpServletClassHandlerTest {
@@ -57,21 +55,8 @@ public class HttpServletClassHandlerTest {
     }
 
     @Test
-    public void testRunTransformed() throws Exception {
+    public void testRecordsSpans() throws Exception {
         runTransformed(TransformedTests.class, "testTheory", handler);
-    }
-
-    private void runTransformed(Class<TransformedTests> clazz, String method, ClassInstrumentationHandler... handlers) throws Exception {
-        TelemetryTransformer transformer = new TelemetryTransformer();
-        for (ClassInstrumentationHandler handler : handlers) {
-            transformer.addHandler(handler);
-        }
-
-        try (TransformingClassLoader loader = new TransformingClassLoader(SimpleServlet.class, transformer)) {
-            Class<?> aClass = loader.loadClass(clazz.getName());
-            Method declaredMethod = aClass.getDeclaredMethod(method);
-            declaredMethod.invoke(null);
-        }
     }
 
     @SuppressWarnings("UnusedDeclaration")
@@ -91,7 +76,7 @@ public class HttpServletClassHandlerTest {
 
             HttpServletRequest request = new FakeHttpServletRequest("GET", "http://localhost:8080/foo");
 
-            HttpServletResponse response = new FakeHttpServletRespone(underlyingWriter);
+            HttpServletResponse response = new FakeHttpServletResponse(underlyingWriter);
 
             SimpleServlet servlet = new SimpleServlet();
             servlet.service(request, response);
@@ -117,10 +102,10 @@ public class HttpServletClassHandlerTest {
         }
     }
 
-    public static class FakeHttpServletRespone implements HttpServletResponse {
+    public static class FakeHttpServletResponse implements HttpServletResponse {
         private final PrintWriter underlying;
 
-        public FakeHttpServletRespone(StringWriter underlying) {
+        public FakeHttpServletResponse(StringWriter underlying) {
             this.underlying = new PrintWriter(underlying);
         }
 

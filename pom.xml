@@ -12,6 +12,8 @@
 
     <modules>
         <module>telemetry-lib</module>
+        <module>telemetry-instrumentation</module>
+        <module>telemetry-test-framework</module>
         <module>telemetry-example</module>
         <module>telemetry-agent</module>
         <module>telemetry-service</module>
@@ -19,6 +21,7 @@
     </modules>
 
     <properties>
+        <javassist.version>3.18.1-GA</javassist.version>
         <dropwizard.version>0.6.2</dropwizard.version>
         <jackson.version>2.2.0</jackson.version>
     </properties>

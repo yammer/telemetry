@@ -1,9 +1,9 @@
 package com.yammer.telemetry.agent;
 
-import com.yammer.telemetry.agent.handlers.ClassInstrumentationHandler;
+import com.yammer.telemetry.instrumentation.ClassInstrumentationHandler;
 import com.yammer.telemetry.agent.handlers.SubTypeInstrumentationHandler;
-import com.yammer.telemetry.agent.test.SimpleBean;
-import com.yammer.telemetry.agent.test.TransformingClassLoader;
+import com.yammer.telemetry.test.TransformingClassLoader;
+import com.yammer.telemetry.instrumentation.TelemetryTransformer;
 import javassist.*;
 import org.junit.Test;
 
@@ -57,7 +57,7 @@ public class TelemetryTransformerTest {
         });
 
         // Ugh we need to do this via reflection to avoid loading the class first..
-        try (TransformingClassLoader loader = new TransformingClassLoader(SimpleBean.class, transformer)) {
+        try (TransformingClassLoader loader = new TransformingClassLoader(transformer)) {
             Class<?> aClass = loader.loadClass("com.yammer.telemetry.agent.test.SimpleBean");
 
             String value = "foo";

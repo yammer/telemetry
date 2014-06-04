@@ -40,38 +40,4 @@ public class MetricsRegistryHandler extends SubTypeInstrumentationHandler {
 
         cc.instrument(converter);
     }
-
-//    @Override
-//    public boolean transformed(CtClass cc, ClassPool pool) {
-//        try {
-//            if ("com.yammer.metrics.core.Timer".equals(cc.getName())) {
-//                return addNamePropertyToMetricClass(cc, pool);
-//            }
-//            if ("com.yammer.metrics.core.MetricsRegistry".equals(cc.getName())) {
-//                CtMethod getOrAdd = cc.getDeclaredMethod("getOrAdd");
-//                getOrAdd.insertBefore("System.out.println($1);");
-////                getOrAdd.insertBefore("{ System.out.println(\"Got: \" + java.util.Arrays.toString(new Object[] {$$})); }");
-//                getOrAdd.insertAfter("");
-//                return true;
-//            }
-//            return false;
-//        } catch (CannotCompileException e) {
-//            e.printStackTrace();
-//            return false;
-//        } catch (NotFoundException e) {
-//            e.printStackTrace();
-//            return false;
-//        }
-//    }
-//
-//    private boolean addNamePropertyToMetricClass(CtClass cc, ClassPool pool) throws CannotCompileException {
-//        System.out.println("Adding to: " + cc);
-//        CtField ctField = CtField.make("private com.yammer.metrics.core.MetricName metricName;", cc);
-//        cc.addField(ctField);
-//        CtMethod getMetricName = CtNewMethod.getter("getMetricName", ctField);
-//        CtMethod setMetricName = CtNewMethod.setter("setMetricName", ctField);
-//        cc.addMethod(getMetricName);
-//        cc.addMethod(setMetricName);
-//        return true;
-//    }
 }

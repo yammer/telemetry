@@ -9,6 +9,8 @@ import org.junit.Test;
 
 import java.io.StringWriter;
 import java.math.BigInteger;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
@@ -70,35 +72,24 @@ public class LoggingSpanSinkBuilderTest {
         StringWriter writer = new StringWriter();
         AsynchronousSpanSink spanSink = new LoggingSpanSinkBuilder().withWriter(writer).build();
 
-        AnnotationData annotationData = new AnnotationData() {
-            private long startTime = System.nanoTime();
-
-            @Override
-            public long getStartTimeNanos() {
-                return startTime;
-            }
-
-            @Override
-            public String getName() {
-                return "The Name";
-            }
-
-            @Override
-            public String getMessage() {
-                return "The Message";
-            }
-        };
+        AnnotationData annotationData = new Annotation(System.nanoTime(), "The Name", "The Message");
 
         spanSink.recordAnnotation(BigInteger.ONE, BigInteger.TEN, annotationData);
 
         assertEquals(0, spanSink.shutdown(100, TimeUnit.MILLISECONDS));
 
-        Map wrappedAnnotationData = ImmutableMap.of(
-                "spanId", BigInteger.TEN.toString(),
-                "traceId", BigInteger.ONE.toString(),
-                "annotations", ImmutableList.of(annotationData)
-        );
-        assertEquals(objectMapper.writeValueAsString(wrappedAnnotationData) + "\n", writer.toString());
+        HashMap read = objectMapper.readValue(writer.toString(), HashMap.class);
+
+        assertEquals(BigInteger.TEN.toString(), read.get("spanId"));
+        assertEquals(BigInteger.ONE.toString(), read.get("traceId"));
+
+        List annotations = (List) read.get("annotations");
+        assertEquals(1, annotations.size());
+
+        Map annotationMap = (Map)annotations.get(0);
+        assertEquals(annotationData.getStartTimeNanos(), annotationMap.get("startTimeNanos"));
+        assertEquals(annotationData.getName(), annotationMap.get("name"));
+        assertEquals(annotationData.getMessage(), annotationMap.get("message"));
     }
 
     @Test
@@ -136,12 +127,6 @@ public class LoggingSpanSinkBuilderTest {
         spanSink.recordAnnotation(BigInteger.ONE, BigInteger.TEN, annotationData);
 
         assertEquals(0, spanSink.shutdown(100, TimeUnit.MILLISECONDS));
-
-        Map wrappedAnnotationData = ImmutableMap.of(
-                "spanId", BigInteger.TEN.toString(),
-                "traceId", BigInteger.ONE.toString(),
-                "annotations", ImmutableList.of(annotationData)
-        );
 
         assertTrue(writer.toString().isEmpty());
     }

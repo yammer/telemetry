@@ -1,7 +1,7 @@
-package com.yammer.telemetry.agent.test;
+package com.yammer.telemetry.test;
 
 import com.google.common.io.ByteStreams;
-import com.yammer.telemetry.agent.TelemetryTransformer;
+import com.yammer.telemetry.instrumentation.TelemetryTransformer;
 import javassist.ClassPool;
 
 import java.io.IOException;
@@ -16,9 +16,8 @@ public class TransformingClassLoader extends URLClassLoader {
     private final TelemetryTransformer transformer;
     private final ClassPool classPool;
 
-    public TransformingClassLoader(Class<?> clazzToInstrument, TelemetryTransformer transformer) {
+    public TransformingClassLoader(TelemetryTransformer transformer) {
         super(new URL[] {});
-//        super(new URL[] {clazzToInstrument.getProtectionDomain().getCodeSource().getLocation()});
         this.transformer = checkNotNull(transformer);
         classPool = new ClassPool(null);
         classPool.appendSystemPath();
@@ -28,7 +27,6 @@ public class TransformingClassLoader extends URLClassLoader {
     public Class<?> loadClass(String name) throws ClassNotFoundException {
         Class<?> loadedClass = super.findLoadedClass(name);
         if (loadedClass != null) return loadedClass;
-        System.out.println("Loading: " + name);
         try (InputStream classStream = super.getResourceAsStream(name.replace('.', '/') + ".class")) {
             byte[] classfileBuffer = ByteStreams.toByteArray(classStream);
             byte[] transformedBytes = transformer.transform(this, name, classfileBuffer, classPool);

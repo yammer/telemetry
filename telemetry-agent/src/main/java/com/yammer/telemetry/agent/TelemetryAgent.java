@@ -6,6 +6,7 @@ import com.yammer.telemetry.agent.handlers.ApacheHttpClientClassHandler;
 import com.yammer.telemetry.agent.handlers.HttpServletClassHandler;
 import com.yammer.telemetry.agent.handlers.MetricsRegistryHandler;
 import com.yammer.telemetry.agent.jdbc.JdbcDriverClassHandler;
+import com.yammer.telemetry.instrumentation.TelemetryTransformer;
 import com.yammer.telemetry.sinks.TelemetryServiceSpanSink;
 import com.yammer.telemetry.tracing.LoggingSpanSinkBuilder;
 import com.yammer.telemetry.tracing.Span;

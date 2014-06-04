@@ -21,6 +21,11 @@
         </dependency>
         <dependency>
             <groupId>com.yammer</groupId>
+            <artifactId>telemetry-instrumentation</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.yammer</groupId>
             <artifactId>telemetry-service-sink</artifactId>
             <version>${project.version}</version>
         </dependency>
@@ -37,7 +42,13 @@
         <dependency>
             <groupId>org.javassist</groupId>
             <artifactId>javassist</artifactId>
-            <version>3.18.0-GA</version>
+            <version>${javassist.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.yammer</groupId>
+            <artifactId>telemetry-test-framework</artifactId>
+            <version>0.0.1-SNAPSHOT</version>
+            <scope>test</scope>
         </dependency>
     </dependencies>
 

@@ -1,8 +1,9 @@
-package com.yammer.telemetry.agent;
+package com.yammer.telemetry.instrumentation;
 
-import com.google.common.collect.ImmutableSet;
-import com.yammer.telemetry.agent.handlers.ClassInstrumentationHandler;
-import javassist.*;
+import javassist.ByteArrayClassPath;
+import javassist.ClassPool;
+import javassist.CtClass;
+import javassist.LoaderClassPath;
 
 import java.lang.instrument.ClassFileTransformer;
 import java.lang.instrument.IllegalClassFormatException;
@@ -66,9 +67,5 @@ public class TelemetryTransformer implements ClassFileTransformer {
             t.printStackTrace();
             throw t;
         }
-    }
-
-    Set<ClassInstrumentationHandler> getHandlers() {
-        return ImmutableSet.copyOf(handlers);
     }
 }
