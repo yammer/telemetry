@@ -5,6 +5,7 @@ import com.yammer.telemetry.instrumentation.TelemetryTransformer;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
@@ -14,7 +15,7 @@ import static org.junit.Assert.fail;
 public class TelemetryTestHelpers {
     public static void runTransformed(Class<?> clazz, ClassInstrumentationHandler... handlers) throws Exception {
         Method[] methods = clazz.getDeclaredMethods();
-        Map<Method, Exception> testFailures = new HashMap<>();
+        Map<Method, Throwable> testFailures = new HashMap<>();
         int ran = 0;
 
         for (Method method : methods) {
@@ -23,7 +24,8 @@ public class TelemetryTestHelpers {
                     ran++;
                     runTransformed(clazz, method.getName(), handlers);
                 } catch (Exception e) {
-                    throw testFailures.put(method, e);
+                    //noinspection ThrowableResultOfMethodCallIgnored
+                    testFailures.put(method, unwrap(e));
                 }
             }
         }
@@ -32,8 +34,11 @@ public class TelemetryTestHelpers {
             StringWriter builder = new StringWriter();
             PrintWriter writer = new PrintWriter(builder);
             writer.println("Transformed tests failed:");
-            for (Map.Entry entry : testFailures.entrySet()) {
+            for (Map.Entry<Method, Throwable> entry : testFailures.entrySet()) {
                 writer.printf("%s:%n%s%n%n", entry.getKey(), entry.getValue());
+                //noinspection ThrowableResultOfMethodCallIgnored
+                entry.getValue().printStackTrace(writer);
+                writer.println();
             }
             fail(builder.toString());
         }
@@ -41,6 +46,13 @@ public class TelemetryTestHelpers {
         if (ran == 0) {
             fail("No tests were found within '" + clazz.getName() + "' that were annotated as '" + TransformedTest.class.getName() + "'");
         }
+    }
+
+    private static Throwable unwrap(Throwable e) {
+        if (e instanceof InvocationTargetException) {
+            return e.getCause();
+        }
+        return e;
     }
 
     public static void runTransformed(Class<?> clazz, String method, ClassInstrumentationHandler... handlers) throws Exception {

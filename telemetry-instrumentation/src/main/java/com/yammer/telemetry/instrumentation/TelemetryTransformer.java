@@ -50,7 +50,6 @@ public class TelemetryTransformer implements ClassFileTransformer {
             boolean classUpdated = false;
             for (ClassInstrumentationHandler handler : handlers) {
                 if (classUpdated = handler.transformed(cc, cp)) {
-                    System.out.println("Transformed: " + cc.getName());
                     break;
                 }
             }

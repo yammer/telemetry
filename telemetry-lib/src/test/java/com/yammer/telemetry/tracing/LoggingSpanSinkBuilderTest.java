@@ -94,9 +94,6 @@ public class LoggingSpanSinkBuilderTest {
 
     @Test
     public void testWritingInvalidObject() throws Exception {
-//        String s = objectMapper.writeValueAsString(new Foo());
-//        System.out.println("s = " + s);
-
         StringWriter writer = new StringWriter();
         AsynchronousSpanSink spanSink = new LoggingSpanSinkBuilder().withWriter(writer).build();
 

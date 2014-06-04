@@ -5,6 +5,7 @@ import com.yammer.telemetry.tracing.Span;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
+@SuppressWarnings("UnusedDeclaration")
 public class InstrumentedMeter extends Meter implements MetricNameAware {
     private MetricName metricName;
 

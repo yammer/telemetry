@@ -75,7 +75,6 @@ public class AsynchronousSpanSinkTest {
                             Thread.sleep(5000);
                         } catch (InterruptedException e) {
                             interruptedLatch.countDown();
-                            e.printStackTrace();
                         }
                     }
                 };
@@ -111,7 +110,6 @@ public class AsynchronousSpanSinkTest {
                             Thread.sleep(5000);
                         } catch (InterruptedException e) {
                             interruptedLatch.countDown();
-                            e.printStackTrace();
                         }
                     }
                 };

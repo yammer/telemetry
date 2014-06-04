@@ -8,4 +8,5 @@ public class AnnotationNames {
 
     public static final String CLIENT_SENT = "ClientSent";
     public static final String CLIENT_RECEIVED = "ClientReceived";
+    public static final String CLIENT_EXCEPTION = "ClientException";
 }
