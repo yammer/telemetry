@@ -24,6 +24,7 @@
         <javassist.version>3.18.1-GA</javassist.version>
         <dropwizard.version>0.6.2</dropwizard.version>
         <jackson.version>2.2.0</jackson.version>
+        <guava.version>15.0</guava.version>
     </properties>
 
     <dependencies>

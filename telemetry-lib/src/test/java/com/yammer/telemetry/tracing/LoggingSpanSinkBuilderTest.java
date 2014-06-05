@@ -129,7 +129,6 @@ public class LoggingSpanSinkBuilderTest {
     }
 
     public static class Foo {
-//        private Foo foo = this;
     }
 
 }

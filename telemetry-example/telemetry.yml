@@ -1,5 +1,6 @@
 instruments:
 - inbound-http
+- outbound-http
 - database
 - metrics
 
