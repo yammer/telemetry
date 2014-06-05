@@ -26,8 +26,6 @@ public class MetricsRegistryHandler extends SubTypeInstrumentationHandler {
                         "  }" +
                         "}");
 
-        cc.debugWriteFile("/Users/idavies/debug/" + System.nanoTime());
-
         return true;
     }
 
