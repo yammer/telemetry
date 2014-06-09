@@ -5,6 +5,7 @@ import com.yammer.dropwizard.hibernate.HibernateBundle;
 import com.yammer.dropwizard.migrations.MigrationsBundle;
 import com.yammer.telemetry.example.core.Nap;
 import com.yammer.telemetry.example.db.NapDAO;
+import com.yammer.telemetry.example.resources.DelayedWriteResource;
 import com.yammer.telemetry.example.resources.NapResource;
 import com.yammer.telemetry.example.resources.NapsResource;
 import com.yammer.telemetry.example.resources.ProxyResource;
@@ -13,6 +14,8 @@ import com.yammer.dropwizard.Service;
 import com.yammer.dropwizard.client.JerseyClientBuilder;
 import com.yammer.dropwizard.config.Bootstrap;
 import com.yammer.dropwizard.config.Environment;
+
+import java.util.concurrent.ScheduledExecutorService;
 
 public class ExampleService extends Service<ExampleConfiguration> {
     public static void main(String[] args) throws Exception {
@@ -43,8 +46,11 @@ public class ExampleService extends Service<ExampleConfiguration> {
         Client client = new JerseyClientBuilder().using(environment).using(configuration.getProxyClient()).build();
         environment.addResource(new ProxyResource(client));
 
+        ScheduledExecutorService executorService = environment.managedScheduledExecutorService("delayed-tasks", 5);
+
         final NapDAO napDAO = new NapDAO(hibernate.getSessionFactory());
         environment.addResource(new NapResource(napDAO));
         environment.addResource(new NapsResource(napDAO));
+        environment.addResource(new DelayedWriteResource(napDAO, executorService));
     }
 }
