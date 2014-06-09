@@ -28,10 +28,6 @@ public class TelemetryConfigurationTest {
 
         assertFalse(sinks.getLog().isEnabled());
         assertNull(sinks.getLog().getFile());
-
-        assertFalse(sinks.getTelemetry().isEnabled());
-        assertNull(sinks.getTelemetry().getHost());
-        assertNull(sinks.getTelemetry().getPort());
     }
 
     @Test
@@ -50,10 +46,6 @@ public class TelemetryConfigurationTest {
 
         assertTrue(sinks.getLog().isEnabled());
         assertEquals("example-telemetry.log", sinks.getLog().getFile());
-
-        assertTrue(sinks.getTelemetry().isEnabled());
-        assertEquals("localhost", sinks.getTelemetry().getHost());
-        assertEquals(Integer.valueOf(9090), sinks.getTelemetry().getPort());
     }
 
     private TelemetryConfiguration loadConfiguration(File file) throws IOException {

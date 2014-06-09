@@ -1,6 +1,9 @@
 package com.yammer.telemetry.tracing;
 
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.guava.GuavaModule;
 import com.google.common.collect.ImmutableList;
 
@@ -68,8 +71,8 @@ public class LoggingSpanSinkBuilder {
         @Override
         public Runnable createJob(BigInteger traceId, BigInteger spanId, AnnotationData data) {
             HashMap<String, Object> map = new HashMap<>();
-            map.put("traceId", traceId.toString());
-            map.put("spanId", spanId.toString());
+            map.put("traceId", traceId);
+            map.put("spanId", spanId);
             map.put("annotations", ImmutableList.of(data));
 
             return genericJob(map);

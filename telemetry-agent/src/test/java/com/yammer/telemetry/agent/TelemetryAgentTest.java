@@ -1,7 +1,6 @@
 package com.yammer.telemetry.agent;
 
 import com.google.common.collect.ImmutableList;
-import com.yammer.telemetry.sinks.TelemetryServiceSpanSink;
 import com.yammer.telemetry.tracing.*;
 import org.junit.After;
 import org.junit.Before;
@@ -9,7 +8,6 @@ import org.junit.Test;
 
 import java.io.File;
 import java.lang.instrument.Instrumentation;
-import java.net.URI;
 import java.net.URL;
 
 import static org.junit.Assert.assertEquals;
@@ -83,13 +81,10 @@ public class TelemetryAgentTest {
         TelemetryAgent.agentmain(getConfigurationPath(), instrumentation);
 
         ImmutableList<SpanSink> registeredSinks = ImmutableList.copyOf(SpanSinkRegistry.getSpanSinks());
-        assertEquals(2, registeredSinks.size());
-
-        TelemetryServiceSpanSink telemetrySink = (TelemetryServiceSpanSink) registeredSinks.get(0);
-        assertEquals(URI.create("http://localhost:9090/spans"), telemetrySink.getBaseUri());
+        assertEquals(1, registeredSinks.size());
 
         // todo - improve this test
-        assertTrue(registeredSinks.get(1) instanceof AsynchronousSpanSink);
+        assertTrue(registeredSinks.get(0) instanceof AsynchronousSpanSink);
     }
 
     @Test

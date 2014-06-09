@@ -3,8 +3,6 @@ package com.yammer.telemetry.tracing;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.guava.GuavaModule;
 import com.google.common.base.Optional;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
 import org.junit.Test;
 
 import java.io.StringWriter;
@@ -80,8 +78,8 @@ public class LoggingSpanSinkBuilderTest {
 
         HashMap read = objectMapper.readValue(writer.toString(), HashMap.class);
 
-        assertEquals(BigInteger.TEN.toString(), read.get("spanId"));
-        assertEquals(BigInteger.ONE.toString(), read.get("traceId"));
+        assertEquals(10, read.get("spanId"));
+        assertEquals(1, read.get("traceId"));
 
         List annotations = (List) read.get("annotations");
         assertEquals(1, annotations.size());

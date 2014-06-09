@@ -21,6 +21,7 @@
     </modules>
 
     <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <javassist.version>3.18.1-GA</javassist.version>
         <dropwizard.version>0.6.2</dropwizard.version>
         <jackson.version>2.2.0</jackson.version>

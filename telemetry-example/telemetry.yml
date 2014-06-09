@@ -5,13 +5,9 @@ instruments:
 - metrics
 
 sinks:
-  telemetry:
-    enabled: true
-    host: localhost
-    port: 9090
   log:
     enabled: true
-    file: example-telemetry.log
+    file: telemetry.log
 
 annotations:
   service: example

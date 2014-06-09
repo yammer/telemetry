@@ -11,7 +11,7 @@ import java.io.IOException;
 import java.util.logging.Logger;
 
 public abstract class SubTypeInstrumentationHandler implements ClassInstrumentationHandler {
-    private static final Logger LOGGER = Logger.getLogger(JdbcDriverClassHandler.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(SubTypeInstrumentationHandler.class.getName());
     protected final String superTypeName;
     private boolean enabled = true;
 
