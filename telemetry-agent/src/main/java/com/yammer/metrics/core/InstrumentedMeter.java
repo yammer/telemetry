@@ -30,6 +30,7 @@ public class InstrumentedMeter extends Meter implements MetricNameAware {
         super.mark(n);
     }
 
+
     @Override
     public MetricName getMetricName() {
         return metricName;

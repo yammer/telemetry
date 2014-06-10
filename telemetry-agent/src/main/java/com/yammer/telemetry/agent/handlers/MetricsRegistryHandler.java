@@ -17,6 +17,7 @@ public class MetricsRegistryHandler extends SubTypeInstrumentationHandler {
 
         switchImplementation(cc, pool, "com.yammer.metrics.core.Timer", "com.yammer.metrics.core.InstrumentedTimer");
         switchImplementation(cc, pool, "com.yammer.metrics.core.Meter", "com.yammer.metrics.core.InstrumentedMeter");
+        switchImplementation(cc, pool, "com.yammer.metrics.core.Counter", "com.yammer.metrics.core.InstrumentedCounter");
 
         CtMethod getOrAdd = cc.getDeclaredMethod("getOrAdd");
         getOrAdd.insertBefore(

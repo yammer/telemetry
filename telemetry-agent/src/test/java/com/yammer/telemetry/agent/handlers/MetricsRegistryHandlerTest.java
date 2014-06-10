@@ -1,10 +1,7 @@
 package com.yammer.telemetry.agent.handlers;
 
 import com.yammer.metrics.Metrics;
-import com.yammer.metrics.core.Meter;
-import com.yammer.metrics.core.MetricsRegistry;
-import com.yammer.metrics.core.Timer;
-import com.yammer.metrics.core.TimerContext;
+import com.yammer.metrics.core.*;
 import com.yammer.telemetry.test.TransformedTest;
 import com.yammer.telemetry.tracing.*;
 import javassist.ClassPool;
@@ -118,6 +115,38 @@ public class MetricsRegistryHandlerTest {
             AnnotationData data = annotations.get(0);
             assertEquals("Mark Meter: \"com.yammer.telemetry.agent.handlers\":type=\"TransformedTests\",name=\"testRecordsSpanAnnotationAroundMeter\"", data.getName());
             assertEquals("13", data.getMessage());
+        }
+
+        @TransformedTest
+        public static void testRecordsSpanAnnotationsAroundCounter() throws Exception {
+            InMemorySpanSinkSource sink = new InMemorySpanSinkSource();
+            SpanSinkRegistry.register(sink);
+
+            try (Span trace = Span.startTrace("trace")) {
+                Counter meter = Metrics.newCounter(TransformedTests.class, "testRecordsSpanAnnotationsAroundCounter");
+                meter.inc(13);
+                meter.dec(10);
+                meter.clear();
+            }
+
+            assertEquals(1, sink.getTraces().size());
+            Trace trace = sink.getTraces().iterator().next();
+            SpanData root = trace.getRoot();
+            assertEquals("trace", root.getName());
+            List<AnnotationData> annotations = trace.getAnnotations(root);
+            assertEquals(3, annotations.size());
+
+            AnnotationData data0 = annotations.get(0);
+            assertEquals("Inc Counter: \"com.yammer.telemetry.agent.handlers\":type=\"TransformedTests\",name=\"testRecordsSpanAnnotationsAroundCounter\"", data0.getName());
+            assertEquals("13", data0.getMessage());
+
+            AnnotationData data1 = annotations.get(1);
+            assertEquals("Dec Counter: \"com.yammer.telemetry.agent.handlers\":type=\"TransformedTests\",name=\"testRecordsSpanAnnotationsAroundCounter\"", data1.getName());
+            assertEquals("10", data1.getMessage());
+
+            AnnotationData data3 = annotations.get(2);
+            assertEquals("Cleared Counter: \"com.yammer.telemetry.agent.handlers\":type=\"TransformedTests\",name=\"testRecordsSpanAnnotationsAroundCounter\"", data3.getName());
+            assertEquals(null, data3.getMessage());
         }
 
     }
