@@ -1,5 +1,6 @@
 package com.yammer.metrics.core;
 
+import com.google.common.base.Optional;
 import com.yammer.telemetry.tracing.Span;
 
 import java.util.concurrent.Callable;
@@ -17,8 +18,17 @@ public class InstrumentedTimer extends Timer implements MetricNameAware {
 
     @Override
     public <T> T time(Callable<T> event) throws Exception {
-        try (Span ignored = Span.startSpan("Timer: " + metricName)) {
+        final Optional<Span> currentSpan = Span.currentSpan();
+        try {
+            for (Span span : currentSpan.asSet()) {
+                span.addAnnotation("Start Timer", String.valueOf(metricName));
+            }
+
             return super.time(event);
+        } finally {
+            for (Span span : currentSpan.asSet()) {
+                span.addAnnotation("Stop Timer", String.valueOf(metricName));
+            }
         }
     }
 

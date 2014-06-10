@@ -6,6 +6,8 @@ import com.yammer.telemetry.test.TransformedTest;
 import com.yammer.telemetry.tracing.*;
 import javassist.ClassPool;
 import javassist.CtClass;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 
 import java.util.List;
@@ -17,6 +19,11 @@ import static org.junit.Assert.*;
 
 public class MetricsRegistryHandlerTest {
     private MetricsRegistryHandler handler = new MetricsRegistryHandler();
+
+    @After
+    public void clearSpanSinkRegistry() {
+        SpanSinkRegistry.clear();
+    }
 
     @Test
     public void testNothingForNonMetricsRegistryClass() throws Exception {
@@ -60,40 +67,69 @@ public class MetricsRegistryHandlerTest {
 
     @SuppressWarnings("UnusedDeclaration")
     public static class TransformedTests {
-        @TransformedTest
-        public static void testRecordsSpanAroundCallable() throws Exception {
-            InMemorySpanSinkSource sink = new InMemorySpanSinkSource();
-            SpanSinkRegistry.register(sink);
-
-            Timer timer = Metrics.newTimer(TransformedTests.class, "testRecordsSpanAroundCallable");
-            timer.time(new Callable<Void>() {
-                @Override
-                public Void call() throws Exception {
-                    return null;
-                }
-            });
-
-            assertEquals(1, sink.getTraces().size());
-            Trace trace = sink.getTraces().iterator().next();
-            SpanData root = trace.getRoot();
-            assertEquals("Timer: \"com.yammer.telemetry.agent.handlers\":type=\"TransformedTests\",name=\"testRecordsSpanAroundCallable\"", root.getName());
-            assertTrue(trace.getAnnotations(root).isEmpty());
+        @Before
+        public static void clearSpanSinkRegistry() {
+            SpanSinkRegistry.clear();
         }
 
         @TransformedTest
-        public static void testRecordsSpanAroundTimerContext() throws Exception {
+        public static void testRecordsSpanAnnotationsAroundCallable() throws Exception {
             InMemorySpanSinkSource sink = new InMemorySpanSinkSource();
             SpanSinkRegistry.register(sink);
 
-            Timer timer = Metrics.newTimer(TransformedTests.class, "testRecordsSpanAroundTimerContext");
-            TimerContext timerContext = timer.time();
-            timerContext.stop();
+            try (Span trace = Span.startTrace("trace")) {
+                Timer timer = Metrics.newTimer(TransformedTests.class, "testRecordsSpanAnnotationsAroundCallable");
+                timer.time(new Callable<Void>() {
+                    @Override
+                    public Void call() throws Exception {
+                        return null;
+                    }
+                });
+            }
 
             assertEquals(1, sink.getTraces().size());
             Trace trace = sink.getTraces().iterator().next();
             SpanData root = trace.getRoot();
-            assertEquals("Timer: \"com.yammer.telemetry.agent.handlers\":type=\"TransformedTests\",name=\"testRecordsSpanAroundTimerContext\"", root.getName());
-            assertTrue(trace.getAnnotations(root).isEmpty());
+
+            assertEquals("trace", root.getName());
+            List<AnnotationData> annotations = trace.getAnnotations(root);
+            assertEquals(2, annotations.size());
+
+            AnnotationData data0 = annotations.get(0);
+            assertEquals("Start Timer", data0.getName());
+            assertEquals("\"com.yammer.telemetry.agent.handlers\":type=\"TransformedTests\",name=\"testRecordsSpanAnnotationsAroundCallable\"", data0.getMessage());
+
+            AnnotationData data1 = annotations.get(1);
+            assertEquals("Stop Timer", data1.getName());
+            assertEquals("\"com.yammer.telemetry.agent.handlers\":type=\"TransformedTests\",name=\"testRecordsSpanAnnotationsAroundCallable\"", data1.getMessage());
+        }
+
+        @TransformedTest
+        public static void testRecordsSpanAnnotationsAroundTimerContext() throws Exception {
+            InMemorySpanSinkSource sink = new InMemorySpanSinkSource();
+            SpanSinkRegistry.register(sink);
+
+            try (Span trace = Span.startTrace("trace")) {
+                Timer timer = Metrics.newTimer(TransformedTests.class, "testRecordsSpanAnnotationsAroundTimerContext");
+                TimerContext timerContext = timer.time();
+                timerContext.stop();
+            }
+
+            assertEquals(1, sink.getTraces().size());
+            Trace trace = sink.getTraces().iterator().next();
+            SpanData root = trace.getRoot();
+
+            assertEquals("trace", root.getName());
+            List<AnnotationData> annotations = trace.getAnnotations(root);
+            assertEquals(2, annotations.size());
+
+            AnnotationData data0 = annotations.get(0);
+            assertEquals("Start Timer", data0.getName());
+            assertEquals("\"com.yammer.telemetry.agent.handlers\":type=\"TransformedTests\",name=\"testRecordsSpanAnnotationsAroundTimerContext\"", data0.getMessage());
+
+            AnnotationData data1 = annotations.get(1);
+            assertEquals("Stop Timer", data1.getName());
+            assertEquals("\"com.yammer.telemetry.agent.handlers\":type=\"TransformedTests\",name=\"testRecordsSpanAnnotationsAroundTimerContext\"", data1.getMessage());
         }
 
         @TransformedTest

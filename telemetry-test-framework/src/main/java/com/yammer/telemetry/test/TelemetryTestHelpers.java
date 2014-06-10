@@ -2,13 +2,16 @@ package com.yammer.telemetry.test;
 
 import com.yammer.telemetry.instrumentation.ClassInstrumentationHandler;
 import com.yammer.telemetry.instrumentation.TelemetryTransformer;
+import org.junit.Before;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 import static org.junit.Assert.fail;
 
@@ -56,6 +59,13 @@ public class TelemetryTestHelpers {
     }
 
     public static void runTransformed(Class<?> clazz, String method, ClassInstrumentationHandler... handlers) throws Exception {
+        Set<String> befores = new HashSet<>();
+        for (Method beforeMethod : clazz.getDeclaredMethods()) {
+            if (beforeMethod.isAnnotationPresent(Before.class)) {
+                befores.add(beforeMethod.getName());
+            }
+        }
+
         TelemetryTransformer transformer = new TelemetryTransformer();
         for (ClassInstrumentationHandler handler : handlers) {
             transformer.addHandler(handler);
@@ -63,6 +73,10 @@ public class TelemetryTestHelpers {
 
         try (TransformingClassLoader loader = new TransformingClassLoader(transformer)) {
             Class<?> aClass = loader.loadClass(clazz.getName());
+            for (String beforeMethod : befores) {
+                Method before = aClass.getDeclaredMethod(beforeMethod);
+                before.invoke(null);
+            }
             Method declaredMethod = aClass.getDeclaredMethod(method);
             declaredMethod.invoke(null);
         }

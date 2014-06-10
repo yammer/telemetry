@@ -1,13 +1,19 @@
 package com.yammer.metrics.core;
 
+import com.google.common.base.Optional;
 import com.yammer.telemetry.tracing.Span;
 
 public class InstrumentedTimerContext extends TimerContext {
-    private final Span span;
+    private final Optional<Span> currentSpan;
+    private final MetricName metricName;
 
     public InstrumentedTimerContext(InstrumentedTimer timer, Clock clock) {
         super(timer, clock);
-        span = Span.startSpan("Timer: " + timer.getMetricName());
+        currentSpan = Span.currentSpan();
+        metricName = timer.getMetricName();
+        for (Span span : Span.currentSpan().asSet()) {
+            span.addAnnotation("Start Timer", String.valueOf(metricName));
+        }
     }
 
     @Override
@@ -15,7 +21,9 @@ public class InstrumentedTimerContext extends TimerContext {
         try {
             super.stop();
         } finally {
-            span.end();
+            for (Span span : currentSpan.asSet()) {
+                span.addAnnotation("Stop Timer", String.valueOf(metricName));
+            }
         }
     }
 }
