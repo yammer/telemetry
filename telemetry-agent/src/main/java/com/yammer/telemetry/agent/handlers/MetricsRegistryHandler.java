@@ -30,7 +30,7 @@ public class MetricsRegistryHandler extends SubTypeInstrumentationHandler {
         return true;
     }
 
-    private void switchImplementation(CtClass cc, ClassPool pool, String from, String to) throws NotFoundException, CannotCompileException {
+    public static void switchImplementation(CtClass cc, ClassPool pool, String from, String to) throws NotFoundException, CannotCompileException {
         CtClass oldClass = pool.get(from);
         CtClass newClass = pool.get(to);
 

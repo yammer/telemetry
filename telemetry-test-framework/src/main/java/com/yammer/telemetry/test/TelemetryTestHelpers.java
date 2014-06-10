@@ -8,6 +8,7 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -78,7 +79,12 @@ public class TelemetryTestHelpers {
                 before.invoke(null);
             }
             Method declaredMethod = aClass.getDeclaredMethod(method);
-            declaredMethod.invoke(null);
+
+            if (Modifier.isStatic(declaredMethod.getModifiers())) {
+                declaredMethod.invoke(null);
+            } else {
+                declaredMethod.invoke(aClass.newInstance());
+            }
         }
     }
 }

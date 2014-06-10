@@ -3,6 +3,7 @@ package com.yammer.telemetry.agent;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.yammer.telemetry.agent.handlers.ApacheHttpClientClassHandler;
+import com.yammer.telemetry.agent.handlers.EnvironmentExecutorClassHandler;
 import com.yammer.telemetry.agent.handlers.HttpServletClassHandler;
 import com.yammer.telemetry.agent.handlers.MetricsRegistryHandler;
 import com.yammer.telemetry.agent.jdbc.JdbcDriverClassHandler;
@@ -48,6 +49,10 @@ public class TelemetryAgent {
                     if (config.getInstruments().contains("metrics")) {
                         transformer.addHandler(new MetricsRegistryHandler());
                     }
+                    if (config.getInstruments().contains("executors")) {
+                        transformer.addHandler(new EnvironmentExecutorClassHandler());
+                    }
+
                     inst.addTransformer(transformer);
                 }
             } catch (IOException e) {

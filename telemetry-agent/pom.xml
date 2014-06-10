@@ -24,11 +24,6 @@
             <artifactId>telemetry-instrumentation</artifactId>
             <version>${project.version}</version>
         </dependency>
-        <!--<dependency>-->
-            <!--<groupId>com.yammer</groupId>-->
-            <!--<artifactId>telemetry-service-sink</artifactId>-->
-            <!--<version>${project.version}</version>-->
-        <!--</dependency>-->
         <dependency>
             <groupId>com.fasterxml.jackson.dataformat</groupId>
             <artifactId>jackson-dataformat-yaml</artifactId>

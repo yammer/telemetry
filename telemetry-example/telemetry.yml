@@ -3,6 +3,7 @@ instruments:
 - outbound-http
 - database
 - metrics
+- executors
 
 sinks:
   log:
