@@ -74,17 +74,13 @@ public class TelemetryTestHelpers {
 
         try (TransformingClassLoader loader = new TransformingClassLoader(transformer)) {
             Class<?> aClass = loader.loadClass(clazz.getName());
+            Object instance = aClass.newInstance();
             for (String beforeMethod : befores) {
                 Method before = aClass.getDeclaredMethod(beforeMethod);
-                before.invoke(null);
+                before.invoke(instance);
             }
             Method declaredMethod = aClass.getDeclaredMethod(method);
-
-            if (Modifier.isStatic(declaredMethod.getModifiers())) {
-                declaredMethod.invoke(null);
-            } else {
-                declaredMethod.invoke(aClass.newInstance());
-            }
+            declaredMethod.invoke(instance);
         }
     }
 }
