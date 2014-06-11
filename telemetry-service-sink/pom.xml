@@ -5,7 +5,7 @@
     <parent>
         <artifactId>telemetry-parent</artifactId>
         <groupId>com.yammer.telemetry</groupId>
-        <version>0.0.1</version>
+        <version>0.0.2-SNAPSHOT</version>
     </parent>
 
     <artifactId>telemetry-service-sink</artifactId>
