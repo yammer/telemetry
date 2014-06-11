@@ -41,9 +41,16 @@ public class InstrumentedScheduledThreadPoolExecutor extends ScheduledThreadPool
         super.beforeExecute(t, r);
 
         if (r instanceof InstrumentedRunnableScheduledFuture) {
-            Span span = Span.attachSpan(((InstrumentedRunnableScheduledFuture) r).getTraceId(), ((InstrumentedRunnableScheduledFuture) r).getSpanId(), ((InstrumentedRunnableScheduledFuture) r).getName());
-            local.set(span);
-            span.addAnnotation("Before", ((InstrumentedRunnableScheduledFuture) r).getName());
+            InstrumentedRunnableScheduledFuture instrumentedRunnable = (InstrumentedRunnableScheduledFuture) r;
+
+            BigInteger traceId = instrumentedRunnable.getTraceId();
+            BigInteger spanId = instrumentedRunnable.getSpanId();
+
+            if (traceId != null && spanId != null) {
+                Span span = Span.attachSpan(traceId, spanId, instrumentedRunnable.getName());
+                local.set(span);
+                span.addAnnotation("Before", instrumentedRunnable.getName());
+            }
         }
     }
 
@@ -53,8 +60,10 @@ public class InstrumentedScheduledThreadPoolExecutor extends ScheduledThreadPool
 
         if (r instanceof InstrumentedRunnableScheduledFuture) {
             Span span = local.get();
-            span.addAnnotation("After", ((InstrumentedRunnableScheduledFuture) r).getName());
-            span.end();
+            if (span != null) {
+                span.addAnnotation("After", ((InstrumentedRunnableScheduledFuture) r).getName());
+                span.end();
+            }
         }
     }
 
