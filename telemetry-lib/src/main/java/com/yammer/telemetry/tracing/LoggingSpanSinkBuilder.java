@@ -1,9 +1,7 @@
 package com.yammer.telemetry.tracing;
 
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.MapperFeature;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.guava.GuavaModule;
 import com.google.common.collect.ImmutableList;
 
@@ -60,7 +58,7 @@ public class LoggingSpanSinkBuilder {
 
         public LogJobFactory(WriterProvider writerProvider) {
             this.writerProvider = writerProvider;
-            this.objectMapper = new ObjectMapper().registerModule(new GuavaModule());
+            this.objectMapper = new ObjectMapper().setSerializationInclusion(JsonInclude.Include.NON_NULL).registerModule(new GuavaModule());
         }
 
         @Override

@@ -13,6 +13,12 @@ public interface SpanData {
 
     String getName();
 
+    String getHost();
+
+    String getServiceName();
+
+    String getServiceHost();
+
     long getStartTimeNanos();
 
     long getDuration();

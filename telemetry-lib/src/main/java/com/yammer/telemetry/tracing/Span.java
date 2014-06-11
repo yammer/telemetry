@@ -5,6 +5,8 @@ import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
 
 import java.math.BigInteger;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.*;
 import java.util.logging.Logger;
 
@@ -24,6 +26,9 @@ public class Span implements AutoCloseable, SpanData {
     private final Optional<BigInteger> parentId;
     private final BigInteger id;
     private final String name;
+    private final String serviceName;
+    private final String host;
+    private final String serviceHost;
     private final long startTimeNanos;
     private long duration;
     private final boolean logSpan;
@@ -99,12 +104,33 @@ public class Span implements AutoCloseable, SpanData {
         this.traceId = traceId;
         this.parentId = parentId;
         this.id = id;
-        this.name = name;
+        String hostname = getHostname();
+        if (logSpan) {
+            this.name = name;
+            this.host = hostname;
+            this.serviceName = null;
+            this.serviceHost = null;
+        } else {
+            this.name = null;
+            this.host = null;
+            this.serviceName = name;
+            this.serviceHost = hostname;
+        }
         this.startTimeNanos = startTimeNanos;
         this.duration = startNanos;
         this.logSpan = logSpan;
         this.traceLevel = traceLevel;
         this.annotations = new LinkedList<>();
+    }
+
+    // todo cache this?
+    private static String getHostname() {
+        try {
+            InetAddress address = InetAddress.getLocalHost();
+            return address.getHostName();
+        } catch (UnknownHostException ignored) {
+            return "unknown";
+        }
     }
 
     public static Optional<Span> currentSpan() {
@@ -133,7 +159,7 @@ public class Span implements AutoCloseable, SpanData {
         if (context != null) {
             final Iterable<SpanSink> sinks = SpanSinkRegistry.getSpanSinks();
             context.endSpan(this);
-            if (logSpan && traceLevel == TraceLevel.ON) {
+            if (traceLevel == TraceLevel.ON) {
                 for (SpanSink sink : sinks) {
                     sink.record(this);
                 }
@@ -184,6 +210,18 @@ public class Span implements AutoCloseable, SpanData {
 
     public String getName() {
         return name;
+    }
+
+    public String getServiceName() {
+        return serviceName;
+    }
+
+    public String getHost() {
+        return host;
+    }
+
+    public String getServiceHost() {
+        return serviceHost;
     }
 
     public long getStartTimeNanos() {

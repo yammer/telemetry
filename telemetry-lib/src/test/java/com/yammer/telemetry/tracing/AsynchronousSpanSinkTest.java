@@ -154,6 +154,21 @@ public class AsynchronousSpanSinkTest {
         }
 
         @Override
+        public String getHost() {
+            return "Host-001";
+        }
+
+        @Override
+        public String getServiceName() {
+            return null;
+        }
+
+        @Override
+        public String getServiceHost() {
+            return null;
+        }
+
+        @Override
         public long getStartTimeNanos() {
             return startTime;
         }

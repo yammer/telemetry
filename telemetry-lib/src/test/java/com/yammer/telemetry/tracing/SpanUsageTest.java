@@ -44,7 +44,11 @@ public class SpanUsageTest {
             }
         });
 
-        assertNull(trace.getRoot());
+        SpanData rootSpan = trace.getRoot();
+        assertEquals("wubba", rootSpan.getServiceName());
+        assertNotNull(rootSpan.getServiceHost());
+        assertNull(rootSpan.getName());
+        assertNull(rootSpan.getHost());
 
         List<AnnotationData> annotations = trace.getAnnotations(new SpanId(BigInteger.TEN));
         assertEquals(3, annotations.size());
@@ -148,7 +152,14 @@ public class SpanUsageTest {
 
         assertEquals(1, sink.getTraces().size());
         Trace trace = sink.getTrace(BigInteger.ONE);
-        assertNull(trace.getRoot());
+        SpanData rootSpan = trace.getRoot();
+        assertNotNull(rootSpan);
+        assertEquals(BigInteger.ONE, rootSpan.getTraceId());
+        assertEquals(BigInteger.TEN, rootSpan.getId());
+        assertEquals("Foof", rootSpan.getServiceName());
+        assertNotNull(rootSpan.getServiceHost());
+        assertNull(rootSpan.getName());
+        assertNull(rootSpan.getHost());
         assertEquals(ImmutableList.<SpanData>of(subFoof), trace.getChildren(foof));
     }
 
@@ -163,7 +174,11 @@ public class SpanUsageTest {
 
         assertEquals(1, sink.getTraces().size());
         Trace trace = sink.getTrace(BigInteger.ONE);
-        assertNull(trace.getRoot());
+        SpanData rootSpan = trace.getRoot();
+        assertEquals("Foof", rootSpan.getServiceName());
+        assertNotNull(rootSpan.getServiceHost());
+        assertNull(rootSpan.getName());
+        assertNull(rootSpan.getHost());
         assertEquals(ImmutableList.<SpanData>of(subFoof), trace.getChildren(foof));
     }
 
@@ -254,6 +269,21 @@ public class SpanUsageTest {
 
         @Override
         public String getName() {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public String getHost() {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public String getServiceName() {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public String getServiceHost() {
             throw new UnsupportedOperationException();
         }
 

@@ -10,6 +10,9 @@ public class BeanSpanData implements SpanData {
     private BigInteger id;
     private Optional<BigInteger> parentId;
     private String name;
+    private String host;
+    private String serviceName;
+    private String serviceHost;
     private long startTimeNanos;
     private long duration;
 
@@ -36,6 +39,21 @@ public class BeanSpanData implements SpanData {
     }
 
     @Override
+    public String getHost() {
+        return host;
+    }
+
+    @Override
+    public String getServiceName() {
+        return serviceName;
+    }
+
+    @Override
+    public String getServiceHost() {
+        return serviceHost;
+    }
+
+    @Override
     public long getStartTimeNanos() {
         return startTimeNanos;
     }
@@ -52,6 +70,9 @@ public class BeanSpanData implements SpanData {
                 ", id=" + id +
                 ", parentId=" + parentId +
                 ", name='" + name + '\'' +
+                ", host='" + host + '\'' +
+                ", serviceName='" + serviceName + '\'' +
+                ", serviceHost='" + serviceHost + '\'' +
                 ", startTimeNanos=" + startTimeNanos +
                 ", duration=" + duration +
                 '}';

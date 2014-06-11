@@ -1,5 +1,6 @@
 package com.yammer.telemetry.tracing;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.guava.GuavaModule;
 import com.google.common.base.Optional;
@@ -13,11 +14,12 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 public class LoggingSpanSinkBuilderTest {
 
-    private final ObjectMapper objectMapper = new ObjectMapper().registerModule(new GuavaModule());
+    private final ObjectMapper objectMapper = new ObjectMapper().setSerializationInclusion(JsonInclude.Include.NON_NULL).registerModule(new GuavaModule());
 
     @Test
     public void testLogsSpanData() throws Exception {
@@ -48,6 +50,21 @@ public class LoggingSpanSinkBuilderTest {
             }
 
             @Override
+            public String getHost() {
+                return "SomeHost";
+            }
+
+            @Override
+            public String getServiceName() {
+                return null;
+            }
+
+            @Override
+            public String getServiceHost() {
+                return null;
+            }
+
+            @Override
             public long getStartTimeNanos() {
                 return startTime;
             }
@@ -62,7 +79,10 @@ public class LoggingSpanSinkBuilderTest {
 
         assertEquals(0, spanSink.shutdown(100, TimeUnit.MILLISECONDS));
 
-        assertEquals(objectMapper.writeValueAsString(spanData) + "\n", writer.toString());
+        String output = writer.toString();
+        assertEquals(objectMapper.writeValueAsString(spanData) + "\n", output);
+        assertFalse(output.contains("serviceName"));
+        assertFalse(output.contains("serviceHost"));
     }
 
     @Test
