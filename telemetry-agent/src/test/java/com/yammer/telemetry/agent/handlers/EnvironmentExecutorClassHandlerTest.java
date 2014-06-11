@@ -201,6 +201,7 @@ public class EnvironmentExecutorClassHandlerTest {
             }
 
             final Span innerSpan = latch.poll(100, TimeUnit.MILLISECONDS);
+            Thread.yield();
 
             assertEquals(1, sink.getTraces().size());
 
