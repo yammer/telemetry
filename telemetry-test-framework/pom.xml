@@ -5,7 +5,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <groupId>com.yammer</groupId>
+        <groupId>com.yammer.telemetry</groupId>
         <artifactId>telemetry-parent</artifactId>
         <version>0.0.1-SNAPSHOT</version>
     </parent>
@@ -19,7 +19,7 @@
             <version>4.11</version>
         </dependency>
         <dependency>
-            <groupId>com.yammer</groupId>
+            <groupId>com.yammer.telemetry</groupId>
             <artifactId>telemetry-instrumentation</artifactId>
             <version>${project.version}</version>
         </dependency>

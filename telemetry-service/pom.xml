@@ -6,7 +6,7 @@
 
     <parent>
         <artifactId>telemetry-parent</artifactId>
-        <groupId>com.yammer</groupId>
+        <groupId>com.yammer.telemetry</groupId>
         <version>0.0.1-SNAPSHOT</version>
     </parent>
 
@@ -18,7 +18,7 @@
 
     <dependencies>
         <dependency>
-            <groupId>com.yammer</groupId>
+            <groupId>com.yammer.telemetry</groupId>
             <artifactId>telemetry-lib</artifactId>
             <version>${project.version}</version>
         </dependency>
