@@ -9,6 +9,8 @@ import java.io.StringWriter;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -67,12 +69,17 @@ public class TelemetryTestHelpers {
             }
         }
 
-        TelemetryTransformer transformer = new TelemetryTransformer();
+        final TelemetryTransformer transformer = new TelemetryTransformer();
         for (ClassInstrumentationHandler handler : handlers) {
             transformer.addHandler(handler);
         }
 
-        try (TransformingClassLoader loader = new TransformingClassLoader(transformer)) {
+        try (TransformingClassLoader loader = AccessController.doPrivileged(new PrivilegedAction<TransformingClassLoader>() {
+            @Override
+            public TransformingClassLoader run() {
+                return new TransformingClassLoader(transformer);
+            }
+        })) {
             Class<?> aClass = loader.loadClass(clazz.getName());
             Object instance = aClass.newInstance();
             for (String beforeMethod : befores) {

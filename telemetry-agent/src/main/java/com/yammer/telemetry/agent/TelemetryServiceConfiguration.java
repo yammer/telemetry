@@ -2,11 +2,8 @@ package com.yammer.telemetry.agent;
 
 public class TelemetryServiceConfiguration {
     private boolean enabled = false;
-    private String host = null;
-    private Integer port = null;
-
-    public TelemetryServiceConfiguration() {
-    }
+    private String host;
+    private Integer port;
 
     public boolean isEnabled() {
         return enabled;

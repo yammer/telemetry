@@ -5,11 +5,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.guava.GuavaModule;
 import com.google.common.collect.ImmutableList;
 
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.io.Writer;
+import java.io.*;
 import java.math.BigInteger;
+import java.nio.charset.Charset;
 import java.util.HashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -40,11 +38,11 @@ public class LoggingSpanSinkBuilder {
     public LoggingSpanSinkBuilder withFile(final String file) throws IOException {
         // We try and open the file for append to get early warning of misconfiguration, it will fail is file is not
         // writable.
-        try (FileWriter ignored = new FileWriter(file, true)) {
+        try (FileOutputStream ignored = new FileOutputStream(file, true)) {
             return usingWriterProvider(new WriterProvider() {
                 @Override
                 public Writer getWriter() throws IOException {
-                    return new FileWriter(file, true);
+                    return new OutputStreamWriter(new FileOutputStream(file, true), Charset.forName("UTF-8").newEncoder());
                 }
             });
         }
