@@ -79,7 +79,7 @@ public class Span implements AutoCloseable, SpanData {
         if (!traceId.isPresent()) {
             traceId = context.currentTraceId();
             if (!traceId.isPresent()) {
-                traceId = Optional.of(generateSpanId());
+                traceId = Optional.of(generateTraceId());
             }
         }
 
@@ -232,8 +232,12 @@ public class Span implements AutoCloseable, SpanData {
         return duration;
     }
 
-    private static BigInteger generateSpanId() {
+    private static BigInteger generateTraceId() {
         return new BigInteger(64, ID_GENERATOR);
+    }
+
+    private static BigInteger generateSpanId() {
+        return new BigInteger(32, ID_GENERATOR);
     }
 
     public static Sampling getSampler() {
