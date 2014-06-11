@@ -1,8 +1,10 @@
 package com.yammer.telemetry.tracing;
 
+import java.math.BigInteger;
+
 public interface SpanSink {
 
     void record(SpanData spanData);
 
-    void recordAnnotation(long traceId, long spanId, AnnotationData annotationData);
+    void recordAnnotation(BigInteger traceId, BigInteger spanId, AnnotationData annotationData);
 }

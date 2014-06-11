@@ -1,7 +1,9 @@
-package com.yammer.telemetry.agent;
+package com.yammer.telemetry.instrumentation;
 
-import com.yammer.telemetry.agent.handlers.ClassInstrumentationHandler;
-import javassist.*;
+import javassist.ByteArrayClassPath;
+import javassist.ClassPool;
+import javassist.CtClass;
+import javassist.LoaderClassPath;
 
 import java.lang.instrument.ClassFileTransformer;
 import java.lang.instrument.IllegalClassFormatException;
@@ -22,9 +24,25 @@ public class TelemetryTransformer implements ClassFileTransformer {
                             Class<?> classBeingRedefined,
                             ProtectionDomain protectionDomain,
                             byte[] classfileBuffer) throws IllegalClassFormatException {
+        return transform(loader, className, classfileBuffer, ClassPool.getDefault());
+    }
+
+    /**
+     * Allows specifying the ClassPool, this allows tests to essentially 'reload' classes.
+     *
+     * @param loader
+     * @param className
+     * @param classfileBuffer
+     * @param cp
+     * @return
+     * @throws IllegalClassFormatException
+     */
+    public byte[] transform(ClassLoader loader,
+                            String className,
+                            byte[] classfileBuffer,
+                            ClassPool cp) throws IllegalClassFormatException {
         try {
             final String realClassName = className.replace('/', '.');
-            ClassPool cp = ClassPool.getDefault();
             cp.insertClassPath(new LoaderClassPath(loader));
             cp.insertClassPath(new ByteArrayClassPath(realClassName, classfileBuffer));
             CtClass cc = cp.get(realClassName);

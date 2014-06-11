@@ -26,12 +26,14 @@ public class TreesResource {
         final Collection<Trace> traces = spanSource.getTraces();
         final ImmutableList.Builder<Tree> builder = new ImmutableList.Builder<>();
         for (Trace trace : traces) {
-            builder.add(traceToTree(trace));
+            Tree tree = traceToTree(trace);
+            if (tree != null) builder.add(tree);
         }
         return builder.build();
     }
 
     private Tree traceToTree(Trace trace) {
+        if (trace.getRoot() == null) return null;
         return new Tree(trace.getId(), treeSpanFor(trace.getRoot(), trace));
     }
 

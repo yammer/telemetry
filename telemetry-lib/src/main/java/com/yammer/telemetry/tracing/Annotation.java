@@ -5,8 +5,6 @@ public class Annotation implements AnnotationData {
     private String name;
     private String message;
 
-    private Annotation() { }
-
     public Annotation(long startTimeNanos, String name) {
         this(startTimeNanos, name, null);
     }

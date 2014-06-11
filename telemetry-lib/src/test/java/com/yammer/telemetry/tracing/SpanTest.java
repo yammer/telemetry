@@ -2,18 +2,27 @@ package com.yammer.telemetry.tracing;
 
 import com.google.common.base.Optional;
 import org.junit.After;
+import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 
+import java.math.BigInteger;
+import java.util.EmptyStackException;
 import java.util.List;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.CyclicBarrier;
+import java.util.concurrent.TimeUnit;
 
 import static org.junit.Assert.*;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.*;
 
 public class SpanTest {
+    @Rule
+    public SpanContextRule spanContextRule = new SpanContextRule();
+
+
     @After
     public void clearSpanSinkRegistry() {
         SpanSinkRegistry.clear();
@@ -25,12 +34,12 @@ public class SpanTest {
         SpanSinkRegistry.register(sink);
 
         final Span span = Span.startTrace("testSpan");
-
         span.end();
+
         verify(sink).record(span);
 
         assertNotNull(span.getId());
-        assertEquals(Optional.absent(), span.getParentId());
+        assertEquals(Optional.<BigInteger>absent(), span.getParentId());
         assertEquals("testSpan", span.getName());
         assertTrue(span.getDuration() >= 0);
     }
@@ -94,8 +103,69 @@ public class SpanTest {
 
         final List<Span> spans = captor.getAllValues();
         assertEquals(2, spans.size());
-        assertEquals(Optional.absent(), spans.get(0).getParentId());
-        assertEquals(Optional.absent(), spans.get(1).getParentId());
+        assertEquals(Optional.<BigInteger>absent(), spans.get(0).getParentId());
+        assertEquals(Optional.<BigInteger>absent(), spans.get(1).getParentId());
+    }
+
+    @Test
+    public void testSpansClosedInIncorrectOrderClearsContextButDoesNotLogUnclosedSpans() {
+        final SpanSink sink = mock(SpanSink.class);
+        SpanSinkRegistry.register(sink);
+
+        Span trace = Span.startTrace("The Trace");
+
+        // These are deliberately not closed
+        Span.startSpan("one");
+        Span.startSpan("two");
+
+        trace.end();
+
+        assertTrue(Span.captureSpans().isEmpty());
+
+        verify(sink).record(trace);
+        verifyZeroInteractions(sink);
+    }
+
+    @Test(expected = EmptyStackException.class)
+    public void testEndingASpanMoreThanOnce() {
+        final SpanSink sink = mock(SpanSink.class);
+        SpanSinkRegistry.register(sink);
+
+        Span trace = Span.startTrace("The Trace");
+
+        trace.end();
+        assertTrue(Span.captureSpans().isEmpty());
+        verify(sink).record(trace);
+
+        trace.end();
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void testEndingASpanFromInvalidThreadContext() throws Throwable {
+        final SpanSink sink = mock(SpanSink.class);
+        SpanSinkRegistry.register(sink);
+
+        try (final Span trace = Span.startTrace("The Trace")) {
+
+            final CountDownLatch successLatch = new CountDownLatch(1);
+            final ArrayBlockingQueue<Throwable> expectedException = new ArrayBlockingQueue<>(1);
+
+            // contrived to allow ending a span in a different thread where the spanContext is unavailable.
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        trace.end();
+                        successLatch.countDown();
+                    } catch (Throwable t) {
+                        expectedException.offer(t);
+                    }
+                }
+            }).start();
+
+            //noinspection ThrowableResultOfMethodCallIgnored
+            throw expectedException.poll(100, TimeUnit.MILLISECONDS);
+        }
     }
 
     private class BarrierSpanRunner implements Runnable {
@@ -109,10 +179,8 @@ public class SpanTest {
 
         @Override
         public void run() {
-            try {
-                final Span span = Span.startTrace(spanName);
+            try (Span ignored = Span.startTrace(spanName)) {
                 barrier.await();
-                span.end();
             } catch (Exception e) {
                 throw new RuntimeException("Problem tracing a span", e);
             }

@@ -21,23 +21,56 @@
         </dependency>
         <dependency>
             <groupId>com.yammer</groupId>
-            <artifactId>telemetry-service-sink</artifactId>
+            <artifactId>telemetry-instrumentation</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>com.fasterxml.jackson.dataformat</groupId>
             <artifactId>jackson-dataformat-yaml</artifactId>
             <version>${jackson.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.yammer.metrics</groupId>
+            <artifactId>metrics-core</artifactId>
+            <version>2.2.0</version>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>
-            <version>14.0.1</version>
+            <version>${guava.version}</version>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>org.javassist</groupId>
             <artifactId>javassist</artifactId>
-            <version>3.18.0-GA</version>
+            <version>${javassist.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.datatype</groupId>
+            <artifactId>jackson-datatype-guava</artifactId>
+            <version>${jackson.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.yammer.dropwizard</groupId>
+            <artifactId>dropwizard-core</artifactId>
+            <version>${dropwizard.version}</version>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>com.yammer</groupId>
+            <artifactId>telemetry-test-framework</artifactId>
+            <version>${project.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.yammer.dropwizard</groupId>
+            <artifactId>dropwizard-client</artifactId>
+            <version>${dropwizard.version}</version>
+            <scope>test</scope>
         </dependency>
     </dependencies>
 
@@ -68,6 +101,8 @@
                 <version>1.4</version>
                 <configuration>
                     <createDependencyReducedPom>true</createDependencyReducedPom>
+                    <minimizeJar>false</minimizeJar>
+                    <keepDependenciesWithProvidedScope>false</keepDependenciesWithProvidedScope>
                     <filters>
                         <filter>
                             <artifact>*:*</artifact>

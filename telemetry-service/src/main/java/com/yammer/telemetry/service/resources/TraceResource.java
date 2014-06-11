@@ -9,6 +9,7 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response;
+import java.math.BigInteger;
 
 @Path("/tracing/{id}")
 public class TraceResource {
@@ -19,7 +20,7 @@ public class TraceResource {
     }
 
     @GET
-    public TraceView getTraceView(@PathParam("id") long traceId) {
+    public TraceView getTraceView(@PathParam("id") BigInteger traceId) {
         final Trace trace = source.getTrace(traceId);
         if (trace != null) {
             return new TraceView(trace);

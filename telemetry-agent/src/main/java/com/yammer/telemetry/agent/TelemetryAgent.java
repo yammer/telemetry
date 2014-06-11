@@ -3,9 +3,13 @@ package com.yammer.telemetry.agent;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.yammer.telemetry.agent.handlers.ApacheHttpClientClassHandler;
+import com.yammer.telemetry.agent.handlers.EnvironmentExecutorClassHandler;
 import com.yammer.telemetry.agent.handlers.HttpServletClassHandler;
+import com.yammer.telemetry.agent.handlers.MetricsRegistryHandler;
 import com.yammer.telemetry.agent.jdbc.JdbcDriverClassHandler;
-import com.yammer.telemetry.sinks.TelemetryServiceSpanSink;
+import com.yammer.telemetry.instrumentation.TelemetryTransformer;
+import com.yammer.telemetry.tracing.LoggingSpanSinkBuilder;
+import com.yammer.telemetry.tracing.Span;
 import com.yammer.telemetry.tracing.SpanSinkRegistry;
 
 import java.io.File;
@@ -23,12 +27,13 @@ public class TelemetryAgent {
             try {
                 TelemetryConfiguration config = loadConfiguration(agentArgs);
 
+                Span.setSampler(config.getSampler());
                 Annotations.setServiceAnnotations(config.getAnnotations());
 
                 if (config.isEnabled()) {
-                    TelemetryServiceConfiguration telemetry = config.getSinks().getTelemetry();
-                    if (telemetry.isEnabled()) {
-                        SpanSinkRegistry.register(new TelemetryServiceSpanSink(telemetry.getHost(), telemetry.getPort()));
+                    LogConfiguration log = config.getSinks().getLog();
+                    if (log.isEnabled()) {
+                        SpanSinkRegistry.register(new LoggingSpanSinkBuilder().withFile(log.getFile()).build());
                     }
 
                     final TelemetryTransformer transformer = new TelemetryTransformer();
@@ -41,6 +46,13 @@ public class TelemetryAgent {
                     if (config.getInstruments().contains("database")) {
                         transformer.addHandler(new JdbcDriverClassHandler());
                     }
+                    if (config.getInstruments().contains("metrics")) {
+                        transformer.addHandler(new MetricsRegistryHandler());
+                    }
+                    if (config.getInstruments().contains("executors")) {
+                        transformer.addHandler(new EnvironmentExecutorClassHandler());
+                    }
+
                     inst.addTransformer(transformer);
                 }
             } catch (IOException e) {

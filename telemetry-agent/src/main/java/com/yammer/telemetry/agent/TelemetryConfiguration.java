@@ -1,5 +1,9 @@
 package com.yammer.telemetry.agent;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.yammer.telemetry.tracing.Sampling;
+
+import javax.validation.constraints.NotNull;
 import java.util.Collections;
 import java.util.List;
 
@@ -8,8 +12,8 @@ public class TelemetryConfiguration {
     private SinkConfiguration sinks = new SinkConfiguration();
     private ServiceAnnotations annotations = new ServiceAnnotations("unknown");
 
-    private TelemetryConfiguration() {
-    }
+    @NotNull
+    private Sampling sampler = Sampling.ON;
 
     public List<String> getInstruments() {
         return instruments;
@@ -25,5 +29,12 @@ public class TelemetryConfiguration {
 
     public boolean isEnabled() {
         return (instruments.size() > 0) && sinks.isEnabled();
+    }
+
+    public void setSampler(String sampler) {
+        this.sampler = Sampling.valueOf(sampler);
+    }
+    public Sampling getSampler() {
+        return sampler;
     }
 }

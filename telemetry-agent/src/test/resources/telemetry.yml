@@ -1,0 +1,14 @@
+instruments:
+- inbound-http
+- outbound-http
+- database
+
+sinks:
+  log:
+    enabled: true
+    file: example-telemetry.log
+
+annotations:
+  service: example
+
+sampler: off

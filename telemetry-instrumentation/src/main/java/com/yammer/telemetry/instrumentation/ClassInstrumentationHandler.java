@@ -1,4 +1,4 @@
-package com.yammer.telemetry.agent.handlers;
+package com.yammer.telemetry.instrumentation;
 
 import javassist.ClassPool;
 import javassist.CtClass;

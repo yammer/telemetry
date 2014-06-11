@@ -4,9 +4,9 @@
     final String traceId = $1.getHeader(HttpHeaderNames.TRACE_ID);
     final String spanId = $1.getHeader(HttpHeaderNames.SPAN_ID);
     if (traceId != null && spanId != null) {
-        long traceIdLong = Long.parseLong(traceId);
-        long spanIdLong = Long.parseLong(spanId);
-        span = Span.attachSpan(traceIdLong, spanIdLong);
+        BigInteger traceIdLong = new BigInteger(traceId);
+        BigInteger spanIdLong = new BigInteger(spanId);
+        span = Span.attachSpan(traceIdLong, spanIdLong, $1.getRequestURL().toString());
     } else {
         span = Span.startTrace($1.getRequestURL().toString());
     }
@@ -14,7 +14,7 @@
     try {
         span.addAnnotation(AnnotationNames.SERVER_RECEIVED);
         span.addAnnotation(AnnotationNames.SERVICE_NAME, Annotations.getServiceAnnotations().getService());
-        $proceed($1, $2);
+        $proceed($$);
     } finally {
         span.addAnnotation(AnnotationNames.SERVER_SENT);
         span.end();

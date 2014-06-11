@@ -2,12 +2,13 @@ instruments:
 - inbound-http
 - outbound-http
 - database
+- metrics
+- executors
 
 sinks:
-  telemetry:
+  log:
     enabled: true
-    host: localhost
-    port: 9090
+    file: telemetry.log
 
 annotations:
   service: example

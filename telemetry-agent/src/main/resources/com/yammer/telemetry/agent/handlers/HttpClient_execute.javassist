@@ -11,8 +11,12 @@
 
     // Set the request headers to link up this client request with the corresponding
     // service request.
-    request.setHeader(HttpHeaderNames.TRACE_ID, Long.toString(span.getTraceId()));
-    request.setHeader(HttpHeaderNames.SPAN_ID, Long.toString(span.getId()));
+    if (span.getTraceId() != null ) {
+        request.setHeader(HttpHeaderNames.TRACE_ID, String.valueOf(span.getTraceId()));
+    }
+    if (span.getId() != null) {
+        request.setHeader(HttpHeaderNames.SPAN_ID, String.valueOf(span.getId()));
+    }
 
     if (host != null) {
         span.addAnnotation(AnnotationNames.FALLBACK_SERVICE_NAME, host.getHostName());
@@ -28,7 +32,7 @@
         return $proceed($$);
     } catch (Exception e) {
         // Some exception happened. Let's generate an exception annotation without getting in the way.
-        span.addAnnotation("ClientException", e.getClass().getName());
+        span.addAnnotation(AnnotationNames.CLIENT_EXCEPTION, e.getClass().getName());
         throw e;
     } finally {
         // Generate the "client has received the response" annotation.

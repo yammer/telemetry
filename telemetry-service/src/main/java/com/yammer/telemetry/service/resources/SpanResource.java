@@ -9,6 +9,7 @@ import javax.validation.Valid;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
+import java.math.BigInteger;
 
 @Path("/spans/{traceId}/{spanId}")
 public class SpanResource {
@@ -20,8 +21,8 @@ public class SpanResource {
     }
 
     @POST
-    public void logAnnotation(@PathParam("traceId") long traceId,
-                              @PathParam("spanId") long spanId,
+    public void logAnnotation(@PathParam("traceId") BigInteger traceId,
+                              @PathParam("spanId") BigInteger spanId,
                               @Valid BeanAnnotationData annotationData) {
         LOG.debug("Logging inbound annotation data (traceId={}, spanId={}): {}", traceId, spanId, annotationData);
         sink.recordAnnotation(traceId, spanId, annotationData);

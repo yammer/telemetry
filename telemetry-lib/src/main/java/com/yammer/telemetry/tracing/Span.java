@@ -1,7 +1,12 @@
 package com.yammer.telemetry.tracing;
 
+import com.google.common.base.Function;
 import com.google.common.base.Optional;
+import com.google.common.collect.ImmutableList;
 
+import java.math.BigInteger;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.*;
 import java.util.logging.Logger;
 
@@ -15,13 +20,19 @@ public class Span implements AutoCloseable, SpanData {
     private static final Random ID_GENERATOR = new Random(System.currentTimeMillis());
     private static final ThreadLocal<SpanContext> spanContext = new ThreadLocal<>();
 
-    private final long traceId;
-    private final Optional<Long> parentId;
-    private final long id;
+    private static Sampling sampler = Sampling.ON;
+
+    private final BigInteger traceId;
+    private final Optional<BigInteger> parentId;
+    private final BigInteger id;
     private final String name;
+    private final String serviceName;
+    private final String host;
+    private final String serviceHost;
     private final long startTimeNanos;
     private long duration;
     private final boolean logSpan;
+    private final TraceLevel traceLevel;
     private final List<AnnotationData> annotations;
 
     /**
@@ -31,7 +42,7 @@ public class Span implements AutoCloseable, SpanData {
      * @return The root span of the newly created trace.
      */
     public static Span startTrace(String name) {
-        return start(name, Optional.<Long>absent(), Optional.<Long>absent(), Optional.<Long>absent(), true);
+        return start(name, Optional.<BigInteger>absent(), Optional.<BigInteger>absent(), Optional.<BigInteger>absent(), true, sampler.trace() ? TraceLevel.ON : TraceLevel.OFF);
     }
 
     /**
@@ -42,7 +53,7 @@ public class Span implements AutoCloseable, SpanData {
      * @return The newly started span.
      */
     public static Span startSpan(String name) {
-        return start(name, Optional.<Long>absent(), Optional.<Long>absent(), Optional.<Long>absent(), true);
+        return start(name, Optional.<BigInteger>absent(), Optional.<BigInteger>absent(), Optional.<BigInteger>absent(), true, TraceLevel.INHERIT);
     }
 
     /**
@@ -50,14 +61,15 @@ public class Span implements AutoCloseable, SpanData {
      * (probably on another host) and you'd like to log annotations against that span locally.
      *
      * @param traceId ID of the trace of the span being attached.
-     * @param spanId ID of the span being attached.
+     * @param spanId  ID of the span being attached.
+     * @param name    Name for the span - useful for debug
      * @return The attached span.
      */
-    public static Span attachSpan(long traceId, long spanId) {
-        return start(null, Optional.of(traceId), Optional.of(spanId), Optional.<Long>absent(), false);
+    public static Span attachSpan(BigInteger traceId, BigInteger spanId, String name) {
+        return start(name, Optional.of(traceId), Optional.of(spanId), Optional.<BigInteger>absent(), false, TraceLevel.ON);
     }
 
-    private static Span start(String name, Optional<Long> traceId, Optional<Long> spanId, Optional<Long> parentSpanId, boolean logSpan) {
+    private static Span start(String name, Optional<BigInteger> traceId, Optional<BigInteger> spanId, Optional<BigInteger> parentSpanId, boolean logSpan, TraceLevel traceLevel) {
         SpanContext context = spanContext.get();
         if (context == null) {
             context = new SpanContext();
@@ -78,20 +90,56 @@ public class Span implements AutoCloseable, SpanData {
         if (!spanId.isPresent()) {
             spanId = Optional.of(generateSpanId());
         }
-        final Span span = new Span(traceId.get(), spanId.get(), parentSpanId, name, nowInNanoseconds(), System.nanoTime(), logSpan);
+
+        if (traceLevel == TraceLevel.INHERIT) {
+            traceLevel = context.currentTraceLevel();
+        }
+
+        final Span span = new Span(traceId.get(), spanId.get(), parentSpanId, name, nowInNanoseconds(), System.nanoTime(), logSpan, traceLevel);
         context.startSpan(span);
         return span;
     }
 
-    private Span(long traceId, long id, Optional<Long> parentId, String name, long startTimeNanos, long startNanos, boolean logSpan) {
+    private Span(BigInteger traceId, BigInteger id, Optional<BigInteger> parentId, String name, long startTimeNanos, long startNanos, boolean logSpan, TraceLevel traceLevel) {
         this.traceId = traceId;
         this.parentId = parentId;
         this.id = id;
-        this.name = name;
+        String hostname = getHostname();
+        if (logSpan) {
+            this.name = name;
+            this.host = hostname;
+            this.serviceName = null;
+            this.serviceHost = null;
+        } else {
+            this.name = null;
+            this.host = null;
+            this.serviceName = name;
+            this.serviceHost = hostname;
+        }
         this.startTimeNanos = startTimeNanos;
         this.duration = startNanos;
         this.logSpan = logSpan;
+        this.traceLevel = traceLevel;
         this.annotations = new LinkedList<>();
+    }
+
+    // todo cache this?
+    private static String getHostname() {
+        try {
+            InetAddress address = InetAddress.getLocalHost();
+            return address.getHostName();
+        } catch (UnknownHostException ignored) {
+            return "unknown";
+        }
+    }
+
+    public static Optional<Span> currentSpan() {
+        SpanContext context = spanContext.get();
+        if (context == null) {
+            return Optional.absent();
+        } else {
+            return context.currentSpan();
+        }
     }
 
     public void addAnnotation(String name) {
@@ -103,26 +151,44 @@ public class Span implements AutoCloseable, SpanData {
     }
 
     public void end() {
-        if (logSpan) {
-            duration = System.nanoTime() - duration;
+        duration = System.nanoTime() - duration;
 
-            SpanContext context = spanContext.get();
-            if (context != null) {
-                final Iterable<SpanSink> sinks = SpanSinkRegistry.getSpanSinks();
-                context.endSpan(this);
+        // we need to ensure this span context is ended even if it's not being logged,
+        // otherwise we risk pollution of the context for subsequent operations.
+        SpanContext context = spanContext.get();
+        if (context != null) {
+            final Iterable<SpanSink> sinks = SpanSinkRegistry.getSpanSinks();
+            context.endSpan(this);
+            if (traceLevel == TraceLevel.ON) {
                 for (SpanSink sink : sinks) {
                     sink.record(this);
                 }
-            } else {
-                throw new IllegalStateException("Span.end() from a detached span.");
             }
+        } else {
+            throw new IllegalStateException("Span.end() from a detached span.");
         }
 
-        for (SpanSink sink : SpanSinkRegistry.getSpanSinks()) {
-            for (AnnotationData annotation : annotations) {
-                sink.recordAnnotation(getTraceId(), getId(), annotation);
+        if (traceLevel == TraceLevel.ON) {
+            for (SpanSink sink : SpanSinkRegistry.getSpanSinks()) {
+                for (AnnotationData annotation : annotations) {
+                    sink.recordAnnotation(getTraceId(), getId(), annotation);
+                }
             }
         }
+    }
+
+    /**
+     * This is available for testing to allow checking before and after states are as expected on the span context.
+     *
+     * @return an immutable list of the current state of spans in the thread local context.
+     */
+    static ImmutableList<Span> captureSpans() {
+        SpanContext context = spanContext.get();
+        if (context != null) {
+            return ImmutableList.copyOf(context.spans);
+        }
+
+        return ImmutableList.of();
     }
 
     @Override
@@ -130,20 +196,32 @@ public class Span implements AutoCloseable, SpanData {
         end();
     }
 
-    public long getTraceId() {
+    public BigInteger getTraceId() {
         return traceId;
     }
 
-    public long getId() {
+    public BigInteger getId() {
         return id;
     }
 
-    public Optional<Long> getParentId() {
+    public Optional<BigInteger> getParentId() {
         return parentId;
     }
 
     public String getName() {
         return name;
+    }
+
+    public String getServiceName() {
+        return serviceName;
+    }
+
+    public String getHost() {
+        return host;
+    }
+
+    public String getServiceHost() {
+        return serviceHost;
     }
 
     public long getStartTimeNanos() {
@@ -154,8 +232,16 @@ public class Span implements AutoCloseable, SpanData {
         return duration;
     }
 
-    private static long generateSpanId() {
-        return ID_GENERATOR.nextLong();
+    private static BigInteger generateSpanId() {
+        return new BigInteger(64, ID_GENERATOR);
+    }
+
+    public static Sampling getSampler() {
+        return sampler;
+    }
+
+    public static void setSampler(Sampling sampler) {
+        Span.sampler = sampler;
     }
 
     private static class SpanContext {
@@ -165,20 +251,30 @@ public class Span implements AutoCloseable, SpanData {
             spans = new Stack<>();
         }
 
-        public Optional<Long> currentTraceId() {
+        public Optional<Span> currentSpan() {
             if (spans.isEmpty()) {
                 return Optional.absent();
             } else {
-                return Optional.of(spans.peek().getTraceId());
+                return Optional.of(spans.peek());
             }
         }
 
-        public Optional<Long> currentSpanId() {
-            if (spans.isEmpty()) {
-                return Optional.absent();
-            } else {
-                return Optional.of(spans.peek().getId());
-            }
+        public Optional<BigInteger> currentTraceId() {
+            return currentSpan().transform(new Function<Span, BigInteger>() {
+                @Override
+                public BigInteger apply(Span input) {
+                    return input.getTraceId();
+                }
+            });
+        }
+
+        public Optional<BigInteger> currentSpanId() {
+            return currentSpan().transform(new Function<Span, BigInteger>() {
+                @Override
+                public BigInteger apply(Span input) {
+                    return input.getId();
+                }
+            });
         }
 
         public void startSpan(Span span) {
@@ -189,13 +285,22 @@ public class Span implements AutoCloseable, SpanData {
             Span poppedSpan = spans.pop();
 
             int extraPops = 0;
-            while (poppedSpan.getId() != span.getId()) {
+            while (!poppedSpan.getId().equals(span.getId())) {
                 extraPops++;
                 poppedSpan = spans.pop();
             }
 
             if (extraPops > 0) {
                 LOG.warning("Popped " + extraPops + " unclosed Spans");
+            }
+        }
+
+        public TraceLevel currentTraceLevel() {
+            if (spans.isEmpty()) {
+                if (sampler == Sampling.ON) return TraceLevel.ON;
+                return TraceLevel.OFF; // default when not explicitly requested
+            } else {
+                return spans.peek().traceLevel;
             }
         }
     }
@@ -214,5 +319,9 @@ public class Span implements AutoCloseable, SpanData {
 
     private static long nowInNanoseconds() {
         return System.currentTimeMillis() * 1000000;
+    }
+
+    private static enum TraceLevel {
+        ON, OFF, INHERIT
     }
 }

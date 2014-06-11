@@ -56,4 +56,13 @@ public class Nap {
     public void setId(long id) {
         this.id = id;
     }
+
+    @Override
+    public String toString() {
+        return "Nap{" +
+                "id=" + id +
+                ", start=" + start +
+                ", duration=" + duration +
+                '}';
+    }
 }
