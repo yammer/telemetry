@@ -155,7 +155,7 @@ public class SpanUsageTest {
         SpanData rootSpan = trace.getRoot();
         assertNotNull(rootSpan);
         assertEquals(BigInteger.ONE, rootSpan.getTraceId());
-        assertEquals(BigInteger.TEN, rootSpan.getId());
+        assertEquals(BigInteger.TEN, rootSpan.getSpanId());
         assertEquals("Foof", rootSpan.getServiceName());
         assertNotNull(rootSpan.getServiceHost());
         assertNull(rootSpan.getName());
@@ -216,7 +216,7 @@ public class SpanUsageTest {
         final AtomicReference<BigInteger> spanId = new AtomicReference<>();
         try (Span span = strategy.createSpan()) {
             traceId.set(span.getTraceId());
-            spanId.set(span.getId());
+            spanId.set(span.getSpanId());
 
             span.addAnnotation(AnnotationNames.SERVER_RECEIVED);
             span.addAnnotation(AnnotationNames.SERVICE_NAME, "testing");
@@ -228,7 +228,7 @@ public class SpanUsageTest {
         }
 
         assertEquals(1, sink.getTraces().size());
-        assertEquals(traceId.get(), sink.getTraces().iterator().next().getId());
+        assertEquals(traceId.get(), sink.getTraces().iterator().next().getTraceId());
 
         Trace trace = sink.getTrace(traceId.get());
 
@@ -258,12 +258,12 @@ public class SpanUsageTest {
         }
 
         @Override
-        public BigInteger getId() {
+        public BigInteger getSpanId() {
             return spanId;
         }
 
         @Override
-        public Optional<BigInteger> getParentId() {
+        public Optional<BigInteger> getParentSpanId() {
             throw new UnsupportedOperationException();
         }
 
@@ -288,7 +288,7 @@ public class SpanUsageTest {
         }
 
         @Override
-        public long getStartTimeNanos() {
+        public long getStartTime() {
             throw new UnsupportedOperationException();
         }
 

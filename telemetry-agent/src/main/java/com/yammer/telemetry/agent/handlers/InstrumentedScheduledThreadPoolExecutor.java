@@ -73,7 +73,7 @@ public class InstrumentedScheduledThreadPoolExecutor extends ScheduledThreadPool
         Optional<Span> currentSpan = Span.currentSpan();
         if (currentSpan.isPresent()) {
             traceId = currentSpan.get().getTraceId();
-            spanId = currentSpan.get().getId();
+            spanId = currentSpan.get().getSpanId();
             currentSpan.get().addAnnotation("Scheduled Task", task.getClass().getName());
         }
         return new InstrumentedRunnableScheduledFuture<>(vRunnableScheduledFuture, task.getClass().getName(), traceId, spanId);

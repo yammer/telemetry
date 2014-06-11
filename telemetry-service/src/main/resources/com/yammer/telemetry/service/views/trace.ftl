@@ -30,8 +30,8 @@
 </head>
 <body>
 <h1>Trace - <@traceName trace=trace/></h1>
-<div id="trace-${trace.id}" class="trace">
-    (start = ${trace.startTimeNanos} ; duration = ${trace.duration})
+<div id="trace-${trace.traceId}" class="trace">
+    (start = ${trace.startTime} ; duration = ${trace.duration})
     <#if trace.root??>
         <@renderSpan span=trace.root trace=trace/>
     <#else>
@@ -44,11 +44,11 @@
 <#macro renderSpan span trace>
 <#-- @ftlvariable name="span" type="com.yammer.telemetry.tracing.Span" -->
 <#-- @ftlvariable name="trace" type="com.yammer.telemetry.tracing.Trace" -->
-<div id="span-${span.id}" class="span" style="left: ${((span.startTimeNanos - trace.startTimeNanos) / trace.duration) * 100}%; width: ${(span.duration / trace.duration) * 100}%;">
+<div id="span-${span.spanId}" class="span" style="left: ${((span.startTime - trace.loggedAt) / trace.duration) * 100}%; width: ${(span.duration / trace.duration) * 100}%;">
     <#list trace.getAnnotations(span) as annotation>
-    <div class="annotationMarker" style="left: ${((annotation.startTimeNanos - span.startTimeNanos) / span.duration) * 100}%;" title="${annotation.name} - ${annotation.message!"null"} @ ${annotation.startTimeNanos}">&nbsp;</div>
+    <div class="annotationMarker" style="left: ${((annotation.loggedAt - span.loggedAt) / span.duration) * 100}%;" title="${annotation.name} - ${annotation.message!"null"} @ ${annotation.loggedAt}">&nbsp;</div>
     </#list>
-    ${span.name} (start = ${span.startTimeNanos}; duration = ${span.duration})
+    ${span.name} (start = ${span.startTime}; duration = ${span.duration})
 </div>
 <#list trace.getChildren(span) as child>
     <@renderSpan span=child trace=trace/>

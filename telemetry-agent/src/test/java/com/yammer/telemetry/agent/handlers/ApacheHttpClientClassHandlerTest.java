@@ -150,8 +150,8 @@ public class ApacheHttpClientClassHandlerTest {
 
             assertNotNull(traceHeader);
             assertNotNull(spanHeader);
-            assertEquals(trace.getId().toString(), traceHeader.getValue());
-            assertEquals(httpClientSpan.getId().toString(), spanHeader.getValue());
+            assertEquals(trace.getTraceId().toString(), traceHeader.getValue());
+            assertEquals(httpClientSpan.getSpanId().toString(), spanHeader.getValue());
         }
     }
 

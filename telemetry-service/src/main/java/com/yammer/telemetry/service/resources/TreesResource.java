@@ -34,7 +34,7 @@ public class TreesResource {
 
     private Tree traceToTree(Trace trace) {
         if (trace.getRoot() == null) return null;
-        return new Tree(trace.getId(), treeSpanFor(trace.getRoot(), trace));
+        return new Tree(trace.getTraceId(), treeSpanFor(trace.getRoot(), trace));
     }
 
     private TreeSpan treeSpanFor(SpanData spanData, Trace trace) {
@@ -44,9 +44,9 @@ public class TreesResource {
         }
         final ImmutableList<TreeSpan> children = childBuilder.build();
 
-        return new TreeSpan(spanData.getId(),
+        return new TreeSpan(spanData.getSpanId(),
                 spanData.getName(),
-                new DateTime(spanData.getStartTimeNanos()),
+                new DateTime(spanData.getStartTime()),
                 spanData.getDuration(),
                 trace.getAnnotations(spanData),
                 children);

@@ -23,13 +23,13 @@ public class Span implements AutoCloseable, SpanData {
     private static Sampling sampler = Sampling.ON;
 
     private final BigInteger traceId;
-    private final Optional<BigInteger> parentId;
-    private final BigInteger id;
+    private final Optional<BigInteger> parentSpanId;
+    private final BigInteger spanId;
     private final String name;
     private final String serviceName;
     private final String host;
     private final String serviceHost;
-    private final long startTimeNanos;
+    private final long startTime;
     private long duration;
     private final boolean logSpan;
     private final TraceLevel traceLevel;
@@ -100,10 +100,10 @@ public class Span implements AutoCloseable, SpanData {
         return span;
     }
 
-    private Span(BigInteger traceId, BigInteger id, Optional<BigInteger> parentId, String name, long startTimeNanos, long startNanos, boolean logSpan, TraceLevel traceLevel) {
+    private Span(BigInteger traceId, BigInteger spanId, Optional<BigInteger> parentSpanId, String name, long startTime, long startNanos, boolean logSpan, TraceLevel traceLevel) {
         this.traceId = traceId;
-        this.parentId = parentId;
-        this.id = id;
+        this.parentSpanId = parentSpanId;
+        this.spanId = spanId;
         String hostname = getHostname();
         if (logSpan) {
             this.name = name;
@@ -116,7 +116,7 @@ public class Span implements AutoCloseable, SpanData {
             this.serviceName = name;
             this.serviceHost = hostname;
         }
-        this.startTimeNanos = startTimeNanos;
+        this.startTime = startTime;
         this.duration = startNanos;
         this.logSpan = logSpan;
         this.traceLevel = traceLevel;
@@ -171,7 +171,7 @@ public class Span implements AutoCloseable, SpanData {
         if (traceLevel == TraceLevel.ON) {
             for (SpanSink sink : SpanSinkRegistry.getSpanSinks()) {
                 for (AnnotationData annotation : annotations) {
-                    sink.recordAnnotation(getTraceId(), getId(), annotation);
+                    sink.recordAnnotation(getTraceId(), getSpanId(), annotation);
                 }
             }
         }
@@ -200,12 +200,12 @@ public class Span implements AutoCloseable, SpanData {
         return traceId;
     }
 
-    public BigInteger getId() {
-        return id;
+    public BigInteger getSpanId() {
+        return spanId;
     }
 
-    public Optional<BigInteger> getParentId() {
-        return parentId;
+    public Optional<BigInteger> getParentSpanId() {
+        return parentSpanId;
     }
 
     public String getName() {
@@ -224,8 +224,8 @@ public class Span implements AutoCloseable, SpanData {
         return serviceHost;
     }
 
-    public long getStartTimeNanos() {
-        return startTimeNanos;
+    public long getStartTime() {
+        return startTime;
     }
 
     public long getDuration() {
@@ -276,7 +276,7 @@ public class Span implements AutoCloseable, SpanData {
             return currentSpan().transform(new Function<Span, BigInteger>() {
                 @Override
                 public BigInteger apply(Span input) {
-                    return input.getId();
+                    return input.getSpanId();
                 }
             });
         }
@@ -289,7 +289,7 @@ public class Span implements AutoCloseable, SpanData {
             Span poppedSpan = spans.pop();
 
             int extraPops = 0;
-            while (!poppedSpan.getId().equals(span.getId())) {
+            while (!poppedSpan.getSpanId().equals(span.getSpanId())) {
                 extraPops++;
                 poppedSpan = spans.pop();
             }
@@ -313,10 +313,10 @@ public class Span implements AutoCloseable, SpanData {
     public String toString() {
         return "Span{" +
                 "traceId=" + traceId +
-                ", parentId=" + parentId +
-                ", id=" + id +
+                ", parentSpanId=" + parentSpanId +
+                ", spanId=" + spanId +
                 ", name='" + name + '\'' +
-                ", startTimeNanos=" + startTimeNanos +
+                ", startTime=" + startTime +
                 ", duration=" + duration +
                 '}';
     }

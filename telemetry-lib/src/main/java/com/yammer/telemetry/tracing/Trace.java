@@ -10,61 +10,61 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 public class Trace {
-    private final BigInteger id;
+    private final BigInteger traceId;
     private final ConcurrentMap<BigInteger, List<SpanData>> childSpans;
     private final ConcurrentMap<BigInteger, List<AnnotationData>> annotations;
     private SpanData root = null;
-    private long startTimeNanos = Long.MAX_VALUE;
+    private long startTime = Long.MAX_VALUE;
     private long duration = 0;
 
-    public Trace(BigInteger id) {
-        this.id = id;
+    public Trace(BigInteger traceId) {
+        this.traceId = traceId;
         this.childSpans = new ConcurrentHashMap<>();
         this.annotations = new ConcurrentHashMap<>();
     }
 
-    public BigInteger getId() {
-        return id;
+    public BigInteger getTraceId() {
+        return traceId;
     }
 
     public SpanData getRoot() {
         return root;
     }
 
-    public long getStartTimeNanos() {
-        return startTimeNanos;
+    public long getStartTime() {
+        return startTime;
     }
 
     public long getDuration() {
-        return duration - startTimeNanos;
+        return duration - startTime;
     }
 
     public List<SpanData> getChildren(SpanData spanData) {
         if (spanData == null) {
             return Collections.emptyList();
         }
-        return Optional.fromNullable(childSpans.get(spanData.getId())).or(Collections.<SpanData>emptyList());
+        return Optional.fromNullable(childSpans.get(spanData.getSpanId())).or(Collections.<SpanData>emptyList());
     }
 
     public List<AnnotationData> getAnnotations(SpanData spanData) {
         if (spanData == null) {
             return Collections.emptyList();
         }
-        return Optional.fromNullable(annotations.get(spanData.getId())).or(Collections.<AnnotationData>emptyList());
+        return Optional.fromNullable(annotations.get(spanData.getSpanId())).or(Collections.<AnnotationData>emptyList());
     }
 
     public void addSpan(SpanData spanData) {
-        startTimeNanos = Math.min(startTimeNanos, spanData.getStartTimeNanos());
-        duration = Math.max(duration, spanData.getStartTimeNanos() + spanData.getDuration());
+        startTime = Math.min(startTime, spanData.getStartTime());
+        duration = Math.max(duration, spanData.getStartTime() + spanData.getDuration());
 
-        final Optional<BigInteger> parentId = spanData.getParentId();
-        if (!parentId.isPresent()) {
+        final Optional<BigInteger> parentSpanId = spanData.getParentSpanId();
+        if (!parentSpanId.isPresent()) {
             this.root = spanData;
         } else {
             final List<SpanData> newSiblings = new LinkedList<>();
             newSiblings.add(spanData);
 
-            final List<SpanData> siblings = childSpans.putIfAbsent(parentId.get(), newSiblings);
+            final List<SpanData> siblings = childSpans.putIfAbsent(parentSpanId.get(), newSiblings);
             if (siblings != null) {
                 siblings.add(spanData);
             }

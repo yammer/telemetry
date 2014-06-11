@@ -11,7 +11,7 @@
     </tr>
 <#list traces as trace>
     <tr>
-        <td><a href="/tracing/${trace.id?c?url('utf-8')}">${trace.id?c}</a></td>
+        <td><a href="/tracing/${trace.traceId?c?url('utf-8')}">${trace.traceId?c}</a></td>
         <td><@traceName trace=trace/></td>
     </tr>
 </#list>

@@ -8,12 +8,12 @@ import java.math.BigInteger;
 public class BeanSpanData implements SpanData {
     private BigInteger traceId;
     private BigInteger id;
-    private Optional<BigInteger> parentId;
+    private Optional<BigInteger> parentSpanId;
     private String name;
     private String host;
     private String serviceName;
     private String serviceHost;
-    private long startTimeNanos;
+    private long startTime;
     private long duration;
 
     private BeanSpanData() { }
@@ -24,13 +24,13 @@ public class BeanSpanData implements SpanData {
     }
 
     @Override
-    public BigInteger getId() {
+    public BigInteger getSpanId() {
         return id;
     }
 
     @Override
-    public Optional<BigInteger> getParentId() {
-        return parentId;
+    public Optional<BigInteger> getParentSpanId() {
+        return parentSpanId;
     }
 
     @Override
@@ -54,8 +54,8 @@ public class BeanSpanData implements SpanData {
     }
 
     @Override
-    public long getStartTimeNanos() {
-        return startTimeNanos;
+    public long getStartTime() {
+        return startTime;
     }
 
     @Override
@@ -68,12 +68,12 @@ public class BeanSpanData implements SpanData {
         return "BeanSpanData{" +
                 "traceId=" + traceId +
                 ", id=" + id +
-                ", parentId=" + parentId +
+                ", parentSpanId=" + parentSpanId +
                 ", name='" + name + '\'' +
                 ", host='" + host + '\'' +
                 ", serviceName='" + serviceName + '\'' +
                 ", serviceHost='" + serviceHost + '\'' +
-                ", startTimeNanos=" + startTimeNanos +
+                ", startTime=" + startTime +
                 ", duration=" + duration +
                 '}';
     }

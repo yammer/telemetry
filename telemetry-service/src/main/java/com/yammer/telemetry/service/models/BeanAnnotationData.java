@@ -3,15 +3,15 @@ package com.yammer.telemetry.service.models;
 import com.yammer.telemetry.tracing.AnnotationData;
 
 public class BeanAnnotationData implements AnnotationData {
-    private long startTimeNanos;
+    private long loggedAt;
     private String name;
     private String message;
 
     private BeanAnnotationData() { }
 
     @Override
-    public long getStartTimeNanos() {
-        return startTimeNanos;
+    public long getLoggedAt() {
+        return loggedAt;
     }
 
     @Override
@@ -27,7 +27,7 @@ public class BeanAnnotationData implements AnnotationData {
     @Override
     public String toString() {
         return "BeanAnnotationData{" +
-                "startTimeNanos=" + startTimeNanos +
+                "loggedAt=" + loggedAt +
                 ", name='" + name + '\'' +
                 ", message='" + message + '\'' +
                 '}';
