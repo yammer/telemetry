@@ -14,14 +14,8 @@
     if (span.getTraceId() != null ) {
         request.setHeader(HttpHeaderNames.TRACE_ID, String.valueOf(span.getTraceId()));
     }
-    if (span.getId() != null) {
-        request.setHeader(HttpHeaderNames.SPAN_ID, String.valueOf(span.getId()));
-    }
-
-    if (host != null) {
-        span.addAnnotation(AnnotationNames.FALLBACK_SERVICE_NAME, host.getHostName());
-    } else if (uriRequest != null) {
-        span.addAnnotation(AnnotationNames.FALLBACK_SERVICE_NAME, uriRequest.getURI().getHost());
+    if (span.getSpanId() != null) {
+        request.setHeader(HttpHeaderNames.SPAN_ID, String.valueOf(span.getSpanId()));
     }
 
     try {

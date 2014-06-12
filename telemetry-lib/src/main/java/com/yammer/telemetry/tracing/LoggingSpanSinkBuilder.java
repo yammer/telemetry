@@ -2,6 +2,7 @@ package com.yammer.telemetry.tracing;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import com.fasterxml.jackson.datatype.guava.GuavaModule;
 import com.google.common.collect.ImmutableList;
 
@@ -56,7 +57,7 @@ public class LoggingSpanSinkBuilder {
 
         public LogJobFactory(WriterProvider writerProvider) {
             this.writerProvider = writerProvider;
-            this.objectMapper = new ObjectMapper().setSerializationInclusion(JsonInclude.Include.NON_NULL).registerModule(new GuavaModule());
+            this.objectMapper = new ObjectMapper().setPropertyNamingStrategy(new PropertyNamingStrategy.LowerCaseWithUnderscoresStrategy()).setSerializationInclusion(JsonInclude.Include.NON_NULL).registerModule(new GuavaModule());
         }
 
         @Override
@@ -67,8 +68,8 @@ public class LoggingSpanSinkBuilder {
         @Override
         public Runnable createJob(BigInteger traceId, BigInteger spanId, AnnotationData data) {
             HashMap<String, Object> map = new HashMap<>();
-            map.put("traceId", traceId);
-            map.put("spanId", spanId);
+            map.put("trace_id", traceId);
+            map.put("span_id", spanId);
             map.put("annotations", ImmutableList.of(data));
 
             return genericJob(map);

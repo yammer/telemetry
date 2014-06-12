@@ -2,6 +2,7 @@ package com.yammer.telemetry.tracing;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import com.fasterxml.jackson.datatype.guava.GuavaModule;
 import com.google.common.base.Optional;
 import org.junit.Test;
@@ -19,7 +20,7 @@ import static org.junit.Assert.assertTrue;
 
 public class LoggingSpanSinkBuilderTest {
 
-    private final ObjectMapper objectMapper = new ObjectMapper().setSerializationInclusion(JsonInclude.Include.NON_NULL).registerModule(new GuavaModule());
+    private final ObjectMapper objectMapper = new ObjectMapper().setPropertyNamingStrategy(new PropertyNamingStrategy.LowerCaseWithUnderscoresStrategy()).setSerializationInclusion(JsonInclude.Include.NON_NULL).registerModule(new GuavaModule());
 
     @Test
     public void testLogsSpanData() throws Exception {
@@ -35,12 +36,12 @@ public class LoggingSpanSinkBuilderTest {
             }
 
             @Override
-            public BigInteger getId() {
+            public BigInteger getSpanId() {
                 return BigInteger.TEN;
             }
 
             @Override
-            public Optional<BigInteger> getParentId() {
+            public Optional<BigInteger> getParentSpanId() {
                 return Optional.absent();
             }
 
@@ -65,7 +66,7 @@ public class LoggingSpanSinkBuilderTest {
             }
 
             @Override
-            public long getStartTimeNanos() {
+            public long getStartTime() {
                 return startTime;
             }
 
@@ -98,14 +99,14 @@ public class LoggingSpanSinkBuilderTest {
 
         HashMap read = objectMapper.readValue(writer.toString(), HashMap.class);
 
-        assertEquals(10, read.get("spanId"));
-        assertEquals(1, read.get("traceId"));
+        assertEquals(10, read.get("span_id"));
+        assertEquals(1, read.get("trace_id"));
 
         List annotations = (List) read.get("annotations");
         assertEquals(1, annotations.size());
 
         Map annotationMap = (Map)annotations.get(0);
-        assertEquals(annotationData.getStartTimeNanos(), annotationMap.get("startTimeNanos"));
+        assertEquals(annotationData.getLoggedAt(), annotationMap.get("logged_at"));
         assertEquals(annotationData.getName(), annotationMap.get("name"));
         assertEquals(annotationData.getMessage(), annotationMap.get("message"));
     }
@@ -116,12 +117,12 @@ public class LoggingSpanSinkBuilderTest {
         AsynchronousSpanSink spanSink = new LoggingSpanSinkBuilder().withWriter(writer).build();
 
         AnnotationData annotationData = new AnnotationData() {
-            private long startTime = System.nanoTime();
+            private long loggedAt = System.nanoTime();
             private Foo otherThing = new Foo();
 
             @Override
-            public long getStartTimeNanos() {
-                return startTime;
+            public long getLoggedAt() {
+                return loggedAt;
             }
 
             @Override

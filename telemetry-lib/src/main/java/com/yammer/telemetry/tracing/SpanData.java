@@ -7,9 +7,9 @@ import java.math.BigInteger;
 public interface SpanData {
     BigInteger getTraceId();
 
-    BigInteger getId();
+    BigInteger getSpanId();
 
-    Optional<BigInteger> getParentId();
+    Optional<BigInteger> getParentSpanId();
 
     String getName();
 
@@ -19,7 +19,7 @@ public interface SpanData {
 
     String getServiceHost();
 
-    long getStartTimeNanos();
+    long getStartTime();
 
     long getDuration();
 }

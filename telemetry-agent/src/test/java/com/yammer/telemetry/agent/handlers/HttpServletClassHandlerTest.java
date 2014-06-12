@@ -1,7 +1,7 @@
 package com.yammer.telemetry.agent.handlers;
 
-import com.yammer.telemetry.agent.Annotations;
-import com.yammer.telemetry.agent.ServiceAnnotations;
+import com.yammer.telemetry.tracing.Annotations;
+import com.yammer.telemetry.tracing.ServiceAnnotations;
 import com.yammer.telemetry.agent.test.SimpleServlet;
 import com.yammer.telemetry.tracing.*;
 import javassist.ClassPool;

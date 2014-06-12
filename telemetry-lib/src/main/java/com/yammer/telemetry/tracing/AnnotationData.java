@@ -1,7 +1,7 @@
 package com.yammer.telemetry.tracing;
 
 public interface AnnotationData {
-    long getStartTimeNanos();
+    long getLoggedAt();
 
     String getName();
 

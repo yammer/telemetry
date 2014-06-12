@@ -1,7 +1,7 @@
 package com.yammer.telemetry.agent;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.yammer.telemetry.tracing.Sampling;
+import com.yammer.telemetry.tracing.ServiceAnnotations;
 
 import javax.validation.constraints.NotNull;
 import java.util.Collections;

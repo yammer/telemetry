@@ -119,7 +119,7 @@ public class EnvironmentExecutorClassHandlerTest {
             SpanData spanData = trace.getChildren(rootSpan).get(0);
             assertEquals("Offer", spanData.getName());
             assertEquals(BigInteger.ONE, spanData.getTraceId());
-            assertEquals(Optional.of(BigInteger.TEN), spanData.getParentId());
+            assertEquals(Optional.of(BigInteger.TEN), spanData.getParentSpanId());
         }
 
         @TransformedTest
@@ -173,7 +173,7 @@ public class EnvironmentExecutorClassHandlerTest {
             SpanData spanData = trace.getChildren(rootSpan).get(0);
             assertEquals("Offer", spanData.getName());
             assertEquals(BigInteger.ONE, spanData.getTraceId());
-            assertEquals(Optional.of(BigInteger.TEN), spanData.getParentId());
+            assertEquals(Optional.of(BigInteger.TEN), spanData.getParentSpanId());
         }
 
         @TransformedTest
@@ -231,7 +231,7 @@ public class EnvironmentExecutorClassHandlerTest {
             SpanData spanData = trace.getChildren(rootSpan).get(0);
             assertEquals("Offer", spanData.getName());
             assertEquals(BigInteger.ONE, spanData.getTraceId());
-            assertEquals(Optional.of(BigInteger.TEN), spanData.getParentId());
+            assertEquals(Optional.of(BigInteger.TEN), spanData.getParentSpanId());
         }
 
         @TransformedTest
@@ -287,7 +287,7 @@ public class EnvironmentExecutorClassHandlerTest {
             SpanData spanData = trace.getChildren(rootSpan).get(0);
             assertEquals("Offer", spanData.getName());
             assertEquals(BigInteger.ONE, spanData.getTraceId());
-            assertEquals(Optional.of(BigInteger.TEN), spanData.getParentId());
+            assertEquals(Optional.of(BigInteger.TEN), spanData.getParentSpanId());
         }
     }
 }

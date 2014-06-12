@@ -2,7 +2,6 @@ package com.yammer.telemetry.tracing;
 
 import com.google.common.base.Optional;
 import org.junit.After;
-import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
@@ -38,8 +37,8 @@ public class SpanTest {
 
         verify(sink).record(span);
 
-        assertNotNull(span.getId());
-        assertEquals(Optional.<BigInteger>absent(), span.getParentId());
+        assertNotNull(span.getSpanId());
+        assertEquals(Optional.<BigInteger>absent(), span.getParentSpanId());
         assertEquals("testSpan", span.getName());
         assertTrue(span.getDuration() >= 0);
     }
@@ -66,7 +65,7 @@ public class SpanTest {
         outer.end();
         verify(sink).record(outer);
 
-        assertEquals(Optional.of(outer.getId()), inner.getParentId());
+        assertEquals(Optional.of(outer.getSpanId()), inner.getParentSpanId());
     }
 
     @Test
@@ -103,8 +102,8 @@ public class SpanTest {
 
         final List<Span> spans = captor.getAllValues();
         assertEquals(2, spans.size());
-        assertEquals(Optional.<BigInteger>absent(), spans.get(0).getParentId());
-        assertEquals(Optional.<BigInteger>absent(), spans.get(1).getParentId());
+        assertEquals(Optional.<BigInteger>absent(), spans.get(0).getParentSpanId());
+        assertEquals(Optional.<BigInteger>absent(), spans.get(1).getParentSpanId());
     }
 
     @Test

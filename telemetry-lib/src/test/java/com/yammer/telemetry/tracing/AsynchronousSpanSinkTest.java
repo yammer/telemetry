@@ -139,12 +139,12 @@ public class AsynchronousSpanSinkTest {
         }
 
         @Override
-        public BigInteger getId() {
+        public BigInteger getSpanId() {
             return BigInteger.TEN;
         }
 
         @Override
-        public Optional<BigInteger> getParentId() {
+        public Optional<BigInteger> getParentSpanId() {
             return Optional.absent();
         }
 
@@ -169,7 +169,7 @@ public class AsynchronousSpanSinkTest {
         }
 
         @Override
-        public long getStartTimeNanos() {
+        public long getStartTime() {
             return startTime;
         }
 
@@ -180,11 +180,11 @@ public class AsynchronousSpanSinkTest {
     }
 
     private static class FakeAnnotationData implements AnnotationData {
-        private long startTime = System.nanoTime();
+        private long loggedAt = System.nanoTime();
 
         @Override
-        public long getStartTimeNanos() {
-            return startTime;
+        public long getLoggedAt() {
+            return loggedAt;
         }
 
         @Override
