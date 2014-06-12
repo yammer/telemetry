@@ -18,12 +18,6 @@
         request.setHeader(HttpHeaderNames.SPAN_ID, String.valueOf(span.getSpanId()));
     }
 
-    if (host != null) {
-        span.addAnnotation(AnnotationNames.FALLBACK_SERVICE_NAME, host.getHostName());
-    } else if (uriRequest != null) {
-        span.addAnnotation(AnnotationNames.FALLBACK_SERVICE_NAME, uriRequest.getURI().getHost());
-    }
-
     try {
         // Generate the "client has sent its request" annotation.
         span.addAnnotation(AnnotationNames.CLIENT_SENT);

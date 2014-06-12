@@ -125,7 +125,6 @@ public class ApacheHttpClientClassHandlerTest {
             assertTrue(annotationsMap.containsKey(AnnotationNames.CLIENT_SENT));
             assertTrue(annotationsMap.containsKey(AnnotationNames.CLIENT_RECEIVED));
             assertFalse(annotationsMap.containsKey(AnnotationNames.CLIENT_EXCEPTION));
-            assertEquals(ImmutableList.of("anything"), annotationsMap.get(AnnotationNames.FALLBACK_SERVICE_NAME));
         }
 
         @TransformedTest
