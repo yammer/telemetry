@@ -9,5 +9,5 @@ notifications:
     - yammer-sonatype@microsoft.com
 env:
   global:
-  - secure: KTTmV/3zurg43u7bPPfC73lK+XGVZZk40YPZmWnTuAYwLbWJYLrxPK7h39xLZhhYDE6+PTwFdseLAbGVYl7DZtHJYh4Lf1J2UOiIcs4w7+oxQeDpRebsUrro6yPcEOs7JYgUShgNqoQTNE1P9pcRzJYwdojKmbnWi9hwy3xfQdQ=
-  - secure: DwO6aLe9ZJQ1mNAQwxl+yheQlJtbLmpEdVT9c+oQc4DTXiS3X1dz+9jdvgWfKDv+/VveoZrZK/1xvK1Qx8xptQQ+jN6fyBFuHy5CicxWGU781RqnVLCiteloVO+5/gdR5ewj0pyV85sW4mf5y3wY/wfHc3RuM+gGcdsq34+D9+g=
+  - secure: YnjZsUd/VFGicdXU0oK75zoo4LKPxFQmUlLRFu3Unp6oi7NvmXnLa56PBnmRh3zxh+gBH0MP5UkGguaqOhvvxoXUUAJt2KXNaoSRBcmqZPsSwgJWyswcBzJlJXKSfIXqGTdVzDHldNGqvo7x8GBzAdqlgedWvJQbkXqomLyPJ7c=
+  - secure: eEDhTkzKYu1IS4AiRTSmYt4qiGzhqHYKyKNyJSFMLKWALs//R4Nsciah3/3mANHGpisxKYCGanrrdSeoq31ecvDlCaNbZsdrEIaH5Fmr+KKcAXpT3l/vZKePYGE0580yJ1pkq5NllZ6SHrDQRNtZjMAIgWyEZvwrt4TTlgW4p1c=
