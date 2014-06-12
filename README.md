@@ -10,7 +10,7 @@ execution of the [TracedResource](telemetry-example/src/main/java/com/yammer/tel
 
 ## IDs
 
-Trace and span IDs will be expressed as 64-bit longs.
+Trace and span IDs will be expressed as 64-bit and 32-bit longs respectively.
 
 ## Trace/Span Passing
 
@@ -26,23 +26,6 @@ Clients will pass the current trace ID and the current span ID to downstream ser
 
 ## Notes
 
-### [Phylogenetic Trees](https://en.wikipedia.org/wiki/Phylogenetic_tree)
-
-May be an interesting, high-density way of viewing trace data.
-
-   * [phyloXML](https://en.wikipedia.org/wiki/PhyloXML) - expressive XML format for phylogenetic trees
-   * [jsPhyloSVG](http://www.jsphylosvg.com/) - JavaScript library for rendering phylogenetic trees from phyloXML (and some other formats).
-
-### Network Diagrams
-
-JavaScript libraries for rendering network (dependency?) diagrams.
-
-   * [arbor.js](http://arborjs.org/)
-   * [sigma.js](http://sigmajs.org/)
-
-### Visualization
-
-More random (not D3) JavaScript visualization libraries to check out.
-
-   * [JavaScript InfoVis Toolkit](http://philogb.github.io/jit/)
-   * [D3](http://d3js.org/) - okay, fine…D3, too.
+   * Under heavy development - stuff **will** change
+   * Telemetry-Service has been deprecated for now to concentrate on instrumentation and trace recording
+    
