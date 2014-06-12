@@ -1,7 +1,7 @@
-package com.yammer.telemetry.agent;
+package com.yammer.telemetry.tracing;
 
 public class Annotations {
-    private static ServiceAnnotations serviceAnnotations;
+    private static ServiceAnnotations serviceAnnotations = new ServiceAnnotations();
 
     public static void setServiceAnnotations(ServiceAnnotations serviceAnnotations) {
         Annotations.serviceAnnotations = serviceAnnotations;

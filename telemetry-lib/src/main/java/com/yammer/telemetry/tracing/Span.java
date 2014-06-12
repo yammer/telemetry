@@ -30,8 +30,9 @@ public class Span implements AutoCloseable, SpanData {
     private final String host;
     private final String serviceHost;
     private final long startTime;
+    private final Integer pid;
+    private final Integer servicePid;
     private long duration;
-    private final boolean logSpan;
     private final TraceLevel traceLevel;
     private final List<AnnotationData> annotations;
 
@@ -104,33 +105,25 @@ public class Span implements AutoCloseable, SpanData {
         this.traceId = traceId;
         this.parentSpanId = parentSpanId;
         this.spanId = spanId;
-        String hostname = getHostname();
         if (logSpan) {
             this.name = name;
-            this.host = hostname;
+            this.host = Annotations.getServiceAnnotations().getHost();
+            this.pid = Annotations.getServiceAnnotations().getPid();
             this.serviceName = null;
             this.serviceHost = null;
+            this.servicePid = null;
         } else {
             this.name = null;
             this.host = null;
+            this.pid = null;
             this.serviceName = name;
-            this.serviceHost = hostname;
+            this.serviceHost = Annotations.getServiceAnnotations().getHost();
+            this.servicePid = Annotations.getServiceAnnotations().getPid();
         }
         this.startTime = startTime;
         this.duration = startNanos;
-        this.logSpan = logSpan;
         this.traceLevel = traceLevel;
         this.annotations = new LinkedList<>();
-    }
-
-    // todo cache this?
-    private static String getHostname() {
-        try {
-            InetAddress address = InetAddress.getLocalHost();
-            return address.getHostName();
-        } catch (UnknownHostException ignored) {
-            return "unknown";
-        }
     }
 
     public static Optional<Span> currentSpan() {
@@ -212,16 +205,24 @@ public class Span implements AutoCloseable, SpanData {
         return name;
     }
 
-    public String getServiceName() {
-        return serviceName;
-    }
-
     public String getHost() {
         return host;
     }
 
+    public Integer getPid() {
+        return pid;
+    }
+
+    public String getServiceName() {
+        return serviceName;
+    }
+
     public String getServiceHost() {
         return serviceHost;
+    }
+
+    public Integer getServicePid() {
+        return servicePid;
     }
 
     public long getStartTime() {
