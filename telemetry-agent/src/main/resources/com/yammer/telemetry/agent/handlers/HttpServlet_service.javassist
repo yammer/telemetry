@@ -3,12 +3,13 @@
 
     final String traceId = $1.getHeader(HttpHeaderNames.TRACE_ID);
     final String spanId = $1.getHeader(HttpHeaderNames.SPAN_ID);
+    final String name = String.format("%s %s", new Object[] {$1.getMethod(), $1.getRequestURL()});
     if (traceId != null && spanId != null) {
         BigInteger traceIdLong = new BigInteger(traceId);
         BigInteger spanIdLong = new BigInteger(spanId);
-        span = Span.attachSpan(traceIdLong, spanIdLong, $1.getRequestURL().toString());
+        span = Span.attachSpan(traceIdLong, spanIdLong, name);
     } else {
-        span = Span.startTrace($1.getRequestURL().toString());
+        span = Span.startTrace(name);
     }
 
     try {

@@ -5,6 +5,8 @@ instruments:
 - metrics
 - executors
 
+sampler: off
+
 sinks:
   log:
     enabled: true
