@@ -7,7 +7,9 @@
     HttpUriRequest uriRequest = %HTTP_REQUEST_URI_PARAM%;
 
     // Start the span.
-    Span span = Span.startSpan(request.getRequestLine().getUri());
+    final String name = String.format("%s %s", new Object[] {request.getRequestLine().getMethod(), request.getRequestLine().getUri()});
+    Span span = Span.startSpan(name);
+    //Span span = Span.startSpan(request.getRequestLine().getUri());
 
     // Set the request headers to link up this client request with the corresponding
     // service request.

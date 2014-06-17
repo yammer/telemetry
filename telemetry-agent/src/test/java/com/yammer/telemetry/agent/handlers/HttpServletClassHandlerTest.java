@@ -1,8 +1,7 @@
 package com.yammer.telemetry.agent.handlers;
 
-import com.yammer.telemetry.tracing.Annotations;
-import com.yammer.telemetry.tracing.ServiceAnnotations;
 import com.yammer.telemetry.agent.test.SimpleServlet;
+import com.yammer.telemetry.test.TransformedTest;
 import com.yammer.telemetry.tracing.*;
 import javassist.ClassPool;
 import javassist.CtClass;
@@ -56,7 +55,7 @@ public class HttpServletClassHandlerTest {
 
     @Test
     public void testRecordsSpans() throws Exception {
-        runTransformed(TransformedTests.class, "testTheory", handler);
+        runTransformed(TransformedTests.class, handler);
     }
 
     @SuppressWarnings("UnusedDeclaration")
@@ -66,7 +65,8 @@ public class HttpServletClassHandlerTest {
      * however so instead rely on fake objects, defined below.
      */
     public static class TransformedTests {
-        public static void testTheory() throws Exception {
+        @TransformedTest
+        public static void testBaseBehaviour() throws Exception {
             InMemorySpanSinkSource sink = new InMemorySpanSinkSource();
 
             Annotations.setServiceAnnotations(new ServiceAnnotations("testing"));
@@ -100,10 +100,39 @@ public class HttpServletClassHandlerTest {
             assertEquals(AnnotationNames.SERVER_SENT, annotations.get(2).getName());
             assertNull(annotations.get(2).getMessage());
         }
+
+        @TransformedTest
+        public void testRecordsRequestMethod() throws Exception {
+            InMemorySpanSinkSource sink = new InMemorySpanSinkSource();
+
+            Annotations.setServiceAnnotations(new ServiceAnnotations("testing"));
+            SpanSinkRegistry.register(sink);
+
+            FakeHttpServletRequest request = new FakeHttpServletRequest("FOOF", "http://localhost:8080/foo");
+
+            StringWriter underlyingWriter = new StringWriter();
+            HttpServletResponse response = new FakeHttpServletResponse(underlyingWriter);
+
+            HttpServlet servlet = new HttpServlet() {
+                @Override
+                protected void service(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+                    resp.setStatus(200);
+                }
+            };
+            servlet.service(request, response);
+
+            assertEquals(200, response.getStatus());
+
+            Collection<Trace> traces = sink.getTraces();
+            Trace trace = traces.iterator().next();
+            SpanData rootSpan = trace.getRoot();
+            assertEquals("FOOF http://localhost:8080/foo", rootSpan.getName());
+        }
     }
 
     public static class FakeHttpServletResponse implements HttpServletResponse {
         private final PrintWriter underlying;
+        private int status;
 
         public FakeHttpServletResponse(StringWriter underlying) {
             this.underlying = new PrintWriter(underlying);
@@ -186,17 +215,17 @@ public class HttpServletClassHandlerTest {
 
         @Override
         public void setStatus(int sc) {
-            throw new UnsupportedOperationException();
+            this.status = sc;
         }
 
         @Override
         public void setStatus(int sc, String sm) {
-            throw new UnsupportedOperationException();
+            this.status = sc;
         }
 
         @Override
         public int getStatus() {
-            throw new UnsupportedOperationException();
+            return status;
         }
 
         @Override

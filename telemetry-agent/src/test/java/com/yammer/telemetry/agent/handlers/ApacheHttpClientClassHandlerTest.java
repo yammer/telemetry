@@ -11,6 +11,7 @@ import org.apache.http.*;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.ResponseHandler;
 import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpRequestBase;
 import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.conn.ClientConnectionManager;
 import org.apache.http.impl.client.AbstractHttpClient;
@@ -22,6 +23,7 @@ import org.apache.http.protocol.HttpContext;
 import org.junit.Test;
 
 import java.io.IOException;
+import java.net.URI;
 import java.net.URL;
 import java.util.Collection;
 import java.util.List;
@@ -88,7 +90,7 @@ public class ApacheHttpClientClassHandlerTest {
     @SuppressWarnings("UnusedDeclaration")
     public static class TransformedTests {
         @TransformedTest
-        public static void testUsingHttpClientRecordsSpan() throws Exception {
+        public void testUsingHttpClientRecordsSpan() throws Exception {
             InMemorySpanSinkSource sink = new InMemorySpanSinkSource();
             SpanSinkRegistry.register(sink);
 
@@ -115,7 +117,7 @@ public class ApacheHttpClientClassHandlerTest {
             assertEquals(1, spans.size());
 
             SpanData httpClientSpan = spans.get(0);
-            assertEquals("http://anything", httpClientSpan.getName());
+            assertEquals("GET http://anything", httpClientSpan.getName());
 
             Multimap<String, String> annotationsMap = LinkedListMultimap.create();
             for (AnnotationData annotation : trace.getAnnotations(httpClientSpan)) {
@@ -128,7 +130,7 @@ public class ApacheHttpClientClassHandlerTest {
         }
 
         @TransformedTest
-        public static void testUsingHttpClientPropagatesTraceAndSpanIds() throws Exception {
+        public void testUsingHttpClientPropagatesTraceAndSpanIds() throws Exception {
             InMemorySpanSinkSource sink = new InMemorySpanSinkSource();
             SpanSinkRegistry.register(sink);
 
@@ -151,6 +153,33 @@ public class ApacheHttpClientClassHandlerTest {
             assertNotNull(spanHeader);
             assertEquals(trace.getTraceId().toString(), traceHeader.getValue());
             assertEquals(httpClientSpan.getSpanId().toString(), spanHeader.getValue());
+        }
+
+        @TransformedTest
+        public void testSpanNameIncludesHttpRequestMethod() throws Exception {
+            InMemorySpanSinkSource sink = new InMemorySpanSinkSource();
+            SpanSinkRegistry.register(sink);
+
+            HttpRequestBase request = new HttpRequestBase() {
+                @Override
+                public String getMethod() {
+                    return "FOOF";
+                }
+            };
+            request.setURI(URI.create("http://anything"));
+
+            try (Span trace = Span.startTrace("Test")) {
+
+                BasicHttpResponse expectedResponse = new BasicHttpResponse(HttpVersion.HTTP_1_1, 200, "OK");
+                HttpClient client = new TestableHttpClient(expectedResponse);
+
+                assertEquals(expectedResponse, client.execute(request));
+            }
+
+            Trace trace = sink.getTraces().iterator().next();
+            SpanData httpClientSpan = trace.getChildren(trace.getRoot()).get(0);
+
+            assertEquals("FOOF http://anything", httpClientSpan.getName());
         }
     }
 
