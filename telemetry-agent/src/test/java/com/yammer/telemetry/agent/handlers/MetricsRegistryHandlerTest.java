@@ -87,7 +87,7 @@ public class MetricsRegistryHandlerTest {
                 });
             }
 
-            assertEquals(1, sink.getTraces().size());
+            assertEquals(1, sink.recordedTraceCount());
             Trace trace = sink.getTraces().iterator().next();
             SpanData root = trace.getRoot();
 
@@ -115,7 +115,7 @@ public class MetricsRegistryHandlerTest {
                 timerContext.stop();
             }
 
-            assertEquals(1, sink.getTraces().size());
+            assertEquals(1, sink.recordedTraceCount());
             Trace trace = sink.getTraces().iterator().next();
             SpanData root = trace.getRoot();
 
@@ -142,7 +142,7 @@ public class MetricsRegistryHandlerTest {
                 meter.mark(13);
             }
 
-            assertEquals(1, sink.getTraces().size());
+            assertEquals(1, sink.recordedTraceCount());
             Trace trace = sink.getTraces().iterator().next();
             SpanData root = trace.getRoot();
             assertEquals("trace", root.getName());
@@ -165,7 +165,7 @@ public class MetricsRegistryHandlerTest {
                 meter.clear();
             }
 
-            assertEquals(1, sink.getTraces().size());
+            assertEquals(1, sink.recordedTraceCount());
             Trace trace = sink.getTraces().iterator().next();
             SpanData root = trace.getRoot();
             assertEquals("trace", root.getName());

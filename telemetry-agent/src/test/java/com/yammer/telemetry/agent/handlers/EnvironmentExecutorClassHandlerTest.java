@@ -92,7 +92,7 @@ public class EnvironmentExecutorClassHandlerTest {
 
             final Span innerSpan = latch.poll(100, TimeUnit.MILLISECONDS);
 
-            assertEquals(1, sink.getTraces().size());
+            assertEquals(1, sink.recordedTraceCount());
 
             Trace trace = sink.getTrace(BigInteger.ONE);
             assertNotNull(trace);
@@ -146,7 +146,7 @@ public class EnvironmentExecutorClassHandlerTest {
 
             final Span innerSpan = latch.poll(100, TimeUnit.MILLISECONDS);
 
-            assertEquals(1, sink.getTraces().size());
+            assertEquals(1, sink.recordedTraceCount());
 
             Trace trace = sink.getTrace(BigInteger.ONE);
             assertNotNull(trace);
@@ -260,7 +260,7 @@ public class EnvironmentExecutorClassHandlerTest {
 
             final Span innerSpan = latch.poll(100, TimeUnit.MILLISECONDS);
 
-            assertEquals(1, sink.getTraces().size());
+            assertEquals(1, sink.recordedTraceCount());
 
             Trace trace = sink.getTrace(BigInteger.ONE);
             assertNotNull(trace);

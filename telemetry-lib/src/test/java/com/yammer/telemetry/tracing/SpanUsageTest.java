@@ -148,7 +148,7 @@ public class SpanUsageTest {
         subFoof.end();
         foof.end();
 
-        assertEquals(1, sink.getTraces().size());
+        assertEquals(1, sink.recordedTraceCount());
         Trace trace = sink.getTrace(BigInteger.ONE);
         SpanData rootSpan = trace.getRoot();
         assertNotNull(rootSpan);
@@ -168,7 +168,7 @@ public class SpanUsageTest {
         subFoof.end();
         foof.end();
 
-        assertEquals(1, sink.getTraces().size());
+        assertEquals(1, sink.recordedTraceCount());
         Trace trace = sink.getTrace(BigInteger.ONE);
         SpanData rootSpan = trace.getRoot();
         assertEquals("Foof", rootSpan.getName());
@@ -185,7 +185,7 @@ public class SpanUsageTest {
         subFoof.end();
         foof.end();
 
-        assertEquals(1, sink.getTraces().size());
+        assertEquals(1, sink.recordedTraceCount());
         Trace trace = sink.getTrace(foof.getTraceId());
         assertEquals(foof, trace.getRoot());
         assertEquals(ImmutableList.<SpanData>of(subFoof), trace.getChildren(foof));
@@ -200,7 +200,7 @@ public class SpanUsageTest {
         subFoof.end();
         foof.end();
 
-        assertEquals(0, sink.getTraces().size());
+        assertEquals(0, sink.recordedTraceCount());
         Trace trace = sink.getTrace(foof.getTraceId());
         assertNull(trace);
     }
@@ -221,7 +221,7 @@ public class SpanUsageTest {
             e.printStackTrace();
         }
 
-        assertEquals(1, sink.getTraces().size());
+        assertEquals(1, sink.recordedTraceCount());
         assertEquals(traceId.get(), sink.getTraces().iterator().next().getTraceId());
 
         Trace trace = sink.getTrace(traceId.get());

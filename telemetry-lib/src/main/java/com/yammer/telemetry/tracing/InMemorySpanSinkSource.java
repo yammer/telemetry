@@ -40,4 +40,8 @@ public class InMemorySpanSinkSource implements SpanSink {
             trace.addAnnotation(spanId, annotationData);
         }
     }
+
+    public int recordedTraceCount() {
+        return traces.size();
+    }
 }
