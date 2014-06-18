@@ -5,15 +5,13 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
-public class InMemorySpanSinkSource implements SpanSink, SpanSource {
+public class InMemorySpanSinkSource implements SpanSink {
     private final ConcurrentMap<BigInteger, Trace> traces = new ConcurrentHashMap<>();
 
-    @Override
     public Collection<Trace> getTraces() {
         return traces.values();
     }
 
-    @Override
     public Trace getTrace(BigInteger traceId) {
         return traces.get(traceId);
     }
