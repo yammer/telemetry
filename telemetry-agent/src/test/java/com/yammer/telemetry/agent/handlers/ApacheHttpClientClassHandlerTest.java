@@ -1,6 +1,5 @@
 package com.yammer.telemetry.agent.handlers;
 
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.LinkedListMultimap;
 import com.google.common.collect.Multimap;
 import com.yammer.telemetry.test.TransformedTest;

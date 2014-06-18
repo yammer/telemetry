@@ -3,7 +3,6 @@ package com.yammer.telemetry.example.resources;
 import com.yammer.dropwizard.hibernate.UnitOfWork;
 import com.yammer.metrics.Metrics;
 import com.yammer.metrics.annotation.Timed;
-import com.yammer.metrics.core.Counter;
 import com.yammer.metrics.core.Meter;
 import com.yammer.telemetry.example.core.Nap;
 import com.yammer.telemetry.example.db.NapDAO;

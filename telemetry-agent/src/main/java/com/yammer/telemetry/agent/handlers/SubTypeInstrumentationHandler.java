@@ -1,6 +1,5 @@
 package com.yammer.telemetry.agent.handlers;
 
-import com.yammer.telemetry.agent.jdbc.JdbcDriverClassHandler;
 import com.yammer.telemetry.instrumentation.ClassInstrumentationHandler;
 import javassist.CannotCompileException;
 import javassist.ClassPool;
