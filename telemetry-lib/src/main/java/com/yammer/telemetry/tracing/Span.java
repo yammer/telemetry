@@ -5,9 +5,10 @@ import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
 
 import java.math.BigInteger;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
-import java.util.*;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Random;
+import java.util.Stack;
 import java.util.logging.Logger;
 
 /**
@@ -26,12 +27,9 @@ public class Span implements AutoCloseable, SpanData {
     private final Optional<BigInteger> parentSpanId;
     private final BigInteger spanId;
     private final String name;
-    private final String serviceName;
     private final String host;
-    private final String serviceHost;
     private final long startTime;
     private final Integer pid;
-    private final Integer servicePid;
     private long duration;
     private final TraceLevel traceLevel;
     private final List<AnnotationData> annotations;
@@ -43,7 +41,7 @@ public class Span implements AutoCloseable, SpanData {
      * @return The root span of the newly created trace.
      */
     public static Span startTrace(String name) {
-        return start(name, Optional.<BigInteger>absent(), Optional.<BigInteger>absent(), Optional.<BigInteger>absent(), true, sampler.trace() ? TraceLevel.ON : TraceLevel.OFF);
+        return start(name, Optional.<BigInteger>absent(), Optional.<BigInteger>absent(), Optional.<BigInteger>absent(), sampler.trace() ? TraceLevel.ON : TraceLevel.OFF);
     }
 
     /**
@@ -54,7 +52,7 @@ public class Span implements AutoCloseable, SpanData {
      * @return The newly started span.
      */
     public static Span startSpan(String name) {
-        return start(name, Optional.<BigInteger>absent(), Optional.<BigInteger>absent(), Optional.<BigInteger>absent(), true, TraceLevel.INHERIT);
+        return start(name, Optional.<BigInteger>absent(), Optional.<BigInteger>absent(), Optional.<BigInteger>absent(), TraceLevel.INHERIT);
     }
 
     /**
@@ -67,10 +65,10 @@ public class Span implements AutoCloseable, SpanData {
      * @return The attached span.
      */
     public static Span attachSpan(BigInteger traceId, BigInteger spanId, String name) {
-        return start(name, Optional.of(traceId), Optional.of(spanId), Optional.<BigInteger>absent(), false, TraceLevel.ON);
+        return start(name, Optional.of(traceId), Optional.of(spanId), Optional.<BigInteger>absent(), TraceLevel.ON);
     }
 
-    private static Span start(String name, Optional<BigInteger> traceId, Optional<BigInteger> spanId, Optional<BigInteger> parentSpanId, boolean logSpan, TraceLevel traceLevel) {
+    private static Span start(String name, Optional<BigInteger> traceId, Optional<BigInteger> spanId, Optional<BigInteger> parentSpanId, TraceLevel traceLevel) {
         SpanContext context = spanContext.get();
         if (context == null) {
             context = new SpanContext();
@@ -96,30 +94,18 @@ public class Span implements AutoCloseable, SpanData {
             traceLevel = context.currentTraceLevel();
         }
 
-        final Span span = new Span(traceId.get(), spanId.get(), parentSpanId, name, nowInNanoseconds(), System.nanoTime(), logSpan, traceLevel);
+        final Span span = new Span(traceId.get(), spanId.get(), parentSpanId, name, nowInNanoseconds(), System.nanoTime(), traceLevel);
         context.startSpan(span);
         return span;
     }
 
-    private Span(BigInteger traceId, BigInteger spanId, Optional<BigInteger> parentSpanId, String name, long startTime, long startNanos, boolean logSpan, TraceLevel traceLevel) {
+    private Span(BigInteger traceId, BigInteger spanId, Optional<BigInteger> parentSpanId, String name, long startTime, long startNanos, TraceLevel traceLevel) {
         this.traceId = traceId;
         this.parentSpanId = parentSpanId;
         this.spanId = spanId;
-        if (logSpan) {
-            this.name = name;
-            this.host = Annotations.getServiceAnnotations().getHost();
-            this.pid = Annotations.getServiceAnnotations().getPid();
-            this.serviceName = null;
-            this.serviceHost = null;
-            this.servicePid = null;
-        } else {
-            this.name = null;
-            this.host = null;
-            this.pid = null;
-            this.serviceName = name;
-            this.serviceHost = Annotations.getServiceAnnotations().getHost();
-            this.servicePid = Annotations.getServiceAnnotations().getPid();
-        }
+        this.name = name;
+        this.host = Annotations.getServiceAnnotations().getHost();
+        this.pid = Annotations.getServiceAnnotations().getPid();
         this.startTime = startTime;
         this.duration = startNanos;
         this.traceLevel = traceLevel;
@@ -209,20 +195,9 @@ public class Span implements AutoCloseable, SpanData {
         return host;
     }
 
+    @SuppressWarnings("UnusedDeclaration")
     public Integer getPid() {
         return pid;
-    }
-
-    public String getServiceName() {
-        return serviceName;
-    }
-
-    public String getServiceHost() {
-        return serviceHost;
-    }
-
-    public Integer getServicePid() {
-        return servicePid;
     }
 
     public long getStartTime() {

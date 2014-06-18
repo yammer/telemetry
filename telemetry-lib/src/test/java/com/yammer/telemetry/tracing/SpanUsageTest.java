@@ -45,10 +45,8 @@ public class SpanUsageTest {
         });
 
         SpanData rootSpan = trace.getRoot();
-        assertEquals("wubba", rootSpan.getServiceName());
-        assertNotNull(rootSpan.getServiceHost());
-        assertNull(rootSpan.getName());
-        assertNull(rootSpan.getHost());
+        assertEquals("wubba", rootSpan.getName());
+        assertNotNull(rootSpan.getHost());
 
         List<AnnotationData> annotations = trace.getAnnotations(new SpanId(BigInteger.TEN));
         assertEquals(3, annotations.size());
@@ -156,10 +154,8 @@ public class SpanUsageTest {
         assertNotNull(rootSpan);
         assertEquals(BigInteger.ONE, rootSpan.getTraceId());
         assertEquals(BigInteger.TEN, rootSpan.getSpanId());
-        assertEquals("Foof", rootSpan.getServiceName());
-        assertNotNull(rootSpan.getServiceHost());
-        assertNull(rootSpan.getName());
-        assertNull(rootSpan.getHost());
+        assertEquals("Foof", rootSpan.getName());
+        assertNotNull(rootSpan.getHost());
         assertEquals(ImmutableList.<SpanData>of(subFoof), trace.getChildren(foof));
     }
 
@@ -175,10 +171,8 @@ public class SpanUsageTest {
         assertEquals(1, sink.getTraces().size());
         Trace trace = sink.getTrace(BigInteger.ONE);
         SpanData rootSpan = trace.getRoot();
-        assertEquals("Foof", rootSpan.getServiceName());
-        assertNotNull(rootSpan.getServiceHost());
-        assertNull(rootSpan.getName());
-        assertNull(rootSpan.getHost());
+        assertEquals("Foof", rootSpan.getName());
+        assertNotNull(rootSpan.getHost());
         assertEquals(ImmutableList.<SpanData>of(subFoof), trace.getChildren(foof));
     }
 
@@ -274,16 +268,6 @@ public class SpanUsageTest {
 
         @Override
         public String getHost() {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public String getServiceName() {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public String getServiceHost() {
             throw new UnsupportedOperationException();
         }
 

@@ -159,16 +159,6 @@ public class AsynchronousSpanSinkTest {
         }
 
         @Override
-        public String getServiceName() {
-            return null;
-        }
-
-        @Override
-        public String getServiceHost() {
-            return null;
-        }
-
-        @Override
         public long getStartTime() {
             return startTime;
         }
