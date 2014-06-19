@@ -7,7 +7,6 @@ import com.google.common.collect.ImmutableList;
 import java.math.BigInteger;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Random;
 import java.util.Stack;
 import java.util.logging.Logger;
 
@@ -18,10 +17,10 @@ import java.util.logging.Logger;
  */
 public class Span implements AutoCloseable, SpanData {
     private static final Logger LOG = Logger.getLogger(Span.class.getName());
-    private static final Random ID_GENERATOR = new Random(System.currentTimeMillis());
     private static final ThreadLocal<SpanContext> spanContext = new ThreadLocal<>();
 
     private static Sampling sampler = Sampling.ON;
+    private static IDGenerator idGenerator = new IDGenerator();
 
     private final BigInteger traceId;
     private final Optional<BigInteger> parentSpanId;
@@ -57,7 +56,8 @@ public class Span implements AutoCloseable, SpanData {
 
     /**
      * Attach to an existing span. This is useful when a span has been created elsewhere
-     * (probably on another host) and you'd like to log annotations against that span locally.
+     * and you'd like to log annotations against that span locally. For example across thread boundaries in the local
+     * vm.
      *
      * @param traceId ID of the trace of the span being attached.
      * @param spanId  ID of the span being attached.
@@ -66,6 +66,20 @@ public class Span implements AutoCloseable, SpanData {
      */
     public static Span attachSpan(BigInteger traceId, BigInteger spanId, String name) {
         return start(name, Optional.of(traceId), Optional.of(spanId), Optional.<BigInteger>absent(), TraceLevel.ON);
+    }
+
+    /**
+     * Starts a new span under the specified trace and parent spanId.
+     *
+     * This is used for attaching to an external span for example with an incoming http request.
+     *
+     * @param traceId
+     * @param parentSpanId
+     * @param name
+     * @return
+     */
+    public static Span startSpan(BigInteger traceId, BigInteger parentSpanId, String name) {
+        return start(name, Optional.of(traceId), Optional.<BigInteger>absent(), Optional.of(parentSpanId), TraceLevel.ON);
     }
 
     private static Span start(String name, Optional<BigInteger> traceId, Optional<BigInteger> spanId, Optional<BigInteger> parentSpanId, TraceLevel traceLevel) {
@@ -78,7 +92,7 @@ public class Span implements AutoCloseable, SpanData {
         if (!traceId.isPresent()) {
             traceId = context.currentTraceId();
             if (!traceId.isPresent()) {
-                traceId = Optional.of(generateTraceId());
+                traceId = Optional.of(idGenerator.generateTraceId());
             }
         }
 
@@ -87,7 +101,7 @@ public class Span implements AutoCloseable, SpanData {
         }
 
         if (!spanId.isPresent()) {
-            spanId = Optional.of(generateSpanId());
+            spanId = Optional.of(idGenerator.generateSpanId());
         }
 
         if (traceLevel == TraceLevel.INHERIT) {
@@ -206,14 +220,6 @@ public class Span implements AutoCloseable, SpanData {
 
     public long getDuration() {
         return duration;
-    }
-
-    private static BigInteger generateTraceId() {
-        return new BigInteger(64, ID_GENERATOR);
-    }
-
-    private static BigInteger generateSpanId() {
-        return new BigInteger(32, ID_GENERATOR);
     }
 
     public static Sampling getSampler() {

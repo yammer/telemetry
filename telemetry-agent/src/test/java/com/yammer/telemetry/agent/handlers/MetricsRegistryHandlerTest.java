@@ -92,7 +92,7 @@ public class MetricsRegistryHandlerTest {
             SpanData root = trace.getRoot();
 
             assertEquals("trace", root.getName());
-            List<AnnotationData> annotations = trace.getAnnotations(root);
+            List<AnnotationData> annotations = trace.getAnnotations(root.getSpanId());
             assertEquals(2, annotations.size());
 
             AnnotationData data0 = annotations.get(0);
@@ -120,7 +120,7 @@ public class MetricsRegistryHandlerTest {
             SpanData root = trace.getRoot();
 
             assertEquals("trace", root.getName());
-            List<AnnotationData> annotations = trace.getAnnotations(root);
+            List<AnnotationData> annotations = trace.getAnnotations(root.getSpanId());
             assertEquals(2, annotations.size());
 
             AnnotationData data0 = annotations.get(0);
@@ -146,7 +146,7 @@ public class MetricsRegistryHandlerTest {
             Trace trace = sink.getTraces().iterator().next();
             SpanData root = trace.getRoot();
             assertEquals("trace", root.getName());
-            List<AnnotationData> annotations = trace.getAnnotations(root);
+            List<AnnotationData> annotations = trace.getAnnotations(root.getSpanId());
             assertEquals(1, annotations.size());
             AnnotationData data = annotations.get(0);
             assertEquals("Mark Meter: \"com.yammer.telemetry.agent.handlers\":type=\"TransformedTests\",name=\"testRecordsSpanAnnotationAroundMeter\"", data.getName());
@@ -169,7 +169,7 @@ public class MetricsRegistryHandlerTest {
             Trace trace = sink.getTraces().iterator().next();
             SpanData root = trace.getRoot();
             assertEquals("trace", root.getName());
-            List<AnnotationData> annotations = trace.getAnnotations(root);
+            List<AnnotationData> annotations = trace.getAnnotations(root.getSpanId());
             assertEquals(3, annotations.size());
 
             AnnotationData data0 = annotations.get(0);

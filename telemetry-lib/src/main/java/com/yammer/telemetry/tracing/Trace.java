@@ -14,8 +14,6 @@ public class Trace {
     private final ConcurrentMap<BigInteger, List<SpanData>> childSpans;
     private final ConcurrentMap<BigInteger, List<AnnotationData>> annotations;
     private SpanData root = null;
-    private long startTime = Long.MAX_VALUE;
-    private long duration = 0;
 
     public Trace(BigInteger traceId) {
         this.traceId = traceId;
@@ -31,32 +29,21 @@ public class Trace {
         return root;
     }
 
-    public long getStartTime() {
-        return startTime;
-    }
-
-    public long getDuration() {
-        return duration - startTime;
-    }
-
-    public List<SpanData> getChildren(SpanData spanData) {
-        if (spanData == null) {
+    public List<SpanData> getChildren(BigInteger spanId) {
+        if (spanId == null) {
             return Collections.emptyList();
         }
-        return Optional.fromNullable(childSpans.get(spanData.getSpanId())).or(Collections.<SpanData>emptyList());
+        return Optional.fromNullable(childSpans.get(spanId)).or(Collections.<SpanData>emptyList());
     }
 
-    public List<AnnotationData> getAnnotations(SpanData spanData) {
-        if (spanData == null) {
+    public List<AnnotationData> getAnnotations(BigInteger spanId) {
+        if (spanId == null) {
             return Collections.emptyList();
         }
-        return Optional.fromNullable(annotations.get(spanData.getSpanId())).or(Collections.<AnnotationData>emptyList());
+        return Optional.fromNullable(annotations.get(spanId)).or(Collections.<AnnotationData>emptyList());
     }
 
     public void addSpan(SpanData spanData) {
-        startTime = Math.min(startTime, spanData.getStartTime());
-        duration = Math.max(duration, spanData.getStartTime() + spanData.getDuration());
-
         final Optional<BigInteger> parentSpanId = spanData.getParentSpanId();
         if (!parentSpanId.isPresent()) {
             this.root = spanData;

@@ -7,7 +7,7 @@
     if (traceId != null && spanId != null) {
         BigInteger traceIdLong = new BigInteger(traceId);
         BigInteger spanIdLong = new BigInteger(spanId);
-        span = Span.attachSpan(traceIdLong, spanIdLong, name);
+        span = Span.startSpan(traceIdLong, spanIdLong, name);
     } else {
         span = Span.startTrace(name);
     }
