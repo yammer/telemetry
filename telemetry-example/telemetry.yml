@@ -5,7 +5,7 @@ instruments:
 - metrics
 - executors
 
-sampler: off
+sampler: on
 
 sinks:
   log:

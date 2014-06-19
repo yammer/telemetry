@@ -1,6 +1,5 @@
 package com.yammer.telemetry.agent.handlers;
 
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.LinkedListMultimap;
 import com.google.common.collect.Multimap;
 import com.yammer.telemetry.test.TransformedTest;
@@ -113,14 +112,14 @@ public class ApacheHttpClientClassHandlerTest {
             SpanData root = trace.getRoot();
             assertEquals("Test", root.getName());
 
-            List<SpanData> spans = trace.getChildren(root);
+            List<SpanData> spans = trace.getChildren(root.getSpanId());
             assertEquals(1, spans.size());
 
             SpanData httpClientSpan = spans.get(0);
             assertEquals("GET http://anything", httpClientSpan.getName());
 
             Multimap<String, String> annotationsMap = LinkedListMultimap.create();
-            for (AnnotationData annotation : trace.getAnnotations(httpClientSpan)) {
+            for (AnnotationData annotation : trace.getAnnotations(httpClientSpan.getSpanId())) {
                 annotationsMap.put(annotation.getName(), annotation.getMessage());
             }
 
@@ -144,7 +143,7 @@ public class ApacheHttpClientClassHandlerTest {
             }
 
             Trace trace = sink.getTraces().iterator().next();
-            SpanData httpClientSpan = trace.getChildren(trace.getRoot()).get(0);
+            SpanData httpClientSpan = trace.getChildren(trace.getRoot().getSpanId()).get(0);
 
             Header traceHeader = request.getFirstHeader(HttpHeaderNames.TRACE_ID);
             Header spanHeader = request.getFirstHeader(HttpHeaderNames.SPAN_ID);
@@ -177,7 +176,7 @@ public class ApacheHttpClientClassHandlerTest {
             }
 
             Trace trace = sink.getTraces().iterator().next();
-            SpanData httpClientSpan = trace.getChildren(trace.getRoot()).get(0);
+            SpanData httpClientSpan = trace.getChildren(trace.getRoot().getSpanId()).get(0);
 
             assertEquals("FOOF http://anything", httpClientSpan.getName());
         }

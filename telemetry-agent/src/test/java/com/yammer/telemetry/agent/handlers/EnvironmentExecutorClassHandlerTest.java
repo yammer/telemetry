@@ -92,12 +92,12 @@ public class EnvironmentExecutorClassHandlerTest {
 
             final Span innerSpan = latch.poll(100, TimeUnit.MILLISECONDS);
 
-            assertEquals(1, sink.getTraces().size());
+            assertEquals(1, sink.recordedTraceCount());
 
             Trace trace = sink.getTrace(BigInteger.ONE);
             assertNotNull(trace);
 
-            List<AnnotationData> rootAnnotations = trace.getAnnotations(rootSpan);
+            List<AnnotationData> rootAnnotations = trace.getAnnotations(rootSpan.getSpanId());
             assertEquals(3, rootAnnotations.size());
             ImmutableList<String> annotationNames = ImmutableList.copyOf(Iterables.transform(rootAnnotations, new Function<AnnotationData, String>() {
                 @Override
@@ -115,8 +115,8 @@ public class EnvironmentExecutorClassHandlerTest {
             String expectedTaskName = task.getClass().getName();
             assertTrue(annotationValues.containsAll(ImmutableList.of(expectedTaskName, expectedTaskName, expectedTaskName)));
 
-            assertEquals(1, trace.getChildren(rootSpan).size());
-            SpanData spanData = trace.getChildren(rootSpan).get(0);
+            assertEquals(1, trace.getChildren(rootSpan.getSpanId()).size());
+            SpanData spanData = trace.getChildren(rootSpan.getSpanId()).get(0);
             assertEquals("Offer", spanData.getName());
             assertEquals(BigInteger.ONE, spanData.getTraceId());
             assertEquals(Optional.of(BigInteger.TEN), spanData.getParentSpanId());
@@ -146,12 +146,12 @@ public class EnvironmentExecutorClassHandlerTest {
 
             final Span innerSpan = latch.poll(100, TimeUnit.MILLISECONDS);
 
-            assertEquals(1, sink.getTraces().size());
+            assertEquals(1, sink.recordedTraceCount());
 
             Trace trace = sink.getTrace(BigInteger.ONE);
             assertNotNull(trace);
 
-            List<AnnotationData> rootAnnotations = trace.getAnnotations(rootSpan);
+            List<AnnotationData> rootAnnotations = trace.getAnnotations(rootSpan.getSpanId());
             assertEquals(3, rootAnnotations.size());
             ImmutableList<String> annotationNames = ImmutableList.copyOf(Iterables.transform(rootAnnotations, new Function<AnnotationData, String>() {
                 @Override
@@ -169,8 +169,8 @@ public class EnvironmentExecutorClassHandlerTest {
             String expectedTaskName = task.getClass().getName();
             assertTrue(annotationValues.containsAll(ImmutableList.of(expectedTaskName, expectedTaskName, expectedTaskName)));
 
-            assertEquals(1, trace.getChildren(rootSpan).size());
-            SpanData spanData = trace.getChildren(rootSpan).get(0);
+            assertEquals(1, trace.getChildren(rootSpan.getSpanId()).size());
+            SpanData spanData = trace.getChildren(rootSpan.getSpanId()).get(0);
             assertEquals("Offer", spanData.getName());
             assertEquals(BigInteger.ONE, spanData.getTraceId());
             assertEquals(Optional.of(BigInteger.TEN), spanData.getParentSpanId());
@@ -208,7 +208,7 @@ public class EnvironmentExecutorClassHandlerTest {
             Trace trace = sink.getTrace(BigInteger.ONE);
             assertNotNull(trace);
 
-            List<AnnotationData> rootAnnotations = trace.getAnnotations(rootSpan);
+            List<AnnotationData> rootAnnotations = trace.getAnnotations(rootSpan.getSpanId());
             assertEquals(3, rootAnnotations.size());
             ImmutableList<String> annotationNames = ImmutableList.copyOf(Iterables.transform(rootAnnotations, new Function<AnnotationData, String>() {
                 @Override
@@ -227,8 +227,8 @@ public class EnvironmentExecutorClassHandlerTest {
             assertTrue(annotationValues.containsAll(ImmutableList.of(expectedTaskName, expectedTaskName, expectedTaskName)));
 
 
-            assertEquals(1, trace.getChildren(rootSpan).size());
-            SpanData spanData = trace.getChildren(rootSpan).get(0);
+            assertEquals(1, trace.getChildren(rootSpan.getSpanId()).size());
+            SpanData spanData = trace.getChildren(rootSpan.getSpanId()).get(0);
             assertEquals("Offer", spanData.getName());
             assertEquals(BigInteger.ONE, spanData.getTraceId());
             assertEquals(Optional.of(BigInteger.TEN), spanData.getParentSpanId());
@@ -260,12 +260,12 @@ public class EnvironmentExecutorClassHandlerTest {
 
             final Span innerSpan = latch.poll(100, TimeUnit.MILLISECONDS);
 
-            assertEquals(1, sink.getTraces().size());
+            assertEquals(1, sink.recordedTraceCount());
 
             Trace trace = sink.getTrace(BigInteger.ONE);
             assertNotNull(trace);
 
-            List<AnnotationData> rootAnnotations = trace.getAnnotations(rootSpan);
+            List<AnnotationData> rootAnnotations = trace.getAnnotations(rootSpan.getSpanId());
             assertEquals(3, rootAnnotations.size());
             ImmutableList<String> annotationNames = ImmutableList.copyOf(Iterables.transform(rootAnnotations, new Function<AnnotationData, String>() {
                 @Override
@@ -283,8 +283,8 @@ public class EnvironmentExecutorClassHandlerTest {
             String expectedTaskName = task.getClass().getName() + ":SomeResult"; // return value is appended
             assertTrue(annotationValues.containsAll(ImmutableList.of(expectedTaskName, expectedTaskName, expectedTaskName)));
 
-            assertEquals(1, trace.getChildren(rootSpan).size());
-            SpanData spanData = trace.getChildren(rootSpan).get(0);
+            assertEquals(1, trace.getChildren(rootSpan.getSpanId()).size());
+            SpanData spanData = trace.getChildren(rootSpan.getSpanId()).get(0);
             assertEquals("Offer", spanData.getName());
             assertEquals(BigInteger.ONE, spanData.getTraceId());
             assertEquals(Optional.of(BigInteger.TEN), spanData.getParentSpanId());

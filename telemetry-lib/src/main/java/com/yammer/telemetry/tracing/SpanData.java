@@ -15,10 +15,6 @@ public interface SpanData {
 
     String getHost();
 
-    String getServiceName();
-
-    String getServiceHost();
-
     long getStartTime();
 
     long getDuration();

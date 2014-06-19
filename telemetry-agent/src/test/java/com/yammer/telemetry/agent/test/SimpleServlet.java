@@ -1,7 +1,5 @@
 package com.yammer.telemetry.agent.test;
 
-import org.apache.http.StatusLine;
-
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;

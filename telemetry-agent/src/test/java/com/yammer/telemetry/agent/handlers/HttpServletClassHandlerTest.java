@@ -1,5 +1,6 @@
 package com.yammer.telemetry.agent.handlers;
 
+import com.google.common.base.Optional;
 import com.yammer.telemetry.agent.test.SimpleServlet;
 import com.yammer.telemetry.test.TransformedTest;
 import com.yammer.telemetry.tracing.*;
@@ -11,6 +12,7 @@ import org.junit.Test;
 import javax.servlet.*;
 import javax.servlet.http.*;
 import java.io.*;
+import java.math.BigInteger;
 import java.security.Principal;
 import java.util.*;
 
@@ -90,7 +92,7 @@ public class HttpServletClassHandlerTest {
             SpanData root = trace.getRoot();
             assertNotNull(root);
 
-            List<AnnotationData> annotations = trace.getAnnotations(root);
+            List<AnnotationData> annotations = trace.getAnnotations(root.getSpanId());
             assertEquals(3, annotations.size());
 
             assertEquals(AnnotationNames.SERVER_RECEIVED, annotations.get(0).getName());
@@ -110,8 +112,7 @@ public class HttpServletClassHandlerTest {
 
             FakeHttpServletRequest request = new FakeHttpServletRequest("FOOF", "http://localhost:8080/foo");
 
-            StringWriter underlyingWriter = new StringWriter();
-            HttpServletResponse response = new FakeHttpServletResponse(underlyingWriter);
+            HttpServletResponse response = new FakeHttpServletResponse(new StringWriter());
 
             HttpServlet servlet = new HttpServlet() {
                 @Override
@@ -127,6 +128,48 @@ public class HttpServletClassHandlerTest {
             Trace trace = traces.iterator().next();
             SpanData rootSpan = trace.getRoot();
             assertEquals("FOOF http://localhost:8080/foo", rootSpan.getName());
+        }
+        
+        @TransformedTest
+        public void testCreatesSpanBeneathIncomingSpanAndTraceId() throws Exception {
+            InMemorySpanSinkSource sink = new InMemorySpanSinkSource();
+            
+            Annotations.setServiceAnnotations(new ServiceAnnotations("testing"));
+            SpanSinkRegistry.register(sink);
+            
+            FakeHttpServletRequest request = new FakeHttpServletRequest("GET", "http://localhost:8080/foo", Optional.of(BigInteger.ONE), Optional.of(BigInteger.TEN));
+            
+            HttpServletResponse response = new FakeHttpServletResponse(new StringWriter());
+            
+            HttpServlet servlet = new HttpServlet() {
+                @Override
+                protected void service(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+                    resp.setStatus(200);
+                }
+            };
+            servlet.service(request, response);
+
+            Collection<Trace> traces = sink.getTraces();
+            Trace trace = traces.iterator().next();
+            assertEquals(BigInteger.ONE, trace.getTraceId());
+            SpanData root = trace.getRoot();
+            assertNull(root);
+            List<SpanData> childSpans = trace.getChildren(BigInteger.TEN);
+            assertEquals(1, childSpans.size());
+            SpanData spanData = childSpans.get(0);
+            assertEquals(Optional.of(BigInteger.TEN), spanData.getParentSpanId());
+            assertEquals("GET http://localhost:8080/foo", spanData.getName());
+
+            assertTrue(trace.getAnnotations(BigInteger.TEN).isEmpty());
+            List<AnnotationData> annotations = trace.getAnnotations(spanData.getSpanId());
+            assertEquals(3, annotations.size());
+
+            assertEquals(AnnotationNames.SERVER_RECEIVED, annotations.get(0).getName());
+            assertNull(annotations.get(0).getMessage());
+            assertEquals(AnnotationNames.SERVICE_NAME, annotations.get(1).getName());
+            assertEquals("testing", annotations.get(1).getMessage());
+            assertEquals(AnnotationNames.SERVER_SENT, annotations.get(2).getName());
+            assertNull(annotations.get(2).getMessage());
         }
     }
 
@@ -322,10 +365,18 @@ public class HttpServletClassHandlerTest {
     public static class FakeHttpServletRequest implements HttpServletRequest {
         private final String method;
         private final StringBuffer requestURL;
+        private final Optional<BigInteger> traceId;
+        private final Optional<BigInteger> spanId;
 
         public FakeHttpServletRequest(String method, String requestURL) {
+            this(method, requestURL, Optional.<BigInteger>absent(), Optional.<BigInteger>absent());
+        }
+
+        public FakeHttpServletRequest(String method, String requestURL, Optional<BigInteger> traceId, Optional<BigInteger> spanId) {
             this.method = method;
             this.requestURL = new StringBuffer(requestURL);
+            this.traceId = traceId;
+            this.spanId = spanId;
         }
 
         @Override
@@ -345,6 +396,12 @@ public class HttpServletClassHandlerTest {
 
         @Override
         public String getHeader(String name) {
+            if (HttpHeaderNames.TRACE_ID.equalsIgnoreCase(name) && traceId.isPresent()) {
+                return traceId.get().toString();
+            }
+            if (HttpHeaderNames.SPAN_ID.equalsIgnoreCase(name) && spanId.isPresent()) {
+                return spanId.get().toString();
+            }
             return null;
         }
 

@@ -35,9 +35,9 @@ public class TraceTest {
         trace.addSpan(baz);
 
         assertEquals(foo, trace.getRoot());
-        assertTrue(trace.getChildren(foo).contains(bar));
-        assertTrue(trace.getChildren(bar).contains(baz));
-        assertTrue(trace.getChildren(baz).isEmpty());
+        assertTrue(trace.getChildren(foo.getSpanId()).contains(bar));
+        assertTrue(trace.getChildren(bar.getSpanId()).contains(baz));
+        assertTrue(trace.getChildren(baz.getSpanId()).isEmpty());
     }
 
     @Test
@@ -48,9 +48,9 @@ public class TraceTest {
         trace.addSpan(foo);
 
         assertEquals(foo, trace.getRoot());
-        assertTrue(trace.getChildren(foo).contains(bar));
-        assertTrue(trace.getChildren(bar).contains(baz));
-        assertTrue(trace.getChildren(baz).isEmpty());
+        assertTrue(trace.getChildren(foo.getSpanId()).contains(bar));
+        assertTrue(trace.getChildren(bar.getSpanId()).contains(baz));
+        assertTrue(trace.getChildren(baz.getSpanId()).isEmpty());
     }
 
     @Test
@@ -61,9 +61,9 @@ public class TraceTest {
         trace.addSpan(foo);
 
         assertEquals(foo, trace.getRoot());
-        assertTrue(trace.getChildren(foo).contains(bar));
-        assertTrue(trace.getChildren(bar).contains(baz));
-        assertTrue(trace.getChildren(baz).isEmpty());
+        assertTrue(trace.getChildren(foo.getSpanId()).contains(bar));
+        assertTrue(trace.getChildren(bar.getSpanId()).contains(baz));
+        assertTrue(trace.getChildren(baz.getSpanId()).isEmpty());
     }
 
     @Test

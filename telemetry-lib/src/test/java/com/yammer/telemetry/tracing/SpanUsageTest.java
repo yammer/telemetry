@@ -1,7 +1,6 @@
 package com.yammer.telemetry.tracing;
 
 import com.google.common.base.Function;
-import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
 import org.junit.After;
@@ -45,12 +44,10 @@ public class SpanUsageTest {
         });
 
         SpanData rootSpan = trace.getRoot();
-        assertEquals("wubba", rootSpan.getServiceName());
-        assertNotNull(rootSpan.getServiceHost());
-        assertNull(rootSpan.getName());
-        assertNull(rootSpan.getHost());
+        assertEquals("wubba", rootSpan.getName());
+        assertNotNull(rootSpan.getHost());
 
-        List<AnnotationData> annotations = trace.getAnnotations(new SpanId(BigInteger.TEN));
+        List<AnnotationData> annotations = trace.getAnnotations(BigInteger.TEN);
         assertEquals(3, annotations.size());
 
         assertEquals(ImmutableList.of(AnnotationNames.SERVER_RECEIVED, AnnotationNames.SERVICE_NAME + "_testing", AnnotationNames.SERVER_SENT), ImmutableList.copyOf(Iterables.transform(annotations, new Function<AnnotationData, String>() {
@@ -73,7 +70,7 @@ public class SpanUsageTest {
 
         assertNotNull(trace.getRoot());
 
-        List<AnnotationData> annotations = trace.getAnnotations(trace.getRoot());
+        List<AnnotationData> annotations = trace.getAnnotations(trace.getRoot().getSpanId());
         assertEquals(3, annotations.size());
 
         assertEquals(ImmutableList.of(AnnotationNames.SERVER_RECEIVED, AnnotationNames.SERVICE_NAME + "_testing", AnnotationNames.SERVER_SENT), ImmutableList.copyOf(Iterables.transform(annotations, new Function<AnnotationData, String>() {
@@ -142,6 +139,30 @@ public class SpanUsageTest {
     }
 
     @Test
+    public void testStartSpanWithTraceAndSpanIdRecordsWhenSamplingIsOn() {
+        Span.setSampler(Sampling.ON);
+        Span trace = Span.startSpan(BigInteger.ONE, BigInteger.TEN, "Foof");
+        trace.end();
+
+        assertFalse(sink.getTraces().isEmpty());
+        Trace recordedTrace = sink.getTraces().iterator().next();
+        assertEquals(BigInteger.ONE, recordedTrace.getTraceId());
+        assertEquals("Foof", recordedTrace.getChildren(BigInteger.TEN).get(0).getName());
+    }
+
+    @Test
+    public void testStartSpanWithTraceAndSpanIdRecordsEvenWhenSamplingIsOff() {
+        Span.setSampler(Sampling.OFF);
+        Span trace = Span.startSpan(BigInteger.ONE, BigInteger.TEN, "Foof");
+        trace.end();
+
+        assertFalse(sink.getTraces().isEmpty());
+        Trace recordedTrace = sink.getTraces().iterator().next();
+        assertEquals(BigInteger.ONE, recordedTrace.getTraceId());
+        assertEquals("Foof", recordedTrace.getChildren(BigInteger.TEN).get(0).getName());
+    }
+
+    @Test
     public void testSpanRecordsAfterAttachSpanIfSamplingIsOn() {
         Span.setSampler(Sampling.ON);
         Span foof = Span.attachSpan(BigInteger.ONE, BigInteger.TEN, "Foof");
@@ -150,17 +171,15 @@ public class SpanUsageTest {
         subFoof.end();
         foof.end();
 
-        assertEquals(1, sink.getTraces().size());
+        assertEquals(1, sink.recordedTraceCount());
         Trace trace = sink.getTrace(BigInteger.ONE);
         SpanData rootSpan = trace.getRoot();
         assertNotNull(rootSpan);
         assertEquals(BigInteger.ONE, rootSpan.getTraceId());
         assertEquals(BigInteger.TEN, rootSpan.getSpanId());
-        assertEquals("Foof", rootSpan.getServiceName());
-        assertNotNull(rootSpan.getServiceHost());
-        assertNull(rootSpan.getName());
-        assertNull(rootSpan.getHost());
-        assertEquals(ImmutableList.<SpanData>of(subFoof), trace.getChildren(foof));
+        assertEquals("Foof", rootSpan.getName());
+        assertNotNull(rootSpan.getHost());
+        assertEquals(ImmutableList.<SpanData>of(subFoof), trace.getChildren(foof.getSpanId()));
     }
 
     @Test
@@ -172,14 +191,12 @@ public class SpanUsageTest {
         subFoof.end();
         foof.end();
 
-        assertEquals(1, sink.getTraces().size());
+        assertEquals(1, sink.recordedTraceCount());
         Trace trace = sink.getTrace(BigInteger.ONE);
         SpanData rootSpan = trace.getRoot();
-        assertEquals("Foof", rootSpan.getServiceName());
-        assertNotNull(rootSpan.getServiceHost());
-        assertNull(rootSpan.getName());
-        assertNull(rootSpan.getHost());
-        assertEquals(ImmutableList.<SpanData>of(subFoof), trace.getChildren(foof));
+        assertEquals("Foof", rootSpan.getName());
+        assertNotNull(rootSpan.getHost());
+        assertEquals(ImmutableList.<SpanData>of(subFoof), trace.getChildren(foof.getSpanId()));
     }
 
     @Test
@@ -191,10 +208,10 @@ public class SpanUsageTest {
         subFoof.end();
         foof.end();
 
-        assertEquals(1, sink.getTraces().size());
+        assertEquals(1, sink.recordedTraceCount());
         Trace trace = sink.getTrace(foof.getTraceId());
         assertEquals(foof, trace.getRoot());
-        assertEquals(ImmutableList.<SpanData>of(subFoof), trace.getChildren(foof));
+        assertEquals(ImmutableList.<SpanData>of(subFoof), trace.getChildren(foof.getSpanId()));
     }
 
     @Test
@@ -206,7 +223,7 @@ public class SpanUsageTest {
         subFoof.end();
         foof.end();
 
-        assertEquals(0, sink.getTraces().size());
+        assertEquals(0, sink.recordedTraceCount());
         Trace trace = sink.getTrace(foof.getTraceId());
         assertNull(trace);
     }
@@ -227,12 +244,12 @@ public class SpanUsageTest {
             e.printStackTrace();
         }
 
-        assertEquals(1, sink.getTraces().size());
+        assertEquals(1, sink.recordedTraceCount());
         assertEquals(traceId.get(), sink.getTraces().iterator().next().getTraceId());
 
         Trace trace = sink.getTrace(traceId.get());
 
-        List<SpanData> children = trace.getChildren(new SpanId(spanId.get()));
+        List<SpanData> children = trace.getChildren(spanId.get());
         assertEquals(2, children.size());
         assertEquals(ImmutableList.of("here", "there"), ImmutableList.copyOf(Iterables.transform(children, new Function<SpanData, String>() {
             @Override
@@ -241,61 +258,8 @@ public class SpanUsageTest {
             }
         })));
 
-        assertEquals(3, trace.getAnnotations(new SpanId(spanId.get())).size());
+        assertEquals(3, trace.getAnnotations(spanId.get()).size());
         return trace;
-    }
-
-    private static class SpanId implements SpanData {
-        private final BigInteger spanId;
-
-        public SpanId(BigInteger spanId) {
-            this.spanId = spanId;
-        }
-
-        @Override
-        public BigInteger getTraceId() {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public BigInteger getSpanId() {
-            return spanId;
-        }
-
-        @Override
-        public Optional<BigInteger> getParentSpanId() {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public String getName() {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public String getHost() {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public String getServiceName() {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public String getServiceHost() {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public long getStartTime() {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public long getDuration() {
-            throw new UnsupportedOperationException();
-        }
     }
 
     private static interface Strategy {
