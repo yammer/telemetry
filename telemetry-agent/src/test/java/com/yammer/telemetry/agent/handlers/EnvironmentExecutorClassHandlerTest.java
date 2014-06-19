@@ -15,6 +15,8 @@ import javassist.CtClass;
 import org.junit.After;
 import org.junit.Test;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.math.BigInteger;
 import java.util.List;
 import java.util.concurrent.*;
@@ -66,6 +68,56 @@ public class EnvironmentExecutorClassHandlerTest {
             ExecutorService executorService = environment.managedScheduledExecutorService("test-scheduled-thread-%s", 1);
 
             assertTrue(executorService instanceof InstrumentedScheduledThreadPoolExecutor);
+        }
+
+        @TransformedTest
+        public void testThreadPoolNotPollutedWithInvalidSpanContexts() throws Exception {
+            Environment environment = new Environment("test", new Configuration(), new ObjectMapperFactory(), new Validator());
+            final ExecutorService executorService = environment.managedExecutorService("test-thread-%s", 1, 1, 0, TimeUnit.SECONDS);
+
+            try (CapturingExceptionHandler eh = new CapturingExceptionHandler()) {
+                Runnable noop = new Runnable() {
+                    @Override
+                    public void run() {
+
+                    }
+                };
+
+                Span trace = Span.startTrace("Trace");
+
+                executorService.submit(noop);
+                trace.end();
+
+                Future<?> second = executorService.submit(noop);
+                second.get(); // wait for the second task to complete
+
+                assertNull(eh.pollUncaught(100, TimeUnit.MILLISECONDS));
+            }
+        }
+
+        @TransformedTest
+        public void testScheduledThreadPoolNotPollutedWithInvalidSpanContexts() throws Exception {
+            Environment environment = new Environment("test", new Configuration(), new ObjectMapperFactory(), new Validator());
+            final ScheduledExecutorService executorService = environment.managedScheduledExecutorService("test-scheduled-thread-%s", 1);
+
+            try (CapturingExceptionHandler eh = new CapturingExceptionHandler()) {
+                Runnable noop = new Runnable() {
+                    @Override
+                    public void run() {
+
+                    }
+                };
+
+                Span trace = Span.startTrace("Trace");
+
+                executorService.schedule(noop, 1, TimeUnit.MILLISECONDS);
+                trace.end();
+
+                Future<?> second = executorService.schedule(noop, 1, TimeUnit.MILLISECONDS);
+                second.get(); // wait for the second task to complete
+
+                assertNull(eh.pollUncaught(100, TimeUnit.MILLISECONDS));
+            }
         }
 
         @TransformedTest
@@ -288,6 +340,34 @@ public class EnvironmentExecutorClassHandlerTest {
             assertEquals("Offer", spanData.getName());
             assertEquals(BigInteger.ONE, spanData.getTraceId());
             assertEquals(Optional.of(BigInteger.TEN), spanData.getParentSpanId());
+        }
+
+        private static class CapturingExceptionHandler implements Thread.UncaughtExceptionHandler, AutoCloseable {
+            private final BlockingDeque<String> uncaughtExceptions = new LinkedBlockingDeque<>();
+            private final Thread.UncaughtExceptionHandler prior;
+
+            public CapturingExceptionHandler() {
+                prior = Thread.getDefaultUncaughtExceptionHandler();
+                Thread.setDefaultUncaughtExceptionHandler(this);
+            }
+
+            @Override
+            public void uncaughtException(Thread t, Throwable e) {
+                StringWriter sw = new StringWriter();
+                PrintWriter writer = new PrintWriter(sw);
+                writer.printf("Thread: %s%n", t.getName());
+                e.printStackTrace(writer);
+                uncaughtExceptions.add(sw.toString());
+            }
+
+            @Override
+            public void close() throws Exception {
+                Thread.setDefaultUncaughtExceptionHandler(prior);
+            }
+
+            public String pollUncaught(int timeout, TimeUnit timeUnit) throws InterruptedException {
+                return uncaughtExceptions.poll(timeout, timeUnit);
+            }
         }
     }
 }

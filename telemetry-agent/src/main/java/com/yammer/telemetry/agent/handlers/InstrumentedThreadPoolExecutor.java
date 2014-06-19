@@ -56,26 +56,27 @@ public class InstrumentedThreadPoolExecutor extends ThreadPoolExecutor {
 
     @Override
     protected void afterExecute(Runnable r, Throwable t) {
-        super.afterExecute(r, t);
+        try {
+            super.afterExecute(r, t);
 
-        if (r instanceof InstrumentedRunnableFuture) {
-            Span span = local.get();
-            if (span != null) {
-                span.addAnnotation("After", ((InstrumentedRunnableFuture) r).getName());
-                span.end();
+            if (r instanceof InstrumentedRunnableFuture) {
+                Span span = local.get();
+                if (span != null) {
+                    span.addAnnotation("After", ((InstrumentedRunnableFuture) r).getName());
+                    span.end();
+                }
             }
+        } finally {
+            local.remove();
         }
     }
 
     private <T> RunnableFuture<T> taskFor(RunnableFuture<T> future, String name) {
-        BigInteger traceId = null;
-        BigInteger spanId = null;
         Optional<Span> currentSpan = Span.currentSpan();
         if (currentSpan.isPresent()) {
-            traceId = currentSpan.get().getTraceId();
-            spanId = currentSpan.get().getSpanId();
             currentSpan.get().addAnnotation("Task", name);
+            return new InstrumentedRunnableFuture<>(future, name, currentSpan.get().getTraceId(), currentSpan.get().getSpanId());
         }
-        return new InstrumentedRunnableFuture<>(future, name, traceId, spanId);
+        return future;
     }
 }

@@ -268,6 +268,9 @@ public class Span implements AutoCloseable, SpanData {
         }
 
         public void endSpan(Span span) {
+            if (spans.isEmpty()) {
+                LOG.warning("Ending span " + span.getName() + ":" + span.getSpanId() + " when no spans exist in SpanContext");
+            }
             Span poppedSpan = spans.pop();
 
             int extraPops = 0;

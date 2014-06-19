@@ -56,26 +56,27 @@ public class InstrumentedScheduledThreadPoolExecutor extends ScheduledThreadPool
 
     @Override
     protected void afterExecute(Runnable r, Throwable t) {
-        super.afterExecute(r, t);
+        try {
+            super.afterExecute(r, t);
 
-        if (r instanceof InstrumentedRunnableScheduledFuture) {
-            Span span = local.get();
-            if (span != null) {
-                span.addAnnotation("After", ((InstrumentedRunnableScheduledFuture) r).getName());
-                span.end();
+            if (r instanceof InstrumentedRunnableScheduledFuture) {
+                Span span = local.get();
+                if (span != null) {
+                    span.addAnnotation("After", ((InstrumentedRunnableScheduledFuture) r).getName());
+                    span.end();
+                }
             }
+        } finally {
+            local.remove();
         }
     }
 
     private <T, V> RunnableScheduledFuture<V> decoratedTask(T task, RunnableScheduledFuture<V> vRunnableScheduledFuture) {
-        BigInteger traceId = null;
-        BigInteger spanId = null;
         Optional<Span> currentSpan = Span.currentSpan();
         if (currentSpan.isPresent()) {
-            traceId = currentSpan.get().getTraceId();
-            spanId = currentSpan.get().getSpanId();
             currentSpan.get().addAnnotation("Scheduled Task", task.getClass().getName());
+            return new InstrumentedRunnableScheduledFuture<>(vRunnableScheduledFuture, task.getClass().getName(), currentSpan.get().getTraceId(), currentSpan.get().getSpanId());
         }
-        return new InstrumentedRunnableScheduledFuture<>(vRunnableScheduledFuture, task.getClass().getName(), traceId, spanId);
+        return vRunnableScheduledFuture;
     }
 }
