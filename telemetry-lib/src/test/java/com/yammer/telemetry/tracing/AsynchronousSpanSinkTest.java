@@ -1,11 +1,7 @@
 package com.yammer.telemetry.tracing;
 
-import com.google.common.base.Optional;
-import com.google.common.collect.ImmutableList;
 import org.junit.Test;
 
-import java.math.BigInteger;
-import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -23,7 +19,7 @@ public class AsynchronousSpanSinkTest {
         AsynchronousSpanSink.JobFactory jobFactory = mock(AsynchronousSpanSink.JobFactory.class);
         SpanSink sink = new AsynchronousSpanSink(executor, jobFactory);
 
-        SpanData spanData = new FakeSpanData();
+        SpanData spanData = new BeanSpanData();
         Runnable runnable = new Runnable() {
             @Override
             public void run() {
@@ -61,7 +57,7 @@ public class AsynchronousSpanSinkTest {
 
         });
 
-        sink.record(new FakeSpanData());
+        sink.record(new BeanSpanData());
 
         // there are zero waiting tasks
         assertEquals(0, sink.shutdown(100, TimeUnit.MILLISECONDS));
@@ -92,56 +88,13 @@ public class AsynchronousSpanSinkTest {
 
         });
 
-        sink.record(new FakeSpanData());
-        sink.record(new FakeSpanData());
-        sink.record(new FakeSpanData());
+        sink.record(new BeanSpanData());
+        sink.record(new BeanSpanData());
+        sink.record(new BeanSpanData());
 
         assertEquals(2, sink.shutdown(100, TimeUnit.MILLISECONDS));
 
         assertTrue(interruptedLatch.await(200, TimeUnit.SECONDS));
     }
 
-    private static class FakeSpanData implements SpanData {
-        private long startTime = System.nanoTime();
-
-        @Override
-        public BigInteger getTraceId() {
-            return BigInteger.ONE;
-        }
-
-        @Override
-        public BigInteger getSpanId() {
-            return BigInteger.TEN;
-        }
-
-        @Override
-        public Optional<BigInteger> getParentSpanId() {
-            return Optional.absent();
-        }
-
-        @Override
-        public String getName() {
-            return "Some Name";
-        }
-
-        @Override
-        public String getHost() {
-            return "Host-001";
-        }
-
-        @Override
-        public long getStartTime() {
-            return startTime;
-        }
-
-        @Override
-        public long getDuration() {
-            return 100;
-        }
-
-        @Override
-        public List<AnnotationData> getAnnotations() {
-            return ImmutableList.of();
-        }
-    }
 }

@@ -9,7 +9,7 @@ import com.yammer.telemetry.agent.handlers.MetricsRegistryHandler;
 import com.yammer.telemetry.agent.jdbc.JdbcDriverClassHandler;
 import com.yammer.telemetry.instrumentation.TelemetryTransformer;
 import com.yammer.telemetry.tracing.Annotations;
-import com.yammer.telemetry.tracing.LoggingSpanSinkBuilder;
+import com.yammer.telemetry.tracing.logging.LoggingSpanSink;
 import com.yammer.telemetry.tracing.Span;
 import com.yammer.telemetry.tracing.SpanSinkRegistry;
 
@@ -34,7 +34,7 @@ public class TelemetryAgent {
                 if (config.isEnabled()) {
                     LogConfiguration log = config.getSinks().getLog();
                     if (log.isEnabled()) {
-                        SpanSinkRegistry.register(new LoggingSpanSinkBuilder().withFile(log.getFile()).build());
+                        SpanSinkRegistry.register(new LoggingSpanSink(log.getFile()));
                     }
 
                     final TelemetryTransformer transformer = new TelemetryTransformer();
