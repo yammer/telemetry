@@ -56,7 +56,7 @@ public class HttpServletClassHandlerTest {
     }
 
     @Test
-    public void testRecordsSpans() throws Exception {
+    public void testRunTransformedTests() throws Exception {
         runTransformed(TransformedTests.class, handler);
     }
 

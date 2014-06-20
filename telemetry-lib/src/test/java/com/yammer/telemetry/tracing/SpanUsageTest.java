@@ -228,6 +228,19 @@ public class SpanUsageTest {
         assertNull(trace);
     }
 
+    @Test
+    public void testAnnotationRecordedAfterSpanEnded() {
+        Span.setSampler(Sampling.ON);
+        Span trace = Span.startTrace("trace");
+        trace.addAnnotation("During");
+        trace.end();
+        trace.addAnnotation("After");
+
+        assertEquals(1, sink.recordedTraceCount());
+        Trace theTrace = sink.getTrace(trace.getTraceId());
+        System.out.println(theTrace);
+    }
+
     private Trace testSpan(Strategy strategy) {
         final AtomicReference<BigInteger> traceId = new AtomicReference<>();
         final AtomicReference<BigInteger> spanId = new AtomicReference<>();

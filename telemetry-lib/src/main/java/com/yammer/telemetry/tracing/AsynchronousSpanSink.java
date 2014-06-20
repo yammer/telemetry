@@ -1,6 +1,5 @@
 package com.yammer.telemetry.tracing;
 
-import java.math.BigInteger;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 
@@ -16,12 +15,6 @@ public class AsynchronousSpanSink implements SpanSink {
     @Override
     public void record(SpanData spanData) {
         Runnable job = jobFactory.createJob(spanData);
-        executor.execute(job);
-    }
-
-    @Override
-    public void recordAnnotation(BigInteger traceId, BigInteger spanId, AnnotationData annotationData) {
-        Runnable job = jobFactory.createJob(traceId, spanId, annotationData);
         executor.execute(job);
     }
 
@@ -46,6 +39,5 @@ public class AsynchronousSpanSink implements SpanSink {
 
     public static interface JobFactory {
         Runnable createJob(SpanData data);
-        Runnable createJob(BigInteger traceId, BigInteger spanId, AnnotationData data);
     }
 }

@@ -4,12 +4,9 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import com.fasterxml.jackson.datatype.guava.GuavaModule;
-import com.google.common.collect.ImmutableList;
 
 import java.io.*;
-import java.math.BigInteger;
 import java.nio.charset.Charset;
-import java.util.HashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.logging.Logger;
@@ -63,16 +60,6 @@ public class LoggingSpanSinkBuilder {
         @Override
         public Runnable createJob(SpanData data) {
             return genericJob(data);
-        }
-
-        @Override
-        public Runnable createJob(BigInteger traceId, BigInteger spanId, AnnotationData data) {
-            HashMap<String, Object> map = new HashMap<>();
-            map.put("trace_id", traceId);
-            map.put("span_id", spanId);
-            map.put("annotations", ImmutableList.of(data));
-
-            return genericJob(map);
         }
 
         private Runnable genericJob(Object object) {
