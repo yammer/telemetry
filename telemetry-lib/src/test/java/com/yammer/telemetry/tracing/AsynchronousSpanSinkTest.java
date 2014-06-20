@@ -1,9 +1,11 @@
 package com.yammer.telemetry.tracing;
 
 import com.google.common.base.Optional;
+import com.google.common.collect.ImmutableList;
 import org.junit.Test;
 
 import java.math.BigInteger;
+import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -37,28 +39,6 @@ public class AsynchronousSpanSinkTest {
     }
 
     @Test
-    public void testSubmitsExpectedAnnotationTasksToExecutor() {
-        ExecutorService executor = mock(ExecutorService.class);
-
-        AsynchronousSpanSink.JobFactory jobFactory = mock(AsynchronousSpanSink.JobFactory.class);
-        SpanSink sink = new AsynchronousSpanSink(executor, jobFactory);
-
-        AnnotationData annotationData = new FakeAnnotationData();
-        Runnable runnable = new Runnable() {
-            @Override
-            public void run() {
-            }
-        };
-
-        when(jobFactory.createJob(BigInteger.ONE, BigInteger.TEN, annotationData)).thenReturn(runnable);
-
-        sink.recordAnnotation(BigInteger.ONE, BigInteger.TEN, annotationData);
-
-        verify(jobFactory).createJob(BigInteger.ONE, BigInteger.TEN, annotationData);
-        verify(executor).execute(eq(runnable));
-    }
-
-    @Test
     public void testShutdownWhenLongRunningTask() throws Exception {
         ExecutorService executor = Executors.newSingleThreadExecutor();
 
@@ -79,10 +59,6 @@ public class AsynchronousSpanSinkTest {
                 };
             }
 
-            @Override
-            public Runnable createJob(BigInteger traceId, BigInteger spanId, AnnotationData data) {
-                throw new UnsupportedOperationException();
-            }
         });
 
         sink.record(new FakeSpanData());
@@ -114,10 +90,6 @@ public class AsynchronousSpanSinkTest {
                 };
             }
 
-            @Override
-            public Runnable createJob(BigInteger traceId, BigInteger spanId, AnnotationData data) {
-                throw new UnsupportedOperationException();
-            }
         });
 
         sink.record(new FakeSpanData());
@@ -166,24 +138,10 @@ public class AsynchronousSpanSinkTest {
         public long getDuration() {
             return 100;
         }
-    }
-
-    private static class FakeAnnotationData implements AnnotationData {
-        private long loggedAt = System.nanoTime();
 
         @Override
-        public long getLoggedAt() {
-            return loggedAt;
-        }
-
-        @Override
-        public String getName() {
-            return "A Name";
-        }
-
-        @Override
-        public String getMessage() {
-            return "A Message";
+        public List<AnnotationData> getAnnotations() {
+            return ImmutableList.of();
         }
     }
 }

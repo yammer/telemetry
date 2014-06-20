@@ -56,6 +56,10 @@ public class Trace {
                 siblings.add(spanData);
             }
         }
+
+        for (AnnotationData annotation : spanData.getAnnotations()) {
+            addAnnotation(spanData.getSpanId(), annotation);
+        }
     }
 
     public void addAnnotation(BigInteger spanId, AnnotationData data) {

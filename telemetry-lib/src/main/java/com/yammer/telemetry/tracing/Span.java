@@ -160,14 +160,6 @@ public class Span implements AutoCloseable, SpanData {
         } else {
             throw new IllegalStateException("Span.end() from a detached span.");
         }
-
-        if (traceLevel == TraceLevel.ON) {
-            for (SpanSink sink : SpanSinkRegistry.getSpanSinks()) {
-                for (AnnotationData annotation : annotations) {
-                    sink.recordAnnotation(getTraceId(), getSpanId(), annotation);
-                }
-            }
-        }
     }
 
     /**
@@ -220,6 +212,11 @@ public class Span implements AutoCloseable, SpanData {
 
     public long getDuration() {
         return duration;
+    }
+
+    @Override
+    public List<AnnotationData> getAnnotations() {
+        return annotations;
     }
 
     public static Sampling getSampler() {
