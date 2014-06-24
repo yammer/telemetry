@@ -94,7 +94,7 @@ public class ApacheHttpClientClassHandlerTest {
             SpanSinkRegistry.register(sink);
 
             HttpGet request = new HttpGet("http://anything");
-            try (Span trace = Span.startTrace("Test")) {
+            try (Span trace = SpanHelper.startTrace("Test")) {
 
                 BasicHttpResponse expectedResponse = new BasicHttpResponse(HttpVersion.HTTP_1_1, 200, "OK");
                 HttpClient client = new TestableHttpClient(expectedResponse);
@@ -134,7 +134,7 @@ public class ApacheHttpClientClassHandlerTest {
             SpanSinkRegistry.register(sink);
 
             HttpGet request = new HttpGet("http://anything");
-            try (Span trace = Span.startTrace("Test")) {
+            try (Span trace = SpanHelper.startTrace("Test")) {
 
                 BasicHttpResponse expectedResponse = new BasicHttpResponse(HttpVersion.HTTP_1_1, 200, "OK");
                 HttpClient client = new TestableHttpClient(expectedResponse);
@@ -167,7 +167,7 @@ public class ApacheHttpClientClassHandlerTest {
             };
             request.setURI(URI.create("http://anything"));
 
-            try (Span trace = Span.startTrace("Test")) {
+            try (Span trace = SpanHelper.startTrace("Test")) {
 
                 BasicHttpResponse expectedResponse = new BasicHttpResponse(HttpVersion.HTTP_1_1, 200, "OK");
                 HttpClient client = new TestableHttpClient(expectedResponse);

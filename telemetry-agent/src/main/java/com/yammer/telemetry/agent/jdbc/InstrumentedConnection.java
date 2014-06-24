@@ -1,6 +1,7 @@
 package com.yammer.telemetry.agent.jdbc;
 
 import com.yammer.telemetry.tracing.Span;
+import com.yammer.telemetry.tracing.SpanHelper;
 
 import java.sql.*;
 import java.util.Map;
@@ -48,14 +49,14 @@ public class InstrumentedConnection implements Connection {
 
     @Override
     public void commit() throws SQLException {
-        try (Span span = Span.startSpan("COMMIT")) {
+        try (Span ignored = SpanHelper.startSpan("COMMIT")) {
             underyling.commit();
         }
     }
 
     @Override
     public void rollback() throws SQLException {
-        try (Span span = Span.startSpan("ROLLBACK")) {
+        try (Span ignored = SpanHelper.startSpan("ROLLBACK")) {
             underyling.rollback();
         }
     }
@@ -162,7 +163,7 @@ public class InstrumentedConnection implements Connection {
 
     @Override
     public void rollback(Savepoint savepoint) throws SQLException {
-        try (Span span = Span.startSpan("ROLLBACK")) {
+        try (Span ignored = SpanHelper.startSpan("ROLLBACK")) {
             underyling.rollback(savepoint);
         }
     }

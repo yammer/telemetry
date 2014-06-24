@@ -4,9 +4,7 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 public class TraceTest {
     private Span foo;
@@ -18,9 +16,9 @@ public class TraceTest {
 
     @Before
     public void setUp() {
-        foo = Span.startTrace("foo");
-        bar = Span.startSpan("bar");
-        baz = Span.startSpan("baz");
+        foo = SpanHelper.startTrace("foo");
+        bar = SpanHelper.startSpan("bar");
+        baz = SpanHelper.startSpan("baz");
 
         baz.end();
         bar.end();

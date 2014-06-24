@@ -77,7 +77,7 @@ public class MetricsRegistryHandlerTest {
             InMemorySpanSinkSource sink = new InMemorySpanSinkSource();
             SpanSinkRegistry.register(sink);
 
-            try (Span trace = Span.startTrace("trace")) {
+            try (Span trace = SpanHelper.startTrace("trace")) {
                 Timer timer = Metrics.newTimer(TransformedTests.class, "testRecordsSpanAnnotationsAroundCallable");
                 timer.time(new Callable<Void>() {
                     @Override
@@ -109,7 +109,7 @@ public class MetricsRegistryHandlerTest {
             InMemorySpanSinkSource sink = new InMemorySpanSinkSource();
             SpanSinkRegistry.register(sink);
 
-            try (Span trace = Span.startTrace("trace")) {
+            try (Span trace = SpanHelper.startTrace("trace")) {
                 Timer timer = Metrics.newTimer(TransformedTests.class, "testRecordsSpanAnnotationsAroundTimerContext");
                 TimerContext timerContext = timer.time();
                 timerContext.stop();
@@ -137,7 +137,7 @@ public class MetricsRegistryHandlerTest {
             InMemorySpanSinkSource sink = new InMemorySpanSinkSource();
             SpanSinkRegistry.register(sink);
 
-            try (Span trace = Span.startTrace("trace")) {
+            try (Span trace = SpanHelper.startTrace("trace")) {
                 Meter meter = Metrics.newMeter(TransformedTests.class, "testRecordsSpanAnnotationAroundMeter", "tests", TimeUnit.MILLISECONDS);
                 meter.mark(13);
             }
@@ -158,7 +158,7 @@ public class MetricsRegistryHandlerTest {
             InMemorySpanSinkSource sink = new InMemorySpanSinkSource();
             SpanSinkRegistry.register(sink);
 
-            try (Span trace = Span.startTrace("trace")) {
+            try (Span trace = SpanHelper.startTrace("trace")) {
                 Counter meter = Metrics.newCounter(TransformedTests.class, "testRecordsSpanAnnotationsAroundCounter");
                 meter.inc(13);
                 meter.dec(10);

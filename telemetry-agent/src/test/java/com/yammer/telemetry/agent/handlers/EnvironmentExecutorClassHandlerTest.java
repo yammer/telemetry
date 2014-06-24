@@ -83,7 +83,7 @@ public class EnvironmentExecutorClassHandlerTest {
                     }
                 };
 
-                Span trace = Span.startTrace("Trace");
+                Span trace = SpanHelper.startTrace("Trace");
 
                 executorService.submit(noop);
                 trace.end();
@@ -108,7 +108,7 @@ public class EnvironmentExecutorClassHandlerTest {
                     }
                 };
 
-                Span trace = Span.startTrace("Trace");
+                Span trace = SpanHelper.startTrace("Trace");
 
                 executorService.schedule(noop, 1, TimeUnit.MILLISECONDS);
                 trace.end();
@@ -125,13 +125,13 @@ public class EnvironmentExecutorClassHandlerTest {
             InMemorySpanSinkSource sink = new InMemorySpanSinkSource();
             SpanSinkRegistry.register(sink);
 
-            Span rootSpan = Span.attachSpan(BigInteger.ONE, BigInteger.TEN, "trace");
+            Span rootSpan = SpanHelper.attachSpan(BigInteger.ONE, BigInteger.TEN, "trace");
 
             final ArrayBlockingQueue<Span> latch = new ArrayBlockingQueue<>(1);
             Runnable task = new Runnable() {
                 @Override
                 public void run() {
-                    try (Span span = Span.startSpan("Offer")) {
+                    try (Span span = SpanHelper.startSpan("Offer")) {
                         latch.offer(span);
                     }
                 }
@@ -179,13 +179,13 @@ public class EnvironmentExecutorClassHandlerTest {
             InMemorySpanSinkSource sink = new InMemorySpanSinkSource();
             SpanSinkRegistry.register(sink);
 
-            Span rootSpan = Span.attachSpan(BigInteger.ONE, BigInteger.TEN, "trace");
+            Span rootSpan = SpanHelper.attachSpan(BigInteger.ONE, BigInteger.TEN, "trace");
 
             final ArrayBlockingQueue<Span> latch = new ArrayBlockingQueue<>(1);
             Callable<Boolean> task = new Callable<Boolean>() {
                 @Override
                 public Boolean call() throws Exception {
-                    try (Span span = Span.startSpan("Offer")) {
+                    try (Span span = SpanHelper.startSpan("Offer")) {
                         return latch.offer(span);
                     }
                 }
@@ -233,13 +233,13 @@ public class EnvironmentExecutorClassHandlerTest {
             InMemorySpanSinkSource sink = new InMemorySpanSinkSource();
             SpanSinkRegistry.register(sink);
 
-            Span rootSpan = Span.attachSpan(BigInteger.ONE, BigInteger.TEN, "trace");
+            Span rootSpan = SpanHelper.attachSpan(BigInteger.ONE, BigInteger.TEN, "trace");
 
             final ArrayBlockingQueue<Span> latch = new ArrayBlockingQueue<>(1);
             final Runnable task = new Runnable() {
                 @Override
                 public void run() {
-                    try (Span span = Span.startSpan("Offer")) {
+                    try (Span span = SpanHelper.startSpan("Offer")) {
                         latch.offer(span);
                     }
                 }
@@ -291,13 +291,13 @@ public class EnvironmentExecutorClassHandlerTest {
             InMemorySpanSinkSource sink = new InMemorySpanSinkSource();
             SpanSinkRegistry.register(sink);
 
-            Span rootSpan = Span.attachSpan(BigInteger.ONE, BigInteger.TEN, "trace");
+            Span rootSpan = SpanHelper.attachSpan(BigInteger.ONE, BigInteger.TEN, "trace");
 
             final ArrayBlockingQueue<Span> latch = new ArrayBlockingQueue<>(1);
             final Runnable task = new Runnable() {
                 @Override
                 public void run() {
-                    try (Span span = Span.startSpan("Offer")) {
+                    try (Span span = SpanHelper.startSpan("Offer")) {
                         latch.offer(span);
                     }
                 }

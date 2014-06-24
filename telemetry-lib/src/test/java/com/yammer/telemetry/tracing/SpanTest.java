@@ -32,7 +32,7 @@ public class SpanTest {
         final SpanSink sink = mock(SpanSink.class);
         SpanSinkRegistry.register(sink);
 
-        final Span span = Span.startTrace("testSpan");
+        final Span span = SpanHelper.startTrace("testSpan");
         span.end();
 
         verify(sink).record(span);
@@ -45,8 +45,8 @@ public class SpanTest {
 
     @Test
     public void testRootlessSpans() {
-        final Span outer = Span.startTrace("outerSpan");
-        final Span inner = Span.startSpan("innerSpan");
+        final Span outer = SpanHelper.startTrace("outerSpan");
+        final Span inner = SpanHelper.startSpan("innerSpan");
         inner.end();
         outer.end();
     }
@@ -56,8 +56,8 @@ public class SpanTest {
         final SpanSink sink = mock(SpanSink.class);
         SpanSinkRegistry.register(sink);
 
-        final Span outer = Span.startTrace("outerSpan");
-        final Span inner = Span.startSpan("innerSpan");
+        final Span outer = SpanHelper.startTrace("outerSpan");
+        final Span inner = SpanHelper.startSpan("innerSpan");
 
         inner.end();
         verify(sink).record(inner);
@@ -75,7 +75,7 @@ public class SpanTest {
         SpanSinkRegistry.register(first);
         SpanSinkRegistry.register(second);
 
-        final Span span = Span.startTrace("testSpan");
+        final Span span = SpanHelper.startTrace("testSpan");
         span.end();
 
         verify(first).record(span);
@@ -111,15 +111,15 @@ public class SpanTest {
         final SpanSink sink = mock(SpanSink.class);
         SpanSinkRegistry.register(sink);
 
-        Span trace = Span.startTrace("The Trace");
+        Span trace = SpanHelper.startTrace("The Trace");
 
         // These are deliberately not closed
-        Span.startSpan("one");
-        Span.startSpan("two");
+        SpanHelper.startSpan("one");
+        SpanHelper.startSpan("two");
 
         trace.end();
 
-        assertTrue(Span.captureSpans().isEmpty());
+        assertTrue(SpanHelper.SpanContext.captureSpans().isEmpty());
 
         verify(sink).record(trace);
         verifyZeroInteractions(sink);
@@ -130,10 +130,10 @@ public class SpanTest {
         final SpanSink sink = mock(SpanSink.class);
         SpanSinkRegistry.register(sink);
 
-        Span trace = Span.startTrace("The Trace");
+        Span trace = SpanHelper.startTrace("The Trace");
 
         trace.end();
-        assertTrue(Span.captureSpans().isEmpty());
+        assertTrue(SpanHelper.SpanContext.captureSpans().isEmpty());
         verify(sink).record(trace);
 
         trace.end();
@@ -144,7 +144,7 @@ public class SpanTest {
         final SpanSink sink = mock(SpanSink.class);
         SpanSinkRegistry.register(sink);
 
-        try (final Span trace = Span.startTrace("The Trace")) {
+        try (final Span trace = SpanHelper.startTrace("The Trace")) {
 
             final CountDownLatch successLatch = new CountDownLatch(1);
             final ArrayBlockingQueue<Throwable> expectedException = new ArrayBlockingQueue<>(1);
@@ -178,7 +178,7 @@ public class SpanTest {
 
         @Override
         public void run() {
-            try (Span ignored = Span.startTrace(spanName)) {
+            try (Span ignored = SpanHelper.startTrace(spanName)) {
                 barrier.await();
             } catch (Exception e) {
                 throw new RuntimeException("Problem tracing a span", e);

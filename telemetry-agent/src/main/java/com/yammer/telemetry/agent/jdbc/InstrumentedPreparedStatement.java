@@ -1,6 +1,7 @@
 package com.yammer.telemetry.agent.jdbc;
 
 import com.yammer.telemetry.tracing.Span;
+import com.yammer.telemetry.tracing.SpanHelper;
 
 import java.io.InputStream;
 import java.io.Reader;
@@ -19,14 +20,14 @@ public class InstrumentedPreparedStatement extends InstrumentedStatement impleme
 
     @Override
     public ResultSet executeQuery() throws SQLException {
-        try (Span span = Span.startSpan("Execute Query: " + getSql())) {
+        try (Span ignored = SpanHelper.startSpan("Execute Query: " + getSql())) {
             return underlying.executeQuery();
         }
     }
 
     @Override
     public int executeUpdate() throws SQLException {
-        try (Span span = Span.startSpan("Execute Update: " + getSql())) {
+        try (Span ignored = SpanHelper.startSpan("Execute Update: " + getSql())) {
             return underlying.executeUpdate();
         }
     }
@@ -133,7 +134,7 @@ public class InstrumentedPreparedStatement extends InstrumentedStatement impleme
 
     @Override
     public boolean execute() throws SQLException {
-        try (Span span = Span.startSpan("Execute: " + getSql())) {
+        try (Span ignored = SpanHelper.startSpan("Execute: " + getSql())) {
             return underlying.execute();
         }
     }

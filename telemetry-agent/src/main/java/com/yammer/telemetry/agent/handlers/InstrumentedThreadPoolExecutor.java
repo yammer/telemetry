@@ -2,6 +2,7 @@ package com.yammer.telemetry.agent.handlers;
 
 import com.google.common.base.Optional;
 import com.yammer.telemetry.tracing.Span;
+import com.yammer.telemetry.tracing.SpanHelper;
 
 import java.math.BigInteger;
 import java.util.concurrent.*;
@@ -47,7 +48,7 @@ public class InstrumentedThreadPoolExecutor extends ThreadPoolExecutor {
             BigInteger spanId = instrumentedRunnable.getSpanId();
 
             if (traceId != null && spanId != null) {
-                Span span = Span.attachSpan(traceId, spanId, instrumentedRunnable.getName());
+                Span span = SpanHelper.attachSpan(traceId, spanId, instrumentedRunnable.getName());
                 local.set(span);
                 span.addAnnotation("Before", instrumentedRunnable.getName());
             }
@@ -72,7 +73,7 @@ public class InstrumentedThreadPoolExecutor extends ThreadPoolExecutor {
     }
 
     private <T> RunnableFuture<T> taskFor(RunnableFuture<T> future, String name) {
-        Optional<Span> currentSpan = Span.currentSpan();
+        Optional<Span> currentSpan = SpanHelper.currentSpan();
         if (currentSpan.isPresent()) {
             currentSpan.get().addAnnotation("Task", name);
             return new InstrumentedRunnableFuture<>(future, name, currentSpan.get().getTraceId(), currentSpan.get().getSpanId());

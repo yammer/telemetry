@@ -1,6 +1,7 @@
 package com.yammer.metrics.core;
 
 import com.yammer.telemetry.tracing.Span;
+import com.yammer.telemetry.tracing.SpanHelper;
 
 @SuppressWarnings("UnusedDeclaration")
 public class InstrumentedCounter extends Counter implements MetricNameAware {
@@ -8,7 +9,7 @@ public class InstrumentedCounter extends Counter implements MetricNameAware {
 
     @Override
     public void inc(long n) {
-        for (Span span : Span.currentSpan().asSet()) {
+        for (Span span : SpanHelper.currentSpan().asSet()) {
             span.addAnnotation("Inc Counter: " + metricName, String.valueOf(n));
         }
         super.inc(n);
@@ -16,7 +17,7 @@ public class InstrumentedCounter extends Counter implements MetricNameAware {
 
     @Override
     public void dec(long n) {
-        for (Span span : Span.currentSpan().asSet()) {
+        for (Span span : SpanHelper.currentSpan().asSet()) {
             span.addAnnotation("Dec Counter: " + metricName, String.valueOf(n));
         }
         super.dec(n);
@@ -24,7 +25,7 @@ public class InstrumentedCounter extends Counter implements MetricNameAware {
 
     @Override
     public void clear() {
-        for (Span span : Span.currentSpan().asSet()) {
+        for (Span span : SpanHelper.currentSpan().asSet()) {
             span.addAnnotation("Cleared Counter: " + metricName);
         }
         super.clear();

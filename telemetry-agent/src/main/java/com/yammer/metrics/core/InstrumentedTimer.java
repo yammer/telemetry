@@ -2,6 +2,7 @@ package com.yammer.metrics.core;
 
 import com.google.common.base.Optional;
 import com.yammer.telemetry.tracing.Span;
+import com.yammer.telemetry.tracing.SpanHelper;
 
 import java.util.concurrent.Callable;
 import java.util.concurrent.ScheduledExecutorService;
@@ -18,7 +19,7 @@ public class InstrumentedTimer extends Timer implements MetricNameAware {
 
     @Override
     public <T> T time(Callable<T> event) throws Exception {
-        final Optional<Span> currentSpan = Span.currentSpan();
+        final Optional<Span> currentSpan = SpanHelper.currentSpan();
         try {
             for (Span span : currentSpan.asSet()) {
                 span.addAnnotation("Start Timer", String.valueOf(metricName));
