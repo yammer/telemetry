@@ -10,7 +10,7 @@ import java.util.logging.Logger;
 
 public class SpanHelper {
     static final ThreadLocal<SpanContext> spanContext = new ThreadLocal<>();
-    static final Logger LOG = Logger.getLogger(Span.class.getName());
+    static final Logger LOG = Logger.getLogger(EnabledSpan.class.getName());
     static Sampling sampler = Sampling.ON;
     private static IDGenerator idGenerator = new IDGenerator();
 
@@ -52,7 +52,7 @@ public class SpanHelper {
             traceLevel = context.currentTraceLevel();
         }
 
-        final Span span = new Span(traceId.get(), spanId.get(), parentSpanId, name, nowInNanoseconds(), System.nanoTime(), traceLevel);
+        final Span span = new EnabledSpan(traceId.get(), spanId.get(), parentSpanId, name, nowInNanoseconds(), System.nanoTime(), traceLevel);
         context.startSpan(span);
         return span;
     }
