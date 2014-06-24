@@ -1,13 +1,14 @@
 language: java
-script: mvn verify deploy --settings maven_deploy_settings.xml
+script:
+  - '[ "${TRAVIS_PULL_REQUEST}" = "false" ] && mvn verify deploy --settings maven_deploy_settings.xml || mvn test verify --settings maven_deploy_settings.xml'
 jdk:
-- oraclejdk7
-- openjdk7
+  - oraclejdk7
+  - openjdk7
 notifications:
   email:
     recipients:
-    - yammer-sonatype@microsoft.com
+      - yammer-sonatype@microsoft.com
 env:
   global:
-  - secure: YnjZsUd/VFGicdXU0oK75zoo4LKPxFQmUlLRFu3Unp6oi7NvmXnLa56PBnmRh3zxh+gBH0MP5UkGguaqOhvvxoXUUAJt2KXNaoSRBcmqZPsSwgJWyswcBzJlJXKSfIXqGTdVzDHldNGqvo7x8GBzAdqlgedWvJQbkXqomLyPJ7c=
-  - secure: eEDhTkzKYu1IS4AiRTSmYt4qiGzhqHYKyKNyJSFMLKWALs//R4Nsciah3/3mANHGpisxKYCGanrrdSeoq31ecvDlCaNbZsdrEIaH5Fmr+KKcAXpT3l/vZKePYGE0580yJ1pkq5NllZ6SHrDQRNtZjMAIgWyEZvwrt4TTlgW4p1c=
+    - secure: YnjZsUd/VFGicdXU0oK75zoo4LKPxFQmUlLRFu3Unp6oi7NvmXnLa56PBnmRh3zxh+gBH0MP5UkGguaqOhvvxoXUUAJt2KXNaoSRBcmqZPsSwgJWyswcBzJlJXKSfIXqGTdVzDHldNGqvo7x8GBzAdqlgedWvJQbkXqomLyPJ7c=
+    - secure: eEDhTkzKYu1IS4AiRTSmYt4qiGzhqHYKyKNyJSFMLKWALs//R4Nsciah3/3mANHGpisxKYCGanrrdSeoq31ecvDlCaNbZsdrEIaH5Fmr+KKcAXpT3l/vZKePYGE0580yJ1pkq5NllZ6SHrDQRNtZjMAIgWyEZvwrt4TTlgW4p1c=
