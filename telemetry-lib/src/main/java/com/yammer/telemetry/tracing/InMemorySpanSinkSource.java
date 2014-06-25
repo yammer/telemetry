@@ -1,7 +1,7 @@
 package com.yammer.telemetry.tracing;
 
 import java.math.BigInteger;
-import java.util.*;
+import java.util.Collection;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
@@ -13,7 +13,7 @@ public class InMemorySpanSinkSource implements SpanSink {
     }
 
     public Trace getTrace(BigInteger traceId) {
-        return traces.get(traceId);
+        return traceId == null ? null : traces.get(traceId);
     }
 
     @Override
@@ -21,6 +21,8 @@ public class InMemorySpanSinkSource implements SpanSink {
         // This is cleaner from a code perspective, but it means we allocate a new Trace on
         // every request even if one is already in the map. This may be worth changing if
         // performance suffers here due to the frequency of calls.
+        if (spanData instanceof DisabledSpan) throw new IllegalArgumentException("Should never be recording disabled spans");
+
         final Trace newTrace = new Trace(spanData.getTraceId());
         newTrace.addSpan(spanData);
 

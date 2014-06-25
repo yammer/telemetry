@@ -3,8 +3,14 @@ package com.yammer.telemetry.tracing;
 import com.google.common.base.Optional;
 
 import java.math.BigInteger;
+import java.util.LinkedList;
 import java.util.List;
 
+/**
+ * Start a new trace.
+ * Start a new span within a trace.
+ * Attach to a span within a trace.
+ */
 public abstract class Span implements AutoCloseable, SpanData {
     protected final BigInteger traceId;
     protected final Optional<BigInteger> parentSpanId;
@@ -12,58 +18,102 @@ public abstract class Span implements AutoCloseable, SpanData {
     protected final String name;
     protected final String host;
     protected final Integer pid;
+    private final TraceLevel traceLevel;
+    private final long startTime;
+    protected final List<AnnotationData> annotations;
+    private long duration;
 
-    protected Span(Optional<BigInteger> parentSpanId, BigInteger spanId, String name, BigInteger traceId) {
+    protected Span(Optional<BigInteger> parentSpanId, BigInteger spanId, String name, BigInteger traceId, long startTime, long startNanos, TraceLevel traceLevel) {
         this.host = Annotations.getServiceAnnotations().getHost();
         this.pid = Annotations.getServiceAnnotations().getPid();
         this.parentSpanId = parentSpanId;
         this.spanId = spanId;
         this.name = name;
         this.traceId = traceId;
+        this.startTime = startTime;
+        this.duration = startNanos;
+        this.traceLevel = traceLevel;
+        this.annotations = new LinkedList<>();
     }
 
     public abstract void addAnnotation(String name);
 
     public abstract void addAnnotation(String name, String message);
 
-    public abstract void end();
+    protected abstract void afterClose();
+
+    public final void end() {
+        duration = System.nanoTime() - duration;
+
+        // we need to ensure this span context is ended even if it's not being logged,
+        // otherwise we risk pollution of the context for subsequent operations.
+        Optional<SpanHelper.SpanContext> context = SpanHelper.currentContext();
+        if (context.isPresent()) {
+            context.get().endSpan(this);
+            afterClose();
+        } else {
+            throw new IllegalStateException("Span.end() from a detached span.");
+        }
+    }
 
     @Override
-    public void close() {
+    public final void close() {
         end();
     }
 
-    public BigInteger getTraceId() {
+    public final BigInteger getTraceId() {
         return traceId;
     }
 
-    public BigInteger getSpanId() {
+    public final BigInteger getSpanId() {
         return spanId;
     }
 
-    public Optional<BigInteger> getParentSpanId() {
+    public final Optional<BigInteger> getParentSpanId() {
         return parentSpanId;
     }
 
-    public String getName() {
+    public final String getName() {
         return name;
     }
 
-    public String getHost() {
+    public final String getHost() {
         return host;
     }
 
     @SuppressWarnings("UnusedDeclaration")
-    public Integer getPid() {
+    public final Integer getPid() {
         return pid;
     }
 
-    public abstract long getStartTime();
-
-    public abstract long getDuration();
+    @Override
+    public final long getStartTime() {
+        return startTime;
+    }
 
     @Override
-    public abstract List<AnnotationData> getAnnotations();
+    public final long getDuration() {
+        return duration;
+    }
 
-    abstract TraceLevel getTraceLevel();
+    @Override
+    public final List<AnnotationData> getAnnotations() {
+        return annotations;
+    }
+
+    final TraceLevel getTraceLevel() {
+        return traceLevel;
+    }
+
+    @Override
+    public String toString() {
+        return "Span{" +
+                "traceId=" + traceId +
+                ", parentSpanId=" + parentSpanId +
+                ", spanId=" + spanId +
+                ", name='" + name + '\'' +
+                ", startTime=" + startTime +
+                ", duration=" + duration +
+                '}';
+    }
 }

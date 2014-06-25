@@ -5,12 +5,13 @@ import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
 
 import java.math.BigInteger;
+import java.util.Objects;
 import java.util.Stack;
 import java.util.logging.Logger;
 
 public class SpanHelper {
     static final ThreadLocal<SpanContext> spanContext = new ThreadLocal<>();
-    static final Logger LOG = Logger.getLogger(EnabledSpan.class.getName());
+    static final Logger LOG = Logger.getLogger(SpanHelper.class.getName());
     static Sampling sampler = Sampling.ON;
     private static IDGenerator idGenerator = new IDGenerator();
 
@@ -20,41 +21,6 @@ public class SpanHelper {
 
     public static void setSampler(Sampling sampler) {
         SpanHelper.sampler = sampler;
-    }
-
-    static long nowInNanoseconds() {
-        return System.currentTimeMillis() * 1000000;
-    }
-
-    static Span start(String name, Optional<BigInteger> traceId, Optional<BigInteger> spanId, Optional<BigInteger> parentSpanId, TraceLevel traceLevel) {
-        SpanContext context = spanContext.get();
-        if (context == null) {
-            context = new SpanContext();
-            spanContext.set(context);
-        }
-
-        if (!traceId.isPresent()) {
-            traceId = context.currentTraceId();
-            if (!traceId.isPresent()) {
-                traceId = Optional.of(idGenerator.generateTraceId());
-            }
-        }
-
-        if (!parentSpanId.isPresent()) {
-            parentSpanId = context.currentSpanId();
-        }
-
-        if (!spanId.isPresent()) {
-            spanId = Optional.of(idGenerator.generateSpanId());
-        }
-
-        if (traceLevel == TraceLevel.INHERIT) {
-            traceLevel = context.currentTraceLevel();
-        }
-
-        final Span span = new EnabledSpan(traceId.get(), spanId.get(), parentSpanId, name, nowInNanoseconds(), System.nanoTime(), traceLevel);
-        context.startSpan(span);
-        return span;
     }
 
     /**
@@ -115,6 +81,48 @@ public class SpanHelper {
         }
     }
 
+    private static Span start(String name, Optional<BigInteger> traceId, Optional<BigInteger> spanId, Optional<BigInteger> parentSpanId, TraceLevel traceLevel) {
+        SpanContext context = spanContext.get();
+        if (context == null) {
+            context = new SpanContext();
+            spanContext.set(context);
+        }
+
+        if (traceLevel == TraceLevel.INHERIT) {
+            traceLevel = context.currentTraceLevel();
+        }
+
+        if (!traceId.isPresent()) {
+            traceId = context.currentTraceId();
+            if (!traceId.isPresent()) {
+                traceId = Optional.of(idGenerator.generateTraceId());
+            }
+        }
+
+        if (!parentSpanId.isPresent()) {
+            parentSpanId = context.currentSpanId();
+        }
+
+        if (!spanId.isPresent()) {
+            spanId = Optional.of(idGenerator.generateSpanId());
+        }
+
+        final Span span = (traceLevel == TraceLevel.OFF) ?
+                new DisabledSpan() :
+                new EnabledSpan(traceId.get(), spanId.get(), parentSpanId, name, traceLevel);
+
+        context.startSpan(span);
+        return span;
+    }
+
+    static long nowInNanoseconds() {
+        return System.currentTimeMillis() * 1000000;
+    }
+
+    static Optional<SpanContext> currentContext() {
+        return Optional.fromNullable(spanContext.get());
+    }
+
     static class SpanContext {
         private final Stack<Span> spans;
 
@@ -140,12 +148,17 @@ public class SpanHelper {
             if (spans.isEmpty()) {
                 return Optional.absent();
             } else {
-                return Optional.of(spans.peek());
+                Span span = spans.peek();
+                if (span instanceof DisabledSpan) return Optional.absent();
+                return Optional.of(span);
             }
         }
 
         public Optional<BigInteger> currentTraceId() {
-            return currentSpan().transform(new Function<Span, BigInteger>() {
+            Optional<Span> currentSpan = currentSpan();
+            if (!currentSpan.isPresent()) return Optional.absent();
+            if (currentSpan.get() instanceof DisabledSpan) return Optional.absent();
+            return currentSpan.transform(new Function<Span, BigInteger>() {
                 @Override
                 public BigInteger apply(Span input) {
                     return input.getTraceId();
@@ -154,6 +167,9 @@ public class SpanHelper {
         }
 
         public Optional<BigInteger> currentSpanId() {
+            Optional<Span> currentSpan = currentSpan();
+            if (!currentSpan.isPresent()) return Optional.absent();
+            if (currentSpan.get() instanceof DisabledSpan) return Optional.absent();
             return currentSpan().transform(new Function<Span, BigInteger>() {
                 @Override
                 public BigInteger apply(Span input) {
@@ -173,7 +189,7 @@ public class SpanHelper {
             Span poppedSpan = spans.pop();
 
             int extraPops = 0;
-            while (!poppedSpan.getSpanId().equals(span.getSpanId())) {
+            while (!Objects.equals(poppedSpan.getSpanId(), span.getSpanId())) {
                 extraPops++;
                 poppedSpan = spans.pop();
             }
