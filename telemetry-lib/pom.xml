@@ -5,7 +5,7 @@
     <parent>
         <artifactId>telemetry-parent</artifactId>
         <groupId>com.yammer.telemetry</groupId>
-        <version>0.0.2-SNAPSHOT</version>
+        <version>0.0.2</version>
     </parent>
 
     <artifactId>telemetry-lib</artifactId>
