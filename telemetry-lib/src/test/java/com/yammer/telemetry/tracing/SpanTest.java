@@ -157,7 +157,7 @@ public class SpanTest {
                         trace.end();
                         successLatch.countDown();
                     } catch (Throwable t) {
-                        expectedException.offer(t);
+                        expectedException.offer(t.fillInStackTrace());
                     }
                 }
             }).start();
