@@ -237,8 +237,7 @@ public class SpanUsageTest {
         trace.addAnnotation("After");
 
         assertEquals(1, sink.recordedTraceCount());
-        Trace theTrace = sink.getTrace(trace.getTraceId());
-        System.out.println(theTrace);
+        assertNotNull(sink.getTrace(trace.getTraceId()));
     }
 
     private Trace testSpan(Strategy strategy) {

@@ -1,19 +1,16 @@
 package com.yammer.telemetry.tracing;
 
-import com.google.common.base.Function;
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
 
 import java.math.BigInteger;
-import java.util.Objects;
-import java.util.Stack;
 import java.util.logging.Logger;
 
 public class SpanHelper {
-    static final ThreadLocal<SpanContext> spanContext = new ThreadLocal<>();
+    private static final ThreadLocal<SpanContext> spanContext = new ThreadLocal<>();
     static final Logger LOG = Logger.getLogger(SpanHelper.class.getName());
     static Sampling sampler = Sampling.ON;
-    private static IDGenerator idGenerator = new IDGenerator();
+    private static final IDGenerator idGenerator = new IDGenerator();
 
     public static Sampling getSampler() {
         return sampler;
@@ -123,89 +120,17 @@ public class SpanHelper {
         return Optional.fromNullable(spanContext.get());
     }
 
-    static class SpanContext {
-        private final Stack<Span> spans;
-
-        SpanContext() {
-            spans = new Stack<>();
+    /**
+     * This is available for testing to allow checking before and after states are as expected on the span context.
+     *
+     * @return an immutable list of the current state of spans in the thread local context.
+     */
+    static ImmutableList<Span> captureSpans() {
+        SpanContext context = spanContext.get();
+        if (context != null) {
+            return context.captureSpans();
         }
 
-        /**
-         * This is available for testing to allow checking before and after states are as expected on the span context.
-         *
-         * @return an immutable list of the current state of spans in the thread local context.
-         */
-        static ImmutableList<Span> captureSpans() {
-            SpanContext context = spanContext.get();
-            if (context != null) {
-                return ImmutableList.copyOf(context.spans);
-            }
-
-            return ImmutableList.of();
-        }
-
-        public Optional<Span> currentSpan() {
-            if (spans.isEmpty()) {
-                return Optional.absent();
-            } else {
-                Span span = spans.peek();
-                if (span instanceof DisabledSpan) return Optional.absent();
-                return Optional.of(span);
-            }
-        }
-
-        public Optional<BigInteger> currentTraceId() {
-            Optional<Span> currentSpan = currentSpan();
-            if (!currentSpan.isPresent()) return Optional.absent();
-            if (currentSpan.get() instanceof DisabledSpan) return Optional.absent();
-            return currentSpan.transform(new Function<Span, BigInteger>() {
-                @Override
-                public BigInteger apply(Span input) {
-                    return input.getTraceId();
-                }
-            });
-        }
-
-        public Optional<BigInteger> currentSpanId() {
-            Optional<Span> currentSpan = currentSpan();
-            if (!currentSpan.isPresent()) return Optional.absent();
-            if (currentSpan.get() instanceof DisabledSpan) return Optional.absent();
-            return currentSpan().transform(new Function<Span, BigInteger>() {
-                @Override
-                public BigInteger apply(Span input) {
-                    return input.getSpanId();
-                }
-            });
-        }
-
-        public void startSpan(Span span) {
-            spans.push(span);
-        }
-
-        public void endSpan(Span span) {
-            if (spans.isEmpty()) {
-                LOG.warning("Ending span " + span.getName() + ":" + span.getSpanId() + " when no spans exist in SpanContext");
-            }
-            Span poppedSpan = spans.pop();
-
-            int extraPops = 0;
-            while (!Objects.equals(poppedSpan.getSpanId(), span.getSpanId())) {
-                extraPops++;
-                poppedSpan = spans.pop();
-            }
-
-            if (extraPops > 0) {
-                LOG.warning("Popped " + extraPops + " unclosed Spans");
-            }
-        }
-
-        public TraceLevel currentTraceLevel() {
-            if (spans.isEmpty()) {
-                if (sampler == Sampling.ON) return TraceLevel.ON;
-                return TraceLevel.OFF; // default when not explicitly requested
-            } else {
-                return spans.peek().getTraceLevel();
-            }
-        }
+        return ImmutableList.of();
     }
 }

@@ -119,7 +119,7 @@ public class SpanTest {
 
         trace.end();
 
-        assertTrue(SpanHelper.SpanContext.captureSpans().isEmpty());
+        assertTrue(SpanHelper.captureSpans().isEmpty());
 
         verify(sink).record(trace);
         verifyZeroInteractions(sink);
@@ -133,7 +133,7 @@ public class SpanTest {
         Span trace = SpanHelper.startTrace("The Trace");
 
         trace.end();
-        assertTrue(SpanHelper.SpanContext.captureSpans().isEmpty());
+        assertTrue(SpanHelper.captureSpans().isEmpty());
         verify(sink).record(trace);
 
         trace.end();

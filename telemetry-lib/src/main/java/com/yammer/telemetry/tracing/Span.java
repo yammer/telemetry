@@ -5,6 +5,7 @@ import com.google.common.base.Optional;
 import java.math.BigInteger;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.UUID;
 
 /**
  * Start a new trace.
@@ -12,18 +13,20 @@ import java.util.List;
  * Attach to a span within a trace.
  */
 public abstract class Span implements AutoCloseable, SpanData {
-    protected final BigInteger traceId;
-    protected final Optional<BigInteger> parentSpanId;
-    protected final BigInteger spanId;
-    protected final String name;
-    protected final String host;
-    protected final Integer pid;
+    private final BigInteger traceId;
+    private final Optional<BigInteger> parentSpanId;
+    private final BigInteger spanId;
+    private final String name;
+    private final String host;
+    private final Integer pid;
     private final TraceLevel traceLevel;
     private final long startTime;
     protected final List<AnnotationData> annotations;
+    private final UUID guid;
     private long duration;
 
     protected Span(Optional<BigInteger> parentSpanId, BigInteger spanId, String name, BigInteger traceId, long startTime, long startNanos, TraceLevel traceLevel) {
+        this.guid = UUID.randomUUID();
         this.host = Annotations.getServiceAnnotations().getHost();
         this.pid = Annotations.getServiceAnnotations().getPid();
         this.parentSpanId = parentSpanId;
@@ -47,7 +50,7 @@ public abstract class Span implements AutoCloseable, SpanData {
 
         // we need to ensure this span context is ended even if it's not being logged,
         // otherwise we risk pollution of the context for subsequent operations.
-        Optional<SpanHelper.SpanContext> context = SpanHelper.currentContext();
+        Optional<SpanContext> context = SpanHelper.currentContext();
         if (context.isPresent()) {
             context.get().endSpan(this);
             afterClose();
@@ -115,5 +118,20 @@ public abstract class Span implements AutoCloseable, SpanData {
                 ", startTime=" + startTime +
                 ", duration=" + duration +
                 '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        Span span = (Span) o;
+
+        return guid.equals(span.guid);
+    }
+
+    @Override
+    public int hashCode() {
+        return guid.hashCode();
     }
 }
