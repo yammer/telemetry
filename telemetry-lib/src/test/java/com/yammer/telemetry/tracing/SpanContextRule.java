@@ -21,13 +21,13 @@ public class SpanContextRule implements TestRule {
             @Override
             public void evaluate() throws Throwable {
                 Throwable caught = null;
-                final ImmutableList<Span> beforeState = SpanHelper.SpanContext.captureSpans();
+                final ImmutableList<Span> beforeState = SpanHelper.captureSpans();
                 try {
                     base.evaluate();
                 } catch (Throwable t) {
                     caught = t;
                 } finally {
-                    ImmutableList<Span> afterState = SpanHelper.SpanContext.captureSpans();
+                    ImmutableList<Span> afterState = SpanHelper.captureSpans();
                     verify(beforeState, afterState);
                 }
 
