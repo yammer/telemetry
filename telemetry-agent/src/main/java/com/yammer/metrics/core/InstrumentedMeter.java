@@ -1,6 +1,7 @@
 package com.yammer.metrics.core;
 
 import com.yammer.telemetry.tracing.Span;
+import com.yammer.telemetry.tracing.SpanHelper;
 
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -24,7 +25,7 @@ public class InstrumentedMeter extends Meter implements MetricNameAware {
 
     @Override
     public void mark(long n) {
-        for (Span span : Span.currentSpan().asSet()) {
+        for (Span span : SpanHelper.currentSpan().asSet()) {
             span.addAnnotation("Mark Meter: " + metricName, String.valueOf(n));
         }
         super.mark(n);

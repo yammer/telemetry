@@ -8,8 +8,7 @@
 
     // Start the span.
     final String name = String.format("%s %s", new Object[] {request.getRequestLine().getMethod(), request.getRequestLine().getUri()});
-    Span span = Span.startSpan(name);
-    //Span span = Span.startSpan(request.getRequestLine().getUri());
+    Span span = SpanHelper.startSpan(name);
 
     // Set the request headers to link up this client request with the corresponding
     // service request.

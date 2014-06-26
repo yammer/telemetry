@@ -21,12 +21,12 @@ public class TelemetryAgentTest {
 
     @Before
     public void captureDefaultSampling() {
-        defaultSampler = Span.getSampler();
+        defaultSampler = SpanHelper.getSampler();
     }
 
     @After
     public void resetDefaultSampling() {
-        Span.setSampler(defaultSampler);
+        SpanHelper.setSampler(defaultSampler);
     }
 
     @Test(expected = NullPointerException.class)
@@ -89,11 +89,11 @@ public class TelemetryAgentTest {
 
     @Test
     public void configuresSpanSampleLevels() throws Exception {
-        assertEquals(Sampling.ON, Span.getSampler());
+        assertEquals(Sampling.ON, SpanHelper.getSampler());
 
         TelemetryAgent.agentmain(getConfigurationPath(), instrumentation);
 
-        assertEquals(Sampling.OFF, Span.getSampler());
+        assertEquals(Sampling.OFF, SpanHelper.getSampler());
     }
 
     private String getConfigurationPath() {

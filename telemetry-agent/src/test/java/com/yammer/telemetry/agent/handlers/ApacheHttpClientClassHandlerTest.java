@@ -94,7 +94,7 @@ public class ApacheHttpClientClassHandlerTest {
             SpanSinkRegistry.register(sink);
 
             HttpGet request = new HttpGet("http://anything");
-            try (Span trace = Span.startTrace("Test")) {
+            try (Span trace = SpanHelper.startTrace("Test")) {
 
                 BasicHttpResponse expectedResponse = new BasicHttpResponse(HttpVersion.HTTP_1_1, 200, "OK");
                 HttpClient client = new TestableHttpClient(expectedResponse);
@@ -134,7 +134,7 @@ public class ApacheHttpClientClassHandlerTest {
             SpanSinkRegistry.register(sink);
 
             HttpGet request = new HttpGet("http://anything");
-            try (Span trace = Span.startTrace("Test")) {
+            try (Span trace = SpanHelper.startTrace("Test")) {
 
                 BasicHttpResponse expectedResponse = new BasicHttpResponse(HttpVersion.HTTP_1_1, 200, "OK");
                 HttpClient client = new TestableHttpClient(expectedResponse);
@@ -167,8 +167,7 @@ public class ApacheHttpClientClassHandlerTest {
             };
             request.setURI(URI.create("http://anything"));
 
-            try (Span trace = Span.startTrace("Test")) {
-
+            try (Span trace = SpanHelper.startTrace("Test")) {
                 BasicHttpResponse expectedResponse = new BasicHttpResponse(HttpVersion.HTTP_1_1, 200, "OK");
                 HttpClient client = new TestableHttpClient(expectedResponse);
 
@@ -179,6 +178,33 @@ public class ApacheHttpClientClassHandlerTest {
             SpanData httpClientSpan = trace.getChildren(trace.getRoot().getSpanId()).get(0);
 
             assertEquals("FOOF http://anything", httpClientSpan.getName());
+        }
+
+        @TransformedTest
+        public void testNoTraceAndSpanHeadersSentIfCurrentSpanIsDisabled() throws Exception {
+            InMemorySpanSinkSource sink = new InMemorySpanSinkSource();
+            SpanSinkRegistry.register(sink);
+
+            HttpRequestBase request = new HttpRequestBase() {
+                @Override
+                public String getMethod() {
+                    return "GET";
+                }
+            };
+            request.setURI(URI.create("http://anything"));
+
+            SpanHelper.setSampler(Sampling.OFF);
+
+            try (Span trace = SpanHelper.startTrace("Trace")) {
+//                assertTrue(trace instanceof DisabledSpan);
+
+                BasicHttpResponse expectedResponse = new BasicHttpResponse(HttpVersion.HTTP_1_1, 200, "OK");
+                HttpClient client = new TestableHttpClient(expectedResponse);
+
+                assertEquals(expectedResponse, client.execute(request));
+            }
+
+            assertTrue(sink.getTraces().isEmpty());
         }
     }
 

@@ -9,9 +9,9 @@ import com.yammer.telemetry.agent.handlers.MetricsRegistryHandler;
 import com.yammer.telemetry.agent.jdbc.JdbcDriverClassHandler;
 import com.yammer.telemetry.instrumentation.TelemetryTransformer;
 import com.yammer.telemetry.tracing.Annotations;
-import com.yammer.telemetry.tracing.logging.LoggingSpanSink;
-import com.yammer.telemetry.tracing.Span;
+import com.yammer.telemetry.tracing.SpanHelper;
 import com.yammer.telemetry.tracing.SpanSinkRegistry;
+import com.yammer.telemetry.tracing.logging.LoggingSpanSink;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -28,7 +28,7 @@ public class TelemetryAgent {
             try {
                 TelemetryConfiguration config = loadConfiguration(agentArgs);
 
-                Span.setSampler(config.getSampler());
+                SpanHelper.setSampler(config.getSampler());
                 Annotations.setServiceAnnotations(config.getAnnotations());
 
                 if (config.isEnabled()) {

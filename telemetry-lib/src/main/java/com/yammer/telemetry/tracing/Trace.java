@@ -8,8 +8,10 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.logging.Logger;
 
 public class Trace {
+    private static final Logger LOG = Logger.getLogger(SpanHelper.class.getName());
     private final BigInteger traceId;
     private final ConcurrentMap<BigInteger, List<SpanData>> childSpans;
     private final ConcurrentMap<BigInteger, List<AnnotationData>> annotations;

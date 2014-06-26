@@ -25,13 +25,13 @@ public class SpanUsageTest {
     public void setUp() throws Exception {
         sink = new InMemorySpanSinkSource();
         SpanSinkRegistry.register(sink);
-        defaultSampler = Span.getSampler();
+        defaultSampler = SpanHelper.getSampler();
     }
 
     @After
     public void tearDown() {
         SpanSinkRegistry.clear();
-        Span.setSampler(defaultSampler);
+        SpanHelper.setSampler(defaultSampler);
     }
 
     @Test
@@ -39,7 +39,7 @@ public class SpanUsageTest {
         Trace trace = testSpan(new Strategy() {
             @Override
             public Span createSpan() {
-                return Span.attachSpan(BigInteger.ONE, BigInteger.TEN, "wubba");
+                return SpanHelper.attachSpan(BigInteger.ONE, BigInteger.TEN, "wubba");
             }
         });
 
@@ -64,7 +64,7 @@ public class SpanUsageTest {
         Trace trace = testSpan(new Strategy() {
             @Override
             public Span createSpan() {
-                return Span.startSpan("Tracing");
+                return SpanHelper.startSpan("Tracing");
             }
         });
 
@@ -84,17 +84,17 @@ public class SpanUsageTest {
 
     @Test(expected = NullPointerException.class)
     public void testCannotAttachWithoutTraceId() {
-        Span.attachSpan(null, BigInteger.ONE, "name");
+        SpanHelper.attachSpan(null, BigInteger.ONE, "name");
     }
 
     @Test(expected = NullPointerException.class)
     public void testCannotAttachWithoutSpanId() {
-        Span.attachSpan(BigInteger.ONE, null, "name");
+        SpanHelper.attachSpan(BigInteger.ONE, null, "name");
     }
 
     @Test(expected = NullPointerException.class)
     public void testCannotAttachWithoutTraceAndSpanIds() {
-        Span.attachSpan(null, null, "name");
+        SpanHelper.attachSpan(null, null, "name");
     }
 
     @Test
@@ -104,8 +104,8 @@ public class SpanUsageTest {
 
     @Test
     public void testStartTraceRecordsWhenSamplingIsOn() {
-        Span.setSampler(Sampling.ON);
-        Span trace = Span.startTrace("Foof");
+        SpanHelper.setSampler(Sampling.ON);
+        Span trace = SpanHelper.startTrace("Foof");
         trace.end();
 
         assertFalse(sink.getTraces().isEmpty());
@@ -113,8 +113,8 @@ public class SpanUsageTest {
 
     @Test
     public void testStartTraceRecordsNothingWhenSamplingIsOff() {
-        Span.setSampler(Sampling.OFF);
-        Span trace = Span.startTrace("Foof");
+        SpanHelper.setSampler(Sampling.OFF);
+        Span trace = SpanHelper.startTrace("Foof");
         trace.end();
 
         assertTrue(sink.getTraces().isEmpty());
@@ -122,8 +122,8 @@ public class SpanUsageTest {
 
     @Test
     public void testStartSpanRecordsWhenSamplingIsOn() {
-        Span.setSampler(Sampling.ON);
-        Span trace = Span.startSpan("Foof");
+        SpanHelper.setSampler(Sampling.ON);
+        Span trace = SpanHelper.startSpan("Foof");
         trace.end();
 
         assertFalse(sink.getTraces().isEmpty());
@@ -131,8 +131,8 @@ public class SpanUsageTest {
 
     @Test
     public void testStartSpanRecordsNothingWhenSamplingIsOff() {
-        Span.setSampler(Sampling.OFF);
-        Span trace = Span.startSpan("Foof");
+        SpanHelper.setSampler(Sampling.OFF);
+        Span trace = SpanHelper.startSpan("Foof");
         trace.end();
 
         assertTrue(sink.getTraces().isEmpty());
@@ -140,8 +140,8 @@ public class SpanUsageTest {
 
     @Test
     public void testStartSpanWithTraceAndSpanIdRecordsWhenSamplingIsOn() {
-        Span.setSampler(Sampling.ON);
-        Span trace = Span.startSpan(BigInteger.ONE, BigInteger.TEN, "Foof");
+        SpanHelper.setSampler(Sampling.ON);
+        Span trace = SpanHelper.startSpan(BigInteger.ONE, BigInteger.TEN, "Foof");
         trace.end();
 
         assertFalse(sink.getTraces().isEmpty());
@@ -152,8 +152,8 @@ public class SpanUsageTest {
 
     @Test
     public void testStartSpanWithTraceAndSpanIdRecordsEvenWhenSamplingIsOff() {
-        Span.setSampler(Sampling.OFF);
-        Span trace = Span.startSpan(BigInteger.ONE, BigInteger.TEN, "Foof");
+        SpanHelper.setSampler(Sampling.OFF);
+        Span trace = SpanHelper.startSpan(BigInteger.ONE, BigInteger.TEN, "Foof");
         trace.end();
 
         assertFalse(sink.getTraces().isEmpty());
@@ -164,9 +164,9 @@ public class SpanUsageTest {
 
     @Test
     public void testSpanRecordsAfterAttachSpanIfSamplingIsOn() {
-        Span.setSampler(Sampling.ON);
-        Span foof = Span.attachSpan(BigInteger.ONE, BigInteger.TEN, "Foof");
-        Span subFoof = Span.startSpan("SubFoof");
+        SpanHelper.setSampler(Sampling.ON);
+        Span foof = SpanHelper.attachSpan(BigInteger.ONE, BigInteger.TEN, "Foof");
+        Span subFoof = SpanHelper.startSpan("SubFoof");
         subFoof.addAnnotation("A");
         subFoof.end();
         foof.end();
@@ -184,9 +184,9 @@ public class SpanUsageTest {
 
     @Test
     public void testSpanRecordsAfterAttachSpanEvenIfSamplingIsOff() {
-        Span.setSampler(Sampling.OFF);
-        Span foof = Span.attachSpan(BigInteger.ONE, BigInteger.TEN, "Foof");
-        Span subFoof = Span.startSpan("SubFoof");
+        SpanHelper.setSampler(Sampling.OFF);
+        Span foof = SpanHelper.attachSpan(BigInteger.ONE, BigInteger.TEN, "Foof");
+        Span subFoof = SpanHelper.startSpan("SubFoof");
         subFoof.addAnnotation("A");
         subFoof.end();
         foof.end();
@@ -201,9 +201,9 @@ public class SpanUsageTest {
 
     @Test
     public void testSpanRecordsAfterStartTraceIfSamplingIsOn() {
-        Span.setSampler(Sampling.ON);
-        Span foof = Span.startTrace("Foof");
-        Span subFoof = Span.startSpan("SubFoof");
+        SpanHelper.setSampler(Sampling.ON);
+        Span foof = SpanHelper.startTrace("Foof");
+        Span subFoof = SpanHelper.startSpan("SubFoof");
         subFoof.addAnnotation("A");
         subFoof.end();
         foof.end();
@@ -216,9 +216,9 @@ public class SpanUsageTest {
 
     @Test
     public void testSpanDoesNotRecordAfterStartTraceIfSamplingIsOff() {
-        Span.setSampler(Sampling.OFF);
-        Span foof = Span.startTrace("Foof");
-        Span subFoof = Span.startSpan("SubFoof");
+        SpanHelper.setSampler(Sampling.OFF);
+        Span foof = SpanHelper.startTrace("Foof");
+        Span subFoof = SpanHelper.startSpan("SubFoof");
         subFoof.addAnnotation("A");
         subFoof.end();
         foof.end();
@@ -230,8 +230,8 @@ public class SpanUsageTest {
 
     @Test
     public void testAnnotationRecordedAfterSpanEnded() {
-        Span.setSampler(Sampling.ON);
-        Span trace = Span.startTrace("trace");
+        SpanHelper.setSampler(Sampling.ON);
+        Span trace = SpanHelper.startTrace("trace");
         trace.addAnnotation("During");
         trace.end();
         trace.addAnnotation("After");
@@ -250,8 +250,8 @@ public class SpanUsageTest {
 
             span.addAnnotation(AnnotationNames.SERVER_RECEIVED);
             span.addAnnotation(AnnotationNames.SERVICE_NAME, "testing");
-            Span.startSpan("here").end();
-            Span.startSpan("there").end();
+            SpanHelper.startSpan("here").end();
+            SpanHelper.startSpan("there").end();
             span.addAnnotation(AnnotationNames.SERVER_SENT);
         } catch (Exception e) {
             e.printStackTrace();
